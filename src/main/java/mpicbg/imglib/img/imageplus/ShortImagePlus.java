@@ -25,25 +25,25 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package mpicbg.imglib.container.imageplus;
+package mpicbg.imglib.img.imageplus;
 
 import ij.ImagePlus;
 import ij.ImageStack;
-import ij.process.FloatProcessor;
-import mpicbg.imglib.container.basictypecontainer.array.FloatArray;
+import ij.process.ShortProcessor;
+import mpicbg.imglib.container.basictypecontainer.array.ShortArray;
 import mpicbg.imglib.exception.ImgLibException;
 import mpicbg.imglib.type.NativeType;
 
 /**
- * {@link ImagePlusContainer} for float-stored data.
+ * {@link ImagePlusContainer} for short-stored data.
  * 
  * @author Jan Funke, Stephan Preibisch, Stephan Saalfeld, Johannes Schindelin
  */
-public class FloatImagePlus< T extends NativeType< T > > extends ImagePlusContainer< T, FloatArray >
+public class ShortImagePlus< T extends NativeType< T > > extends ImagePlusContainer< T, ShortArray > 
 {
 	final ImagePlus imp;	
 	
-	public FloatImagePlus( final long[] dim, final int entitiesPerPixel ) 
+	public ShortImagePlus( final long[] dim, final int entitiesPerPixel ) 
 	{
 		super( dim, entitiesPerPixel );
 		
@@ -51,7 +51,7 @@ public class FloatImagePlus< T extends NativeType< T > > extends ImagePlusContai
 		{
 			final ImageStack stack = new ImageStack( width, height );
 			for ( int i = 0; i < numSlices; ++i )
-				stack.addSlice( "", new FloatProcessor( width, height ) );
+				stack.addSlice( "", new ShortProcessor( width, height ) );
 			imp = new ImagePlus( "image", stack );
 			imp.setDimensions( channels, depth, frames );
 			if ( numSlices > 1 )
@@ -61,7 +61,7 @@ public class FloatImagePlus< T extends NativeType< T > > extends ImagePlusContai
 			for ( int c = 0; c < channels; ++c )
 				for ( int t = 0; t < frames; ++t )
 					for ( int z = 0; z < depth; ++z )
-						mirror.add( new FloatArray( ( float[] )imp.getStack().getProcessor( imp.getStackIndex( c + 1, z + 1 , t + 1 ) ).getPixels() ) );
+						mirror.add( new ShortArray( ( short[] )imp.getStack().getProcessor( imp.getStackIndex( c + 1, z + 1 , t + 1 ) ).getPixels() ) );
 		}
 		else
 		{
@@ -69,11 +69,11 @@ public class FloatImagePlus< T extends NativeType< T > > extends ImagePlusContai
 
 			mirror.clear();
 			for ( int i = 0; i < numSlices; ++i )
-				mirror.add( new FloatArray( width * height * entitiesPerPixel ) );
+				mirror.add( new ShortArray( width * height * entitiesPerPixel ) );
 		}
 	}
 
-	public FloatImagePlus( final ImagePlus imp ) 
+	public ShortImagePlus( final ImagePlus imp ) 
 	{
 		super(
 				imp.getWidth(),
@@ -84,12 +84,12 @@ public class FloatImagePlus< T extends NativeType< T > > extends ImagePlusContai
 				1 );
 		
 		this.imp = imp;
-
-		mirror.clear();		
+		
+		mirror.clear();
 		for ( int c = 0; c < channels; ++c )
 			for ( int t = 0; t < frames; ++t )
 				for ( int z = 0; z < depth; ++z )
-					mirror.add( new FloatArray( ( float[] )imp.getStack().getProcessor( imp.getStackIndex( c + 1, z + 1 , t + 1 ) ).getPixels() ) );
+					mirror.add( new ShortArray( ( short[] )imp.getStack().getProcessor( imp.getStackIndex( c + 1, z + 1 , t + 1 ) ).getPixels() ) );
 	}
 
 	@Override

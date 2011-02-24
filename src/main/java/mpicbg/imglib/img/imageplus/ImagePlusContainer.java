@@ -25,12 +25,12 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package mpicbg.imglib.container.imageplus;
+package mpicbg.imglib.img.imageplus;
 
 import ij.ImagePlus;
 import mpicbg.imglib.container.basictypecontainer.array.ArrayDataAccess;
-import mpicbg.imglib.container.planar.PlanarContainer;
 import mpicbg.imglib.exception.ImgLibException;
+import mpicbg.imglib.img.planar.PlanarImg;
 import mpicbg.imglib.type.NativeType;
 
 /**
@@ -49,7 +49,7 @@ import mpicbg.imglib.type.NativeType;
  * @author Jan Funke, Tobias Pietzsch, Stephan Preibisch, Curtis Rueden, Stephan Saalfeld,
  *   Johannes Schindelin
  */
-public class ImagePlusContainer< T extends NativeType< T >, A extends ArrayDataAccess<A> > extends PlanarContainer< T, A >
+public class ImagePlusContainer< T extends NativeType< T >, A extends ArrayDataAccess<A> > extends PlanarImg< T, A >
 {
 	final protected int width, height, depth, frames, channels;
 	

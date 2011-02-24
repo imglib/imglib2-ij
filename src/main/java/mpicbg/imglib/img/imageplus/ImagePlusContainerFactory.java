@@ -25,11 +25,9 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package mpicbg.imglib.container.imageplus;
+package mpicbg.imglib.img.imageplus;
 
 import mpicbg.imglib.Interval;
-import mpicbg.imglib.container.ImgFactory;
-import mpicbg.imglib.container.NativeContainer;
 import mpicbg.imglib.container.basictypecontainer.array.BitArray;
 import mpicbg.imglib.container.basictypecontainer.array.ByteArray;
 import mpicbg.imglib.container.basictypecontainer.array.CharArray;
@@ -38,8 +36,10 @@ import mpicbg.imglib.container.basictypecontainer.array.FloatArray;
 import mpicbg.imglib.container.basictypecontainer.array.IntArray;
 import mpicbg.imglib.container.basictypecontainer.array.LongArray;
 import mpicbg.imglib.container.basictypecontainer.array.ShortArray;
-import mpicbg.imglib.container.planar.PlanarContainerFactory;
 import mpicbg.imglib.exception.IncompatibleTypeException;
+import mpicbg.imglib.img.ImgFactory;
+import mpicbg.imglib.img.NativeImg;
+import mpicbg.imglib.img.planar.PlanarImgFactory;
 import mpicbg.imglib.type.NativeType;
 
 /**
@@ -47,12 +47,12 @@ import mpicbg.imglib.type.NativeType;
  * 
  * @author Jan Funke, Stephan Preibisch, Stephan Saalfeld, Johannes Schindelin
  */
-public class ImagePlusContainerFactory< T extends NativeType< T > > extends PlanarContainerFactory< T >
+public class ImagePlusContainerFactory< T extends NativeType< T > > extends PlanarImgFactory< T >
 {
 	@Override
 	public ImagePlusContainer< T, ? > create( final long[] dim, final T type )
 	{
-		return ( ImagePlusContainer< T, ? > ) type.createSuitableNativeContainer( this, dim );
+		return ( ImagePlusContainer< T, ? > ) type.createSuitableNativeImg( this, dim );
 	}
 
 	@Override
@@ -65,7 +65,7 @@ public class ImagePlusContainerFactory< T extends NativeType< T > > extends Plan
 	}
 
 	@Override
-	public NativeContainer< T, BitArray > createBitInstance( long[] dimensions, final int entitiesPerPixel )
+	public NativeImg< T, BitArray > createBitInstance( long[] dimensions, final int entitiesPerPixel )
 	{
 		if ( dimensions.length > 5 )
 			throw new RuntimeException( "Unsupported dimensionality: " + dimensions.length );
@@ -74,7 +74,7 @@ public class ImagePlusContainerFactory< T extends NativeType< T > > extends Plan
 	}
 
 	@Override
-	public NativeContainer< T, ByteArray > createByteInstance( final long[] dimensions, final int entitiesPerPixel )
+	public NativeImg< T, ByteArray > createByteInstance( final long[] dimensions, final int entitiesPerPixel )
 	{
 		if ( dimensions.length > 5 )
 			throw new RuntimeException( "Unsupported dimensionality: " + dimensions.length );
@@ -83,7 +83,7 @@ public class ImagePlusContainerFactory< T extends NativeType< T > > extends Plan
 	}
 
 	@Override
-	public NativeContainer< T, CharArray > createCharInstance( long[] dimensions, final int entitiesPerPixel )
+	public NativeImg< T, CharArray > createCharInstance( long[] dimensions, final int entitiesPerPixel )
 	{
 		if ( dimensions.length > 5 )
 			throw new RuntimeException( "Unsupported dimensionality: " + dimensions.length );
@@ -92,7 +92,7 @@ public class ImagePlusContainerFactory< T extends NativeType< T > > extends Plan
 	}
 
 	@Override
-	public NativeContainer< T, DoubleArray > createDoubleInstance( long[] dimensions, final int entitiesPerPixel )
+	public NativeImg< T, DoubleArray > createDoubleInstance( long[] dimensions, final int entitiesPerPixel )
 	{
 		if ( dimensions.length > 5 )
 			throw new RuntimeException( "Unsupported dimensionality: " + dimensions.length );
@@ -101,7 +101,7 @@ public class ImagePlusContainerFactory< T extends NativeType< T > > extends Plan
 	}
 
 	@Override
-	public NativeContainer< T, FloatArray > createFloatInstance( long[] dimensions, final int entitiesPerPixel )
+	public NativeImg< T, FloatArray > createFloatInstance( long[] dimensions, final int entitiesPerPixel )
 	{
 		if ( dimensions.length > 5 )
 			throw new RuntimeException( "Unsupported dimensionality: " + dimensions.length );
@@ -110,7 +110,7 @@ public class ImagePlusContainerFactory< T extends NativeType< T > > extends Plan
 	}
 
 	@Override
-	public NativeContainer< T, IntArray > createIntInstance( long[] dimensions, final int entitiesPerPixel )
+	public NativeImg< T, IntArray > createIntInstance( long[] dimensions, final int entitiesPerPixel )
 	{
 		if ( dimensions.length > 5 )
 			throw new RuntimeException( "Unsupported dimensionality: " + dimensions.length );
@@ -119,7 +119,7 @@ public class ImagePlusContainerFactory< T extends NativeType< T > > extends Plan
 	}
 
 	@Override
-	public NativeContainer< T, LongArray > createLongInstance( long[] dimensions, final int entitiesPerPixel )
+	public NativeImg< T, LongArray > createLongInstance( long[] dimensions, final int entitiesPerPixel )
 	{
 		if ( dimensions.length > 5 )
 			throw new RuntimeException( "Unsupported dimensionality: " + dimensions.length );
@@ -128,7 +128,7 @@ public class ImagePlusContainerFactory< T extends NativeType< T > > extends Plan
 	}
 
 	@Override
-	public NativeContainer< T, ShortArray > createShortInstance( long[] dimensions, final int entitiesPerPixel )
+	public NativeImg< T, ShortArray > createShortInstance( long[] dimensions, final int entitiesPerPixel )
 	{
 		if ( dimensions.length > 5 )
 			throw new RuntimeException( "Unsupported dimensionality: " + dimensions.length );
