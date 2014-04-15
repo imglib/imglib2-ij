@@ -16,6 +16,11 @@
 	<name>ImgLib2 ImageJ</name>
 	<description>ImgLib2 display logic using ImageJ.</description>
 
+	<properties>
+		<!-- NB: only needed until pom-scijava 1.156 comes out -->
+		<imglib2.version>2.0.0-beta-26</imglib2.version>
+	</properties>
+
 	<dependencies>
 		<!-- ImgLib2 dependencies -->
 		<dependency>
