@@ -43,7 +43,7 @@ import ij.process.ShortProcessor;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converter;
-import net.imglib2.display.projector.Projector2D;
+import net.imglib2.display.projector.IterableIntervalProjector2D;
 import net.imglib2.img.array.ArrayImg;
 import net.imglib2.img.array.ArrayImgFactory;
 import net.imglib2.img.basictypeaccess.array.ArrayDataAccess;
@@ -57,7 +57,7 @@ import net.imglib2.view.Views;
  */
 public abstract class ImageJVirtualStack<S, T extends NativeType<T>> extends
 		VirtualStack {
-	final private Projector2D<S, T> projector;
+	final private IterableIntervalProjector2D< S, T > projector;
 
 	final private int size;
 	final private int numDimensions;
@@ -90,7 +90,7 @@ public abstract class ImageJVirtualStack<S, T extends NativeType<T>> extends
 		this.numDimensions = source.numDimensions();
 
 		// if the source interval is not zero-min, we wrap it into a view that translates it to the origin
-		this.projector = new Projector2D< S, T >(0,1, Views.isZeroMin( source ) ? source : Views.zeroMin( source ), img, converter );
+		this.projector = new IterableIntervalProjector2D< S, T >(0,1, Views.isZeroMin( source ) ? source : Views.zeroMin( source ), img, converter );
 
 		switch ( ijtype )
 		{
