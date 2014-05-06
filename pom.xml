@@ -21,6 +21,13 @@
 		<imglib2.version>2.0.0-beta-26</imglib2.version>
 	</properties>
 
+	<licenses>
+		<license>
+			<name>Simplified BSD License</name>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
 	<dependencies>
 		<!-- ImgLib2 dependencies -->
 		<dependency>
