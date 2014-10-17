@@ -3,13 +3,12 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>net.imagej</groupId>
-		<artifactId>pom-imagej</artifactId>
-		<version>2.32</version>
+		<groupId>net.imglib2</groupId>
+		<artifactId>pom-imglib2</artifactId>
+		<version>3.1</version>
 		<relativePath />
 	</parent>
 
-	<groupId>net.imglib2</groupId>
 	<artifactId>imglib2-ij</artifactId>
 	<version>2.0.0-beta-27-SNAPSHOT</version>
 
@@ -17,7 +16,6 @@
 	<description>ImgLib2 display logic using ImageJ.</description>
 
 	<properties>
-		<!-- NB: only needed until pom-scijava 1.156 comes out -->
 		<imglib2.version>2.0.0-beta-26</imglib2.version>
 	</properties>
 
@@ -34,15 +32,15 @@
 			<groupId>net.imglib2</groupId>
 			<artifactId>imglib2</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>net.imglib2</groupId>
-			<artifactId>imglib2-meta</artifactId>
-		</dependency>
 
-		<!-- Other SciJava dependencies -->
+		<!-- ImageJ dependencies -->
 		<dependency>
 			<groupId>net.imagej</groupId>
 			<artifactId>ij</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.imagej</groupId>
+			<artifactId>imagej-common</artifactId>
 		</dependency>
 
 		<!-- Test scope dependencies -->
@@ -52,6 +50,19 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+
+	<dependencyManagement>
+		<dependencies>
+			<!-- ImageJ dependencies -->
+			<dependency>
+				<groupId>net.imagej</groupId>
+				<artifactId>pom-imagej</artifactId>
+				<version>2.53</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
 	<build>
 		<plugins>
@@ -68,163 +79,21 @@
 		</plugins>
 	</build>
 
-	<developers>
-		<developer>
-			<id>StephanPreibisch</id>
-			<name>Stephan Preibisch</name>
-			<email>stephan.preibisch@gmx.de</email>
-			<url>http://fly.mpi-cbg.de/~preibisch/</url>
-			<organization>MPI-CBG at Dresden</organization>
-			<organizationUrl>http://mpi-cbg.de/</organizationUrl>
-			<roles>
-				<role>architect</role>
-				<role>developer</role>
-			</roles>
-			<timezone>+1</timezone>
-		</developer>
-		<developer>
-			<id>tpietzsch</id>
-			<name>Tobias Pietzsch</name>
-			<email>tobias.pietzsch@gmail.com</email>
-			<organization>MPI-CBG at Dresden</organization>
-			<organizationUrl>http://mpi-cbg.de/</organizationUrl>
-			<roles>
-				<role>developer</role>
-			</roles>
-			<timezone>+1</timezone>
-		</developer>
-		<developer>
-			<id>axtimwalde</id>
-			<name>Stephan Saalfeld</name>
-			<email>saalfeld@mpi-cbg.de</email>
-			<url>http://fly.mpi-cbg.de/~saalfeld/</url>
-			<organization>MPI-CBG at Dresden</organization>
-			<organizationUrl>http://mpi-cbg.de/</organizationUrl>
-			<roles>
-				<role>architect</role>
-				<role>developer</role>
-			</roles>
-			<timezone>+1</timezone>
-		</developer>
-		<developer>
-			<id>ctrueden</id>
-			<name>Curtis Rueden</name>
-			<email>ctrueden@wisc.edu</email>
-			<url>http://loci.wisc.edu/people/curtis-rueden</url>
-			<organization>UW-Madison LOCI</organization>
-			<organizationUrl>http://loci.wisc.edu/</organizationUrl>
-			<roles>
-				<role>architect</role>
-				<role>developer</role>
-			</roles>
-			<timezone>-6</timezone>
-		</developer>
-		<developer>
-			<id>dietzc</id>
-			<name>Christian Dietz</name>
-			<email>christian.dietz@uni-konstanz.de</email>
-			<url>http://www.informatik.uni-konstanz.de/berthold/mitglieder/christian-dietz/</url>
-			<organization>University of Konstanz</organization>
-			<organizationUrl>http://www.informatik.uni-konstanz.de/</organizationUrl>
-			<roles>
-				<role>developer</role>
-			</roles>
-			<timezone>+1</timezone>
-		</developer>
-		<developer>
-			<id>tinevez</id>
-			<name>Jean-Yves Tinevez</name>
-			<email>jean-yves.tinevez@pasteur.fr</email>
-			<url>http://www.pasteur.fr/ip/easysite/pasteur/fr/recherche/plates-formes-technologiques/imagopole/plates-formes-imagopole/la-plate-forme-d-imagerie-dynamique/equipe-pfid/equipe-pfid-jyt</url>
-			<organization>Institut Pasteur</organization>
-			<organizationUrl>http://www.pasteur.fr/</organizationUrl>
-			<roles>
-				<role>developer</role>
-			</roles>
-			<timezone>+1</timezone>
-		</developer>
-		<developer>
-			<id>dscho</id>
-			<name>Johannes Schindelin</name>
-			<email>johannes.schindelin@gmx.de</email>
-			<url>http://loci.wisc.edu/people/johannes-schindelin</url>
-			<organization>UW-Madison LOCI</organization>
-			<organizationUrl>http://loci.wisc.edu/</organizationUrl>
-			<roles>
-				<role>developer</role>
-			</roles>
-			<timezone>-6</timezone>
-		</developer>
-	</developers>
-
-	<contributors>
-		<contributor>
-			<name>Barry DeZonia</name>
-			<url>http://loci.wisc.edu/people/barry-dezonia</url>
-			<organization>UW-Madison LOCI</organization>
-			<organizationUrl>http://loci.wisc.edu/</organizationUrl>
-			<roles>
-				<role>developer</role>
-			</roles>
-			<timezone>-6</timezone>
-		</contributor>
-		<contributor>
-			<name>Albert Cardona</name>
-			<email>sapristi@gmail.com</email>
-			<url>http://albert.rierol.net/</url>
-			<organization>Institute of Neuroinformatics, Uni/ETH Zürich</organization>
-			<organizationUrl>http://www.ini.uzh.ch/</organizationUrl>
-			<roles>
-				<role>developer</role>
-			</roles>
-			<timezone>+1</timezone>
-		</contributor>
-		<contributor>
-			<name>Mark Hiner</name>
-			<email>hiner@wisc.edu</email>
-			<url>http://loci.wisc.edu/people/mark-hiner</url>
-			<organization>UW-Madison LOCI</organization>
-			<organizationUrl>http://loci.wisc.edu/</organizationUrl>
-			<roles>
-				<role>developer</role>
-			</roles>
-			<timezone>-6</timezone>
-		</contributor>
-		<contributor><name>Dimiter Prodanov</name></contributor>
-	</contributors>
-
 	<issueManagement>
 		<system>GitHub</system>
-		<url>https://github.com/imglib/imglib-ij/issues</url>
+		<url>https://github.com/imglib/imglib2-ij/issues</url>
 	</issueManagement>
 
 	<ciManagement>
 		<system>Jenkins</system>
-		<url>http://jenkins.imagej.net/view/ImgLib2</url>
+		<url>http://jenkins.imagej.net/job/ImgLib2-IJ/</url>
 	</ciManagement>
 
-	<mailingLists>
-		<mailingList>
-			<name>ImageJ-devel</name>
-			<subscribe>http://imagej.net/mailman/listinfo/imagej-devel</subscribe>
-			<unsubscribe>http://imagej.net/mailman/listinfo/imagej-devel</unsubscribe>
-			<post>imagej-devel@imagej.net</post>
-			<archive>http://imagej.net/pipermail/imagej-devel/</archive>
-		</mailingList>
-		<mailingList>
-			<name>Fiji-devel</name>
-			<subscribe>http://groups.google.com/group/fiji-devel</subscribe>
-			<unsubscribe>http://groups.google.com/group/fiji-devel</unsubscribe>
-			<post>fiji-devel@googlegroups.com</post>
-			<archive>http://groups.google.com/group/fiji-devel</archive>
-		</mailingList>
-	</mailingLists>
-
 	<scm>
-		<connection>scm:git:git://github.com/imglib/imglib-ij</connection>
-		<developerConnection>scm:git:git@github.com:imglib/imglib-ij</developerConnection>
+		<connection>scm:git:git://github.com/imglib/imglib2-ij</connection>
+		<developerConnection>scm:git:git@github.com:imglib/imglib2-ij</developerConnection>
 		<tag>HEAD</tag>
-		<url>https://github.com/imglib/imglib-ij</url>
+		<url>https://github.com/imglib/imglib2-ij</url>
 	</scm>
 
 	<repositories>
