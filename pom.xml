@@ -14,11 +14,6 @@
 
 	<name>ImgLib2 ImageJ</name>
 	<description>ImgLib2 display logic using ImageJ.</description>
-
-	<properties>
-		<imglib2.version>2.0.0-beta-26</imglib2.version>
-	</properties>
-
 	<licenses>
 		<license>
 			<name>Simplified BSD License</name>
@@ -26,6 +21,45 @@
 		</license>
 	</licenses>
 
+	<scm>
+		<connection>scm:git:git://github.com/imglib/imglib2-ij</connection>
+		<developerConnection>scm:git:git@github.com:imglib/imglib2-ij</developerConnection>
+		<tag>HEAD</tag>
+		<url>https://github.com/imglib/imglib2-ij</url>
+	</scm>
+	<issueManagement>
+		<system>GitHub</system>
+		<url>https://github.com/imglib/imglib2-ij/issues</url>
+	</issueManagement>
+	<ciManagement>
+		<system>Jenkins</system>
+		<url>http://jenkins.imagej.net/job/ImgLib2-IJ/</url>
+	</ciManagement>
+
+	<properties>
+		<imglib2.version>2.0.0-beta-26</imglib2.version>
+	</properties>
+
+	<repositories>
+		<!-- NB: for SciJava dependencies -->
+		<repository>
+			<id>imagej.public</id>
+			<url>http://maven.imagej.net/content/groups/public</url>
+		</repository>
+	</repositories>
+
+	<dependencyManagement>
+		<dependencies>
+			<!-- ImageJ dependencies -->
+			<dependency>
+				<groupId>net.imagej</groupId>
+				<artifactId>pom-imagej</artifactId>
+				<version>2.53</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 	<dependencies>
 		<!-- ImgLib2 dependencies -->
 		<dependency>
@@ -51,19 +85,6 @@
 		</dependency>
 	</dependencies>
 
-	<dependencyManagement>
-		<dependencies>
-			<!-- ImageJ dependencies -->
-			<dependency>
-				<groupId>net.imagej</groupId>
-				<artifactId>pom-imagej</artifactId>
-				<version>2.53</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
-
 	<build>
 		<plugins>
 			<plugin>
@@ -78,30 +99,5 @@
 			</plugin>
 		</plugins>
 	</build>
-
-	<issueManagement>
-		<system>GitHub</system>
-		<url>https://github.com/imglib/imglib2-ij/issues</url>
-	</issueManagement>
-
-	<ciManagement>
-		<system>Jenkins</system>
-		<url>http://jenkins.imagej.net/job/ImgLib2-IJ/</url>
-	</ciManagement>
-
-	<scm>
-		<connection>scm:git:git://github.com/imglib/imglib2-ij</connection>
-		<developerConnection>scm:git:git@github.com:imglib/imglib2-ij</developerConnection>
-		<tag>HEAD</tag>
-		<url>https://github.com/imglib/imglib2-ij</url>
-	</scm>
-
-	<repositories>
-		<!-- NB: for SciJava dependencies -->
-		<repository>
-			<id>imagej.public</id>
-			<url>http://maven.imagej.net/content/groups/public</url>
-		</repository>
-	</repositories>
 
 </project>
