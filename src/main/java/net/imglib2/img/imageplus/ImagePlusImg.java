@@ -38,6 +38,7 @@ import net.imglib2.exception.ImgLibException;
 import net.imglib2.img.basictypeaccess.array.ArrayDataAccess;
 import net.imglib2.img.planar.PlanarImg;
 import net.imglib2.type.NativeType;
+import net.imglib2.util.Fraction;
 
 /**
  * A container that stores data in an array of 2D slices each as a linear array
@@ -64,13 +65,24 @@ public class ImagePlusImg< T extends NativeType< T >, A extends ArrayDataAccess<
 {
 	final protected int width, height, depth, frames, channels;
 
+	protected ImagePlusImg( final ImagePlus imp )
+	{
+		this(
+				imp.getWidth(),
+				imp.getHeight(),
+				imp.getNSlices(),
+				imp.getNFrames(),
+				imp.getNChannels(),
+				new Fraction() );
+	}
+
 	protected ImagePlusImg(
 			final int width,
 			final int height,
 			final int depth,
 			final int frames,
 			final int channels,
-			final int entitiesPerPixel )
+			final Fraction entitiesPerPixel )
 	{
 		super( reduceDimensions( new long[] { width, height, channels, depth, frames } ), entitiesPerPixel );
 
@@ -93,7 +105,7 @@ public class ImagePlusImg< T extends NativeType< T >, A extends ArrayDataAccess<
 	 * @param dim
 	 * @param entitiesPerPixel
 	 */
-	ImagePlusImg( final long[] dim, final int entitiesPerPixel )
+	ImagePlusImg( final long[] dim, final Fraction entitiesPerPixel )
 	{
 		super( dim, entitiesPerPixel );
 
@@ -125,14 +137,14 @@ public class ImagePlusImg< T extends NativeType< T >, A extends ArrayDataAccess<
 			frames = 1;
 	}
 
-	ImagePlusImg( final A creator, final long[] dim, final int entitiesPerPixel )
+	ImagePlusImg( final A creator, final long[] dim, final Fraction entitiesPerPixel )
 	{
 		this( dim, entitiesPerPixel );
 
 		mirror.clear();
 
 		for ( int i = 0; i < numSlices; ++i )
-			mirror.add( creator.createArray( width * height * entitiesPerPixel ) );
+			mirror.add( creator.createArray( (int) Math.ceil(width * height * entitiesPerPixel.getRatio()) ) );
 	}
 
 	public ImagePlus getImagePlus() throws ImgLibException
@@ -224,4 +236,9 @@ public class ImagePlusImg< T extends NativeType< T >, A extends ArrayDataAccess<
 	 */
 	public void close()
 	{}
+
+	protected int numEntities( final Fraction entitiesPerPixel )
+	{
+		return (int) Math.ceil(width * height * entitiesPerPixel.getRatio());
+	}
 }

@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>net.imglib2</groupId>
 		<artifactId>pom-imglib2</artifactId>
-		<version>3.1</version>
+		<version>4.1</version>
 		<relativePath />
 	</parent>
 
@@ -30,10 +30,6 @@
 		<url>http://jenkins.imagej.net/job/ImgLib2-IJ/</url>
 	</ciManagement>
 
-	<properties>
-		<imglib2.version>2.0.0-beta-26</imglib2.version>
-	</properties>
-
 	<repositories>
 		<!-- NB: for SciJava dependencies -->
 		<repository>
@@ -42,18 +38,6 @@
 		</repository>
 	</repositories>
 
-	<dependencyManagement>
-		<dependencies>
-			<!-- ImageJ dependencies -->
-			<dependency>
-				<groupId>net.imagej</groupId>
-				<artifactId>pom-imagej</artifactId>
-				<version>2.53</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
 	<dependencies>
 		<!-- ImgLib2 dependencies -->
 		<dependency>
@@ -80,7 +64,7 @@
 		<dependency>
 			<groupId>net.imglib2</groupId>
 			<artifactId>imglib2</artifactId>
-			<version>${imglib2.version}</version>
+			<version>2.0.1</version>
 			<classifier>tests</classifier>
 			<scope>test</scope>
 		</dependency>
