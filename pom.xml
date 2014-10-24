@@ -86,7 +86,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<packageName>net.imglib2.ij</packageName>
+							<packageName>net.imglib2.img</packageName>
 						</manifest>
 					</archive>
 				</configuration>
