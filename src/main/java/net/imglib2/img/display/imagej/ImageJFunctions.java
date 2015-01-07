@@ -39,6 +39,8 @@ import ij.measure.Calibration;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import net.imagej.ImgPlus;
+import net.imagej.axis.Axes;
 import net.imglib2.Dimensions;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.ComplexPowerGLogFloatConverter;
@@ -49,8 +51,6 @@ import net.imglib2.converter.RealUnsignedShortConverter;
 import net.imglib2.converter.TypeIdentity;
 import net.imglib2.img.ImagePlusAdapter;
 import net.imglib2.img.Img;
-import net.imglib2.meta.Axes;
-import net.imglib2.meta.ImgPlus;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.ComplexType;
