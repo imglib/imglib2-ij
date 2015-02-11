@@ -32,41 +32,54 @@
  * #L%
  */
 
-package net.imglib2.img.imageplus;
+package net.imglib2.img.display.imagej;
 
-import static org.junit.Assert.assertTrue;
-import net.imglib2.img.array.ArrayImgFactory;
-import net.imglib2.img.imageplus.ImagePlusImg;
-import net.imglib2.img.imageplus.ImagePlusImgFactory;
+import ij.ImagePlus;
+import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.converter.Converter;
 import net.imglib2.type.numeric.real.FloatType;
-import net.imglib2.util.ImgTestHelper;
-import net.imglib2.util.Util;
-
-import org.junit.Test;
+import net.imglib2.view.RandomAccessibleIntervalCursor;
+import net.imglib2.view.Views;
 
 /**
- * Unit tests for {@link ImagePlusImg}.
+ * TODO
  *
- * @author Stephan Preibisch
- * @author Stephan Saalfeld
- * @author Curtis Rueden
  */
-public class ImagePlusImgTest
+public class ImageJVirtualStackFloat< S > extends ImageJVirtualStack< S, FloatType >
 {
-	@Test public void testImagePlusImg()
+	public ImageJVirtualStackFloat( final RandomAccessibleInterval< S > source, final Converter< S, FloatType > converter )
 	{
-		final long[][] dim = ImgTestHelper.dims();
-		for ( int i = 0; i < dim.length; ++i )
+		super( source, converter, new FloatType(), ImagePlus.GRAY32 );
+		setMinMax( source, converter );
+	}
+
+	public void setMinMax ( final RandomAccessibleInterval< S > source, final Converter< S, FloatType > converter )
+	{
+		final RandomAccessibleIntervalCursor< S > cursor = new RandomAccessibleIntervalCursor< S >( Views.isZeroMin( source ) ? source : Views.zeroMin( source ) );
+		final FloatType t = new FloatType();
+
+		if ( cursor.hasNext() )
 		{
-			if ( dim[ i ].length < 6 )
+			converter.convert( cursor.next(), t );
+
+			float min = t.get();
+			float max = min;
+
+			while ( cursor.hasNext() )
 			{
-				assertTrue( "ArrayImg vs ImagePlusImg failed for dim = " + Util.printCoordinates( dim[ i ] ),
-				            ImgTestHelper.testImg( dim[ i ], new ArrayImgFactory< FloatType >(), new ImagePlusImgFactory< FloatType >() ) );
-				assertTrue( "ImagePlusImg vs ArrayImg failed for dim = " + Util.printCoordinates( dim[ i ] ),
-				            ImgTestHelper.testImg( dim[ i ], new ImagePlusImgFactory< FloatType >(), new ArrayImgFactory< FloatType >() ) );
-				assertTrue( "ImagePlusImg vs ImagePlusImg failed for dim = " + Util.printCoordinates( dim[ i ] ),
-				            ImgTestHelper.testImg( dim[ i ], new ImagePlusImgFactory< FloatType >(), new ImagePlusImgFactory< FloatType >() ) );
+				converter.convert( cursor.next(), t );
+				final float value = t.get();
+
+				if ( value < min )
+					min = value;
+
+				if ( value > max )
+					max = value;
 			}
+
+			System.out.println("fmax = " + max );
+			System.out.println("fmin = " + min );
+			imageProcessor.setMinAndMax( min, max );
 		}
 	}
 }

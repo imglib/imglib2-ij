@@ -36,14 +36,14 @@ package net.imglib2.img.imageplus;
 
 import ij.ImagePlus;
 import ij.ImageStack;
-import ij.process.ColorProcessor;
+import ij.process.ByteProcessor;
 import net.imglib2.exception.ImgLibException;
-import net.imglib2.img.basictypeaccess.array.IntArray;
+import net.imglib2.img.basictypeaccess.array.ByteArray;
 import net.imglib2.type.NativeType;
 import net.imglib2.util.Fraction;
 
 /**
- * {@link ImagePlusImg} for integer-stored data.
+ * {@link ImagePlusImg} for byte-stored data.
  *
  * @author Funke
  * @author Preibisch
@@ -54,11 +54,11 @@ import net.imglib2.util.Fraction;
  * @author Stephan Saalfeld
  * @author Johannes Schindelin
  */
-public class IntImagePlus< T extends NativeType< T > > extends ImagePlusImg< T, IntArray >
+public class ByteImagePlus< T extends NativeType< T > > extends ImagePlusImg< T, ByteArray >
 {
 	final ImagePlus imp;
 
-	public IntImagePlus( final long[] dim, final Fraction entitiesPerPixel )
+	public ByteImagePlus( final long[] dim, final Fraction entitiesPerPixel )
 	{
 		super( dim, entitiesPerPixel );
 
@@ -66,7 +66,7 @@ public class IntImagePlus< T extends NativeType< T > > extends ImagePlusImg< T, 
 		{
 			final ImageStack stack = new ImageStack( width, height );
 			for ( int i = 0; i < numSlices; ++i )
-				stack.addSlice( "", new ColorProcessor( width, height ) );
+				stack.addSlice( "", new ByteProcessor( width, height ) );
 			imp = new ImagePlus( "image", stack );
 			imp.setDimensions( channels, depth, frames );
 			if ( numSlices > 1 )
@@ -76,7 +76,7 @@ public class IntImagePlus< T extends NativeType< T > > extends ImagePlusImg< T, 
 			for ( int t = 0; t < frames; ++t )
 				for ( int z = 0; z < depth; ++z )
 					for ( int c = 0; c < channels; ++c )
-						mirror.add( new IntArray( ( int[] ) imp.getStack().getPixels( imp.getStackIndex( c + 1, z + 1, t + 1 ) ) ) );
+						mirror.add( new ByteArray( ( byte[] )imp.getStack().getProcessor( imp.getStackIndex( c + 1, z + 1 , t + 1 ) ).getPixels() ) );
 		}
 		else
 		{
@@ -84,11 +84,11 @@ public class IntImagePlus< T extends NativeType< T > > extends ImagePlusImg< T, 
 
 			mirror.clear();
 			for ( int i = 0; i < numSlices; ++i )
-				mirror.add( new IntArray( numEntities(entitiesPerPixel) ) );
+				mirror.add( new ByteArray( numEntities(entitiesPerPixel) ) );
 		}
 	}
 
-	public IntImagePlus( final ImagePlus imp )
+	public ByteImagePlus( final ImagePlus imp )
 	{
 		super( imp );
 
@@ -98,14 +98,14 @@ public class IntImagePlus< T extends NativeType< T > > extends ImagePlusImg< T, 
 		for ( int t = 0; t < frames; ++t )
 			for ( int z = 0; z < depth; ++z )
 				for ( int c = 0; c < channels; ++c )
-					mirror.add( new IntArray( ( int[] )imp.getStack().getProcessor( imp.getStackIndex( c + 1, z + 1 , t + 1 ) ).getPixels() ) );
+					mirror.add( new ByteArray( ( byte[] )imp.getStack().getProcessor( imp.getStackIndex( c + 1, z + 1 , t + 1 ) ).getPixels() ) );
 	}
 
 	/**
 	 * This has to be overwritten, otherwise two different instances exist (one in the imageplus, one in the mirror)
 	 */
 	@Override
-	public void setPlane( final int no, final IntArray plane )
+	public void setPlane( final int no, final ByteArray plane )
 	{
 		System.arraycopy( plane.getCurrentStorageArray(), 0, mirror.get( no ).getCurrentStorageArray(), 0, plane.getCurrentStorageArray().length );
 	}
@@ -125,4 +125,3 @@ public class IntImagePlus< T extends NativeType< T > > extends ImagePlusImg< T, 
 		return imp;
 	}
 }
-

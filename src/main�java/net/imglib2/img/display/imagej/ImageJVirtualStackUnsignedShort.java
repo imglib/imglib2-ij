@@ -32,41 +32,35 @@
  * #L%
  */
 
-package net.imglib2.img.imageplus;
+package net.imglib2.img.display.imagej;
 
-import static org.junit.Assert.assertTrue;
-import net.imglib2.img.array.ArrayImgFactory;
-import net.imglib2.img.imageplus.ImagePlusImg;
-import net.imglib2.img.imageplus.ImagePlusImgFactory;
-import net.imglib2.type.numeric.real.FloatType;
-import net.imglib2.util.ImgTestHelper;
+import ij.ImagePlus;
+import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.converter.Converter;
+import net.imglib2.type.logic.BitType;
+import net.imglib2.type.numeric.integer.Unsigned12BitType;
+import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.util.Util;
 
-import org.junit.Test;
-
 /**
- * Unit tests for {@link ImagePlusImg}.
+ * TODO
  *
- * @author Stephan Preibisch
- * @author Stephan Saalfeld
- * @author Curtis Rueden
  */
-public class ImagePlusImgTest
+public class ImageJVirtualStackUnsignedShort< S > extends ImageJVirtualStack< S, UnsignedShortType >
 {
-	@Test public void testImagePlusImg()
+	public ImageJVirtualStackUnsignedShort( RandomAccessibleInterval< S > source, Converter< S, UnsignedShortType > converter )
 	{
-		final long[][] dim = ImgTestHelper.dims();
-		for ( int i = 0; i < dim.length; ++i )
-		{
-			if ( dim[ i ].length < 6 )
-			{
-				assertTrue( "ArrayImg vs ImagePlusImg failed for dim = " + Util.printCoordinates( dim[ i ] ),
-				            ImgTestHelper.testImg( dim[ i ], new ArrayImgFactory< FloatType >(), new ImagePlusImgFactory< FloatType >() ) );
-				assertTrue( "ImagePlusImg vs ArrayImg failed for dim = " + Util.printCoordinates( dim[ i ] ),
-				            ImgTestHelper.testImg( dim[ i ], new ImagePlusImgFactory< FloatType >(), new ArrayImgFactory< FloatType >() ) );
-				assertTrue( "ImagePlusImg vs ImagePlusImg failed for dim = " + Util.printCoordinates( dim[ i ] ),
-				            ImgTestHelper.testImg( dim[ i ], new ImagePlusImgFactory< FloatType >(), new ImagePlusImgFactory< FloatType >() ) );
-			}
-		}
+		super( source, converter, new UnsignedShortType(), ImagePlus.GRAY16 );
+
+		int maxDisplay = (1 << 16) - 1;
+		
+		final S s = Util.getTypeFromInterval( source );
+		
+		if ( BitType.class.isInstance( s ) )
+			maxDisplay = 1;
+		else if ( Unsigned12BitType.class.isInstance( s ) )
+			maxDisplay = 4095;
+		
+		imageProcessor.setMinAndMax( 0, maxDisplay );
 	}
 }
