@@ -43,9 +43,11 @@ import ij.process.ImageProcessor;
 import ij.process.ShortProcessor;
 import net.imglib2.Cursor;
 import net.imglib2.Interval;
+import net.imglib2.IterableInterval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converter;
 import net.imglib2.display.projector.IterableIntervalProjector2D;
+import net.imglib2.img.NativeImg;
 import net.imglib2.img.array.ArrayImg;
 import net.imglib2.img.array.ArrayImgFactory;
 import net.imglib2.img.basictypeaccess.array.ArrayDataAccess;
@@ -87,7 +89,24 @@ public abstract class ImageJVirtualStack<S, T extends NativeType<T>> extends
 		final int sizeX = ( int ) source.dimension( 0 );
 		final int sizeY = getDimension1Size( source );
 
-		img = new ArrayImgFactory< T >().create( new long[] { sizeX, sizeY }, type );
+		Object dataAccess = null;
+		Object storageArray;
+
+		//TODO
+		// So - source is an IntervalView on a MixedTransformView, with a SCIFIOImgPlus that is the actual NativeImg we want.
+		// Can it be safely unwrapped? can we create a utility method to get down to the NativeImg?
+		if (source instanceof NativeImg && ((NativeImg)source).createLinkedType().getClass().equals(type.getClass())) {
+			dataAccess = ((NativeImg)source).update(null);
+		}
+
+		if (dataAccess != null && (dataAccess instanceof ArrayDataAccess)) {
+			img = null;
+			storageArray = ((ArrayDataAccess)dataAccess).getCurrentStorageArray();
+		}
+		else {
+			img = new ArrayImgFactory<T>().create(new long[] { sizeX, sizeY }, type);
+			storageArray = ((ArrayDataAccess) img.update(null)).getCurrentStorageArray();
+		}
 
 		higherSourceDimensions = new long[3];
 		higherSourceDimensions[ 0 ] = ( source.numDimensions() > 2 ) ? source.dimension( 2 ) : 1;
@@ -96,25 +115,25 @@ public abstract class ImageJVirtualStack<S, T extends NativeType<T>> extends
 		this.numDimensions = source.numDimensions();
 
 		// if the source interval is not zero-min, we wrap it into a view that translates it to the origin
-		this.projector = new IterableIntervalProjector2D< S, T >(0,1, Views.isZeroMin( source ) ? source : Views.zeroMin( source ), img, converter );
+		this.projector = new IterableIntervalProjector2D< S, T >(0,1, Views.isZeroMin( source ) ? source : Views.zeroMin( source ), (IterableInterval<T>) (img == null ? dataAccess : img), converter );
 
 		switch ( ijtype )
 		{
 		case ImagePlus.GRAY8:
 			this.bitDepth = 8;
-			imageProcessor = new ByteProcessor( sizeX, sizeY, ( byte[] ) ( ( ArrayDataAccess< ? > ) img.update( null ) ).getCurrentStorageArray(), null );
+			imageProcessor = new ByteProcessor( sizeX, sizeY, ( byte[] ) storageArray, null );
 			break;
 		case ImagePlus.GRAY16:
 			this.bitDepth = 16;
-			imageProcessor = new ShortProcessor( sizeX, sizeY, ( short[] ) ( ( ArrayDataAccess< ? > ) img.update( null ) ).getCurrentStorageArray(), null );
+			imageProcessor = new ShortProcessor( sizeX, sizeY, ( short[] ) storageArray, null );
 			break;
 		case ImagePlus.COLOR_RGB:
 			this.bitDepth = 24;
-			imageProcessor = new ColorProcessor( sizeX, sizeY, ( int[] ) ( ( ArrayDataAccess< ? > ) img.update( null ) ).getCurrentStorageArray() );
+			imageProcessor = new ColorProcessor( sizeX, sizeY, ( int[] ) storageArray );
 			break;
 		case ImagePlus.GRAY32:
 			this.bitDepth = 32;
-			imageProcessor = new FloatProcessor( sizeX, sizeY, ( float[] ) ( ( ArrayDataAccess< ? > ) img.update( null ) ).getCurrentStorageArray(), null );
+			imageProcessor = new FloatProcessor( sizeX, sizeY, ( float[] ) storageArray, null );
 			// ip.setMinAndMax( display.getMin(), display.getMax() );
 			break;
 		default:
@@ -211,10 +230,15 @@ public abstract class ImageJVirtualStack<S, T extends NativeType<T>> extends
 	 */
 	@Override
 	public void setPixels(final Object pixels, final int n) {
-		//TODO may want some way to configure this behavior..
-		//     ideally we would just use the origin object by reference instead of
-		//     copying it to the virtual array and then copying back.
+		// Pixels are updated by reference
+		if (img == null) {
+			System.out.println("Doin stuff by ref!");
+			return;
+		}
 
+			System.out.println("Doin stuff by value :(");
+
+		// Otherwise we have to copy them back
 		// Input and output need to be RealTypes
 		if (!(source.randomAccess().get() instanceof RealType) || !(img.firstElement() instanceof RealType))
 			return;
