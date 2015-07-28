@@ -50,7 +50,7 @@ public class ImageJVirtualStackFloat< S > extends ImageJVirtualStack< S, FloatTy
 	public ImageJVirtualStackFloat( final RandomAccessibleInterval< S > source, final Converter< S, FloatType > converter )
 	{
 		super( source, converter, new FloatType(), ImagePlus.GRAY32 );
-		setMinMax( source, converter );
+		imageProcessor.setMinAndMax( 0, 1 );
 	}
 
 	public void setMinMax ( final RandomAccessibleInterval< S > source, final Converter< S, FloatType > converter )
