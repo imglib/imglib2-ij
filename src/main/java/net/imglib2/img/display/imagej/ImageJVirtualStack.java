@@ -73,6 +73,8 @@ public abstract class ImageJVirtualStack<S, T extends NativeType<T>> extends
 
 	final protected ImageProcessor imageProcessor;
 
+	private boolean isWritable = false;
+
 	protected ImageJVirtualStack( final RandomAccessibleInterval< S > source, final Converter< S, T > converter, final T type, final int ijtype ) {
 		super( ( int ) source.dimension( 0 ), getDimension1Size( source ), null, null );
 
@@ -134,6 +136,22 @@ public abstract class ImageJVirtualStack<S, T extends NativeType<T>> extends
 			return 1;
 
 		return (int) interval.dimension(1);
+	}
+
+	/**
+	 * Sets whether or not this virtual stack is writable. The classic ImageJ
+	 * VirtualStack was read-only; but if this stack is backed by a CellCache it
+	 * may now be writable.
+	 */
+	public void setWritable(final boolean writable) {
+		isWritable = writable;
+	}
+
+	/**
+	 * @return True if this VirtualStack will attempt to persist changes
+	 */
+	public boolean isWritable() {
+		return isWritable;
 	}
 
 	/**
@@ -211,34 +229,33 @@ public abstract class ImageJVirtualStack<S, T extends NativeType<T>> extends
 	 */
 	@Override
 	public void setPixels(final Object pixels, final int n) {
-		//TODO may want some way to configure this behavior..
-		//     ideally we would just use the origin object by reference instead of
-		//     copying it to the virtual array and then copying back.
+		if (isWritable()) {
 
-		// Input and output need to be RealTypes
-		if (!(source.randomAccess().get() instanceof RealType) || !(img.firstElement() instanceof RealType))
-			return;
+			// Input and output need to be RealTypes
+			if (!(source.randomAccess().get() instanceof RealType) || !(img.firstElement() instanceof RealType))
+				return;
 
-		RandomAccessibleInterval<S> origin = source;
+			RandomAccessibleInterval<S> origin = source;
 
-		// Get the 2D plane represented by the virtual array
-		if (numDimensions > 2) {
-			final int[] position = new int[3];
-			IntervalIndexer.indexToPosition(n - 1, higherSourceDimensions,
+			// Get the 2D plane represented by the virtual array
+			if (numDimensions > 2) {
+				final int[] position = new int[3];
+				IntervalIndexer.indexToPosition(n - 1, higherSourceDimensions,
 					position);
-			origin = Views.hyperSlice(source, 2, position[0]);
-			if (numDimensions > 3)
-				origin = Views.hyperSlice(origin, 2, position[1]);
-			if (numDimensions > 4)
-				origin = Views.hyperSlice(origin, 2, position[2]);
-		}
+				origin = Views.hyperSlice(source, 2, position[0]);
+				if (numDimensions > 3)
+					origin = Views.hyperSlice(origin, 2, position[1]);
+				if (numDimensions > 4)
+					origin = Views.hyperSlice(origin, 2, position[2]);
+			}
 
-		final Cursor<S> originCursor = Views.iterable(origin).cursor();
-		final Cursor<T> cursor = img.cursor();
+			final Cursor<S> originCursor = Views.iterable(origin).cursor();
+			final Cursor<T> cursor = img.cursor();
 
-		// Replace the origin values with the current state of the virtual array
-		while (originCursor.hasNext()) {
-			((RealType)originCursor.next()).setReal(((RealType)cursor.next()).getRealDouble());
+			// Replace the origin values with the current state of the virtual array
+			while (originCursor.hasNext()) {
+				((RealType)originCursor.next()).setReal(((RealType)cursor.next()).getRealDouble());
+			}
 		}
 	}
 
