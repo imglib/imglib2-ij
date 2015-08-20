@@ -41,6 +41,7 @@ import ij.process.ColorProcessor;
 import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
 import ij.process.ShortProcessor;
+import net.imglib2.Cursor;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converter;
@@ -49,6 +50,7 @@ import net.imglib2.img.array.ArrayImg;
 import net.imglib2.img.array.ArrayImgFactory;
 import net.imglib2.img.basictypeaccess.array.ArrayDataAccess;
 import net.imglib2.type.NativeType;
+import net.imglib2.type.numeric.RealType;
 import net.imglib2.util.IntervalIndexer;
 import net.imglib2.view.Views;
 
@@ -66,12 +68,17 @@ public abstract class ImageJVirtualStack<S, T extends NativeType<T>> extends
 
 	final private int bitDepth;
 
+	final private RandomAccessibleInterval< S > source;
+	final private ArrayImg< T, ? > img;
+
 	final protected ImageProcessor imageProcessor;
 
-	protected ImageJVirtualStack( final RandomAccessibleInterval< S > source, final Converter< S, T > converter, final T type, final int ijtype )
-	{
+	private boolean isWritable = false;
+
+	protected ImageJVirtualStack( final RandomAccessibleInterval< S > source, final Converter< S, T > converter, final T type, final int ijtype ) {
 		super( ( int ) source.dimension( 0 ), getDimension1Size( source ), null, null );
 
+		this.source = source;
 		assert source.numDimensions() > 1;
 
 		int tmpsize = 1;
@@ -82,7 +89,7 @@ public abstract class ImageJVirtualStack<S, T extends NativeType<T>> extends
 		final int sizeX = ( int ) source.dimension( 0 );
 		final int sizeY = getDimension1Size( source );
 
-		final ArrayImg< T, ? > img = new ArrayImgFactory< T >().create( new long[] { sizeX, sizeY }, type );
+		img = new ArrayImgFactory< T >().create( new long[] { sizeX, sizeY }, type );
 
 		higherSourceDimensions = new long[3];
 		higherSourceDimensions[ 0 ] = ( source.numDimensions() > 2 ) ? source.dimension( 2 ) : 1;
@@ -129,6 +136,22 @@ public abstract class ImageJVirtualStack<S, T extends NativeType<T>> extends
 			return 1;
 
 		return (int) interval.dimension(1);
+	}
+
+	/**
+	 * Sets whether or not this virtual stack is writable. The classic ImageJ
+	 * VirtualStack was read-only; but if this stack is backed by a CellCache it
+	 * may now be writable.
+	 */
+	public void setWritable(final boolean writable) {
+		isWritable = writable;
+	}
+
+	/**
+	 * @return True if this VirtualStack will attempt to persist changes
+	 */
+	public boolean isWritable() {
+		return isWritable;
 	}
 
 	/**
@@ -206,6 +229,34 @@ public abstract class ImageJVirtualStack<S, T extends NativeType<T>> extends
 	 */
 	@Override
 	public void setPixels(final Object pixels, final int n) {
+		if (isWritable()) {
+
+			// Input and output need to be RealTypes
+			if (!(source.randomAccess().get() instanceof RealType) || !(img.firstElement() instanceof RealType))
+				return;
+
+			RandomAccessibleInterval<S> origin = source;
+
+			// Get the 2D plane represented by the virtual array
+			if (numDimensions > 2) {
+				final int[] position = new int[3];
+				IntervalIndexer.indexToPosition(n - 1, higherSourceDimensions,
+					position);
+				origin = Views.hyperSlice(source, 2, position[0]);
+				if (numDimensions > 3)
+					origin = Views.hyperSlice(origin, 2, position[1]);
+				if (numDimensions > 4)
+					origin = Views.hyperSlice(origin, 2, position[2]);
+			}
+
+			final Cursor<S> originCursor = Views.iterable(origin).cursor();
+			final Cursor<T> cursor = img.cursor();
+
+			// Replace the origin values with the current state of the virtual array
+			while (originCursor.hasNext()) {
+				((RealType)originCursor.next()).setReal(((RealType)cursor.next()).getRealDouble());
+			}
+		}
 	}
 
 	/**
