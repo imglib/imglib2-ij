@@ -57,6 +57,8 @@ import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.type.numeric.real.FloatType;
 
+import java.util.Arrays;
+
 /**
  * Provides convenience functions to wrap ImageJ 1.x data structures as ImgLib2
  * ones, and vice versa.
@@ -178,11 +180,10 @@ public class ImagePlusAdapter
 	protected static < T extends NumericType< T > & NativeType< T > > void setCalibrationFromImagePlus1( final ImgPlus<T> image, final ImagePlus imp ) 
 	{
 		final int d = image.numDimensions();
-		final float [] spacing = new float[d];
-		final float[] origin = new float[d];
+		final double[] spacing = new double[d];
+		final double[] origin = new double[d];
 
-		for( int i = 0; i < d; ++i )
-			spacing[i] = 1f;
+		Arrays.fill(spacing, 1.0);
 
 		final Calibration c = imp.getCalibration();
 		String unit = null;
@@ -194,13 +195,13 @@ public class ImagePlusAdapter
 			unit = c.getUnit();
 
 			if (d >= 1) {
-				spacing[0] = (float)c.pixelWidth;
-				origin[0] = (float) c.xOrigin;
+				spacing[0] = c.pixelWidth;
+				origin[0] = c.xOrigin;
 			}
 
 			if (d >= 2) {
-				spacing[1] = (float)c.pixelHeight;
-				origin[1] = (float) c.yOrigin;
+				spacing[1] = c.pixelHeight;
+				origin[1] = c.yOrigin;
 			}
 
 			/* Extra dimensions. We must take  care of the dimensions order and
@@ -209,19 +210,17 @@ public class ImagePlusAdapter
 
 			if (imp.getNChannels() > 1) {
 				spacing[currentDim] = 1;
-				origin[currentDim] = 0;
 				currentDim++;
 			}
 
 			if (imp.getNSlices() > 1) {
-				spacing[currentDim] = (float) c.pixelDepth;
-				origin[currentDim] = (float) c.zOrigin;
+				spacing[currentDim] = c.pixelDepth;
+				origin[currentDim] = c.zOrigin;
 				currentDim++;
 			}
 
 			if (imp.getNFrames() > 1) {
-				spacing[currentDim] = (float) c.frameInterval;
-				origin[currentDim] = 0;
+				spacing[currentDim] = c.frameInterval;
 			}
 
 		}
