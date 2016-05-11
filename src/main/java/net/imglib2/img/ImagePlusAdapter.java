@@ -185,11 +185,14 @@ public class ImagePlusAdapter
 			spacing[i] = 1f;
 
 		final Calibration c = imp.getCalibration();
+		String unit = null;
 
 		/* Fill out calibration array. We must make sure that the element
 		 * matches the dimension; the resulting ImgPlus skips singleton dimensions. */
 		if( c != null ) 
 		{
+			unit = c.getUnit();
+
 			if (d >= 1) {
 				spacing[0] = (float)c.pixelWidth;
 				origin[0] = (float) c.xOrigin;
@@ -228,6 +231,7 @@ public class ImagePlusAdapter
 			if (axis instanceof LinearAxis) {
 				((LinearAxis) axis).setScale(spacing[i]);
 				((LinearAxis) axis).setOrigin(origin[i]);
+				axis.setUnit(unit);
 			}
 		}
 	}
