@@ -224,6 +224,8 @@ public class ImageJFunctions
 		}
 
 		imp.show();
+		imp.getProcessor().resetMinAndMax();
+		imp.updateAndRepaintWindow();
 
 		return imp;
 	}
@@ -290,6 +292,8 @@ public class ImageJFunctions
 	{
 		final ImagePlus imp = wrapFloat( img, converter, title );
 		imp.show();
+		imp.getProcessor().resetMinAndMax();
+		imp.updateAndRepaintWindow();
 
 		return imp;
 	}
@@ -340,6 +344,8 @@ public class ImageJFunctions
 	{
 		final ImagePlus imp = wrapRGB( img, converter, title );
 		imp.show();
+		imp.getProcessor().resetMinAndMax();
+		imp.updateAndRepaintWindow();
 
 		return imp;
 	}
@@ -379,6 +385,8 @@ public class ImageJFunctions
 	{
 		final ImagePlus imp = wrapUnsignedByte( img, converter, title );
 		imp.show();
+		imp.getProcessor().resetMinAndMax();
+		imp.updateAndRepaintWindow();
 
 		return imp;
 	}
@@ -441,6 +449,8 @@ public class ImageJFunctions
 	{
 		final ImagePlus imp = wrapUnsignedShort( img, converter, title );
 		imp.show();
+		imp.getProcessor().resetMinAndMax();
+		imp.updateAndRepaintWindow();
 
 		return imp;
 	}
