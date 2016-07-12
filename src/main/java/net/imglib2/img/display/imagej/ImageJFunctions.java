@@ -53,6 +53,7 @@ import net.imglib2.converter.TypeIdentity;
 import net.imglib2.img.ImagePlusAdapter;
 import net.imglib2.img.Img;
 import net.imglib2.type.NativeType;
+import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.ComplexType;
 import net.imglib2.type.numeric.IntegerType;
@@ -163,9 +164,12 @@ public class ImageJFunctions
 		final Object oImg = img;
 		if ( ARGBType.class.isInstance( t ) )
 			target = wrapRGB( ( RandomAccessibleInterval< ARGBType > )oImg, title );
-		else if ( UnsignedByteType.class.isInstance( t ) )
+		else if ( UnsignedByteType.class.isInstance( t ))
 			target = wrapUnsignedByte( ( RandomAccessibleInterval< RealType > )oImg, title );
-		else if ( IntegerType.class.isInstance( t ) )
+                else if ( BitType.class.isInstance( t )) {
+                        target = wrapBit( (RandomAccessibleInterval < RealType > )oImg,title);
+                }
+                else if ( IntegerType.class.isInstance( t ) )
 			target = wrapUnsignedShort( ( RandomAccessibleInterval< RealType > )oImg, title );
 		else if ( RealType.class.isInstance( t ) )
 			target = wrapFloat( ( RandomAccessibleInterval< RealType > )oImg, title );
@@ -360,6 +364,19 @@ public class ImageJFunctions
 	{
 		return wrapUnsignedByte( img, new RealUnsignedByteConverter< T >( 0, 255 ), title );
 	}
+        
+        
+        /**
+	 * Create a single channel 8-bit unsigned integer {@link ImagePlus}
+	 * from a BitType {@link RandomAccessibleInterval} using a custom {@link Converter}.
+	 */
+	public static < T extends RealType< T > > ImagePlus wrapBit(
+			final RandomAccessibleInterval< T > img,
+			final String title )
+	{
+		return wrapUnsignedByte( img, new RealUnsignedByteConverter< T >( 0, 1 ), title );
+	}
+        
 
 	/**
 	 * Create a single channel 8-bit unsigned integer {@link ImagePlus}
