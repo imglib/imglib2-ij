@@ -53,6 +53,7 @@ import net.imglib2.converter.TypeIdentity;
 import net.imglib2.img.ImagePlusAdapter;
 import net.imglib2.img.Img;
 import net.imglib2.type.NativeType;
+import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.ComplexType;
 import net.imglib2.type.numeric.IntegerType;
@@ -89,28 +90,58 @@ public class ImageJFunctions
 {
 	final static AtomicInteger ai = new AtomicInteger();
 
-	public static <T extends NumericType<T> & NativeType<T>> Img< T > wrap( final ImagePlus imp ) { return ImagePlusAdapter.wrap( imp ); }
+	public static < T extends NumericType< T > & NativeType< T > > Img< T > wrap( final ImagePlus imp )
+	{
+		return ImagePlusAdapter.wrap( imp );
+	}
 
-	@SuppressWarnings("unchecked")
-	public static < T extends RealType<T> > Img< T > wrapReal( final ImagePlus imp ) { return ImagePlusAdapter.wrapReal( imp ); }
+	@SuppressWarnings( "unchecked" )
+	public static < T extends RealType< T > > Img< T > wrapReal( final ImagePlus imp )
+	{
+		return ImagePlusAdapter.wrapReal( imp );
+	}
 
-	@SuppressWarnings("unchecked")
-	public static < T extends RealType<T> & NativeType<T>> Img< T > wrapRealNative( final ImagePlus imp ) { return ImagePlusAdapter.wrapReal( imp ); }
+	@SuppressWarnings( "unchecked" )
+	public static < T extends RealType< T > & NativeType< T > > Img< T > wrapRealNative( final ImagePlus imp )
+	{
+		return ImagePlusAdapter.wrapReal( imp );
+	}
 
-	@SuppressWarnings("unchecked")
-	public static < T extends NumericType<T> > Img< T > wrapNumeric( final ImagePlus imp ) { return ImagePlusAdapter.wrapNumeric( imp ); }
+	@SuppressWarnings( "unchecked" )
+	public static < T extends NumericType< T > > Img< T > wrapNumeric( final ImagePlus imp )
+	{
+		return ImagePlusAdapter.wrapNumeric( imp );
+	}
 
-	public static < T extends NumericType<T> & NativeType<T>> Img< T > wrapNumericNative( final ImagePlus imp ) { return wrap( imp ); }
+	public static < T extends NumericType< T > & NativeType< T > > Img< T > wrapNumericNative( final ImagePlus imp )
+	{
+		return wrap( imp );
+	}
 
-	public static Img<UnsignedByteType> wrapByte( final ImagePlus imp ) { return ImagePlusAdapter.wrapByte( imp ); }
+	public static Img< UnsignedByteType > wrapByte( final ImagePlus imp )
+	{
+		return ImagePlusAdapter.wrapByte( imp );
+	}
 
-	public static Img<UnsignedShortType> wrapShort( final ImagePlus imp ) { return ImagePlusAdapter.wrapShort( imp ); }
+	public static Img< UnsignedShortType > wrapShort( final ImagePlus imp )
+	{
+		return ImagePlusAdapter.wrapShort( imp );
+	}
 
-	public static Img<ARGBType> wrapRGBA( final ImagePlus imp ) { return ImagePlusAdapter.wrapRGBA( imp ); }
+	public static Img< ARGBType > wrapRGBA( final ImagePlus imp )
+	{
+		return ImagePlusAdapter.wrapRGBA( imp );
+	}
 
-	public static Img<FloatType> wrapFloat( final ImagePlus imp ) { return ImagePlusAdapter.wrapFloat( imp ); }
+	public static Img< FloatType > wrapFloat( final ImagePlus imp )
+	{
+		return ImagePlusAdapter.wrapFloat( imp );
+	}
 
-	public static Img<FloatType> convertFloat( final ImagePlus imp ) { return ImagePlusAdapter.convertFloat( imp ); }
+	public static Img< FloatType > convertFloat( final ImagePlus imp )
+	{
+		return ImagePlusAdapter.convertFloat( imp );
+	}
 
 	/**
 	 * Display and return a single channel {@link ImagePlus}, wrapping a
@@ -119,23 +150,25 @@ public class ImageJFunctions
 	 * or ImagePlus.COLOR_RGB) is inferred from the generic type of the input
 	 * {@link RandomAccessibleInterval}.
 	 */
-	public static <T extends NumericType<T>> ImagePlus show( final RandomAccessibleInterval<T> img )
+	public static < T extends NumericType< T > > ImagePlus show( final RandomAccessibleInterval< T > img )
 	{
 		return show( img, "Image " + ai.getAndIncrement() );
 	}
 
 	/**
-	 * Displays a complex type as power spectrum, phase spectrum, real values or imaginary values depending on the converter
+	 * Displays a complex type as power spectrum, phase spectrum, real values or
+	 * imaginary values depending on the converter
 	 */
-	public static <T extends ComplexType<T>> ImagePlus show( final RandomAccessibleInterval<T> img, final Converter< T, FloatType > converter )
+	public static < T extends ComplexType< T > > ImagePlus show( final RandomAccessibleInterval< T > img, final Converter< T, FloatType > converter )
 	{
 		return show( img, converter, "Complex image " + ai.getAndIncrement() );
 	}
 
 	/**
-	 * Displays a complex type as power spectrum, phase spectrum, real values or imaginary values depending on the converter
+	 * Displays a complex type as power spectrum, phase spectrum, real values or
+	 * imaginary values depending on the converter
 	 */
-	public static <T extends ComplexType<T>> ImagePlus show( final RandomAccessibleInterval<T> img, final Converter< T, FloatType > converter, final String title )
+	public static < T extends ComplexType< T > > ImagePlus show( final RandomAccessibleInterval< T > img, final Converter< T, FloatType > converter, final String title )
 	{
 		final ImageJVirtualStackFloat< T > stack = new ImageJVirtualStackFloat< T >( img, converter );
 		final ImagePlus imp = new ImagePlus( title, stack );
@@ -151,7 +184,7 @@ public class ImageJFunctions
 	 * or ImagePlus.COLOR_RGB) is inferred from the generic type of the input
 	 * {@link RandomAccessibleInterval}.
 	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@SuppressWarnings( { "unchecked", "rawtypes" } )
 	public static < T extends NumericType< T > > ImagePlus wrap( final RandomAccessibleInterval< T > img, final String title )
 	{
 		ImagePlus target;
@@ -162,50 +195,60 @@ public class ImageJFunctions
 		// TODO: remove casting madness as soon as the bug is fixed
 		final Object oImg = img;
 		if ( ARGBType.class.isInstance( t ) )
-			target = wrapRGB( ( RandomAccessibleInterval< ARGBType > )oImg, title );
+			target = wrapRGB( ( RandomAccessibleInterval< ARGBType > ) oImg, title );
 		else if ( UnsignedByteType.class.isInstance( t ) )
-			target = wrapUnsignedByte( ( RandomAccessibleInterval< RealType > )oImg, title );
+			target = wrapUnsignedByte( ( RandomAccessibleInterval< RealType > ) oImg, title );
+		else if ( BitType.class.isInstance( t ) )
+		{
+			target = wrapBit( ( RandomAccessibleInterval< RealType > ) oImg, title );
+		}
 		else if ( IntegerType.class.isInstance( t ) )
-			target = wrapUnsignedShort( ( RandomAccessibleInterval< RealType > )oImg, title );
+			target = wrapUnsignedShort( ( RandomAccessibleInterval< RealType > ) oImg, title );
 		else if ( RealType.class.isInstance( t ) )
-			target = wrapFloat( ( RandomAccessibleInterval< RealType > )oImg, title );
+			target = wrapFloat( ( RandomAccessibleInterval< RealType > ) oImg, title );
 		else if ( ComplexType.class.isInstance( t ) )
-			target = wrapFloat( ( RandomAccessibleInterval< ComplexType > )oImg, new ComplexPowerGLogFloatConverter(), title );
+			target = wrapFloat( ( RandomAccessibleInterval< ComplexType > ) oImg, new ComplexPowerGLogFloatConverter(), title );
 		else
 		{
 			System.out.println( "Do not know how to display Type " + t.getClass().getSimpleName() );
 			target = null;
 		}
 
-		// Retrieve and set calibration if we can. ImgPlus has calibration and axis types
-		if (null != target && img instanceof ImgPlus) {
+		// Retrieve and set calibration if we can. ImgPlus has calibration and
+		// axis types
+		if ( null != target && img instanceof ImgPlus )
+		{
 
-			final ImgPlus<T> imgplus = (ImgPlus<T>) img;
+			final ImgPlus< T > imgplus = ( ImgPlus< T > ) img;
 			final Calibration impcal = target.getCalibration();
 
 			// TODO - using averageScale() introduces error for nonlinear axes
 
-			final int xaxis = imgplus.dimensionIndex(Axes.X);
-			if (xaxis >= 0) {
-				impcal.pixelWidth = imgplus.averageScale(xaxis);
-				impcal.xOrigin = imgplus.axis(xaxis).calibratedValue(0);
+			final int xaxis = imgplus.dimensionIndex( Axes.X );
+			if ( xaxis >= 0 )
+			{
+				impcal.pixelWidth = imgplus.averageScale( xaxis );
+				impcal.xOrigin = imgplus.axis( xaxis ).calibratedValue( 0 );
 			}
 
-			final int yaxis = imgplus.dimensionIndex(Axes.Y);
-			if (yaxis >= 0) {
-				impcal.pixelHeight = imgplus.averageScale(yaxis);
-				impcal.yOrigin = imgplus.axis(yaxis).calibratedValue(0);
+			final int yaxis = imgplus.dimensionIndex( Axes.Y );
+			if ( yaxis >= 0 )
+			{
+				impcal.pixelHeight = imgplus.averageScale( yaxis );
+				impcal.yOrigin = imgplus.axis( yaxis ).calibratedValue( 0 );
 			}
 
-			final int zaxis = imgplus.dimensionIndex(Axes.Z);
-			if (zaxis >= 0) {
-				impcal.pixelDepth = imgplus.averageScale(zaxis);
-				impcal.zOrigin = imgplus.axis(zaxis).calibratedValue(0);
+			final int zaxis = imgplus.dimensionIndex( Axes.Z );
+			if ( zaxis >= 0 )
+			{
+				impcal.pixelDepth = imgplus.averageScale( zaxis );
+				impcal.zOrigin = imgplus.axis( zaxis ).calibratedValue( 0 );
 			}
 
-			final int taxis = imgplus.dimensionIndex(Axes.TIME);
-			if (taxis >= 0) {
-				impcal.frameInterval = imgplus.averageScale(taxis);
+			final int taxis = imgplus.dimensionIndex( Axes.TIME );
+			if ( taxis >= 0 )
+			{
+				impcal.frameInterval = imgplus.averageScale( taxis );
 			}
 			target.setTitle( imgplus.getName() );
 		}
@@ -213,15 +256,10 @@ public class ImageJFunctions
 		return target;
 	}
 
-
-
 	public static < T extends NumericType< T > > ImagePlus show( final RandomAccessibleInterval< T > img, final String title )
 	{
 		final ImagePlus imp = wrap( img, title );
-		if ( null == imp )
-		{
-			return null;
-		}
+		if ( null == imp ) { return null; }
 
 		imp.show();
 		imp.getProcessor().resetMinAndMax();
@@ -231,8 +269,8 @@ public class ImageJFunctions
 	}
 
 	/**
-	 * Create a single channel 32-bit float {@link ImagePlus}
-	 * from a {@link RandomAccessibleInterval} using a custom {@link Converter}.
+	 * Create a single channel 32-bit float {@link ImagePlus} from a
+	 * {@link RandomAccessibleInterval} using a custom {@link Converter}.
 	 */
 	public static < T extends RealType< T > > ImagePlus wrapFloat(
 			final RandomAccessibleInterval< T > img,
@@ -249,12 +287,12 @@ public class ImageJFunctions
 		if ( n > 2 )
 		{
 			imp.setOpenAsHyperStack( true );
-			final int c = ( int )dims.dimension( 2 ), s, f;
+			final int c = ( int ) dims.dimension( 2 ), s, f;
 			if ( n > 3 )
 			{
-				s = ( int )dims.dimension( 3 );
+				s = ( int ) dims.dimension( 3 );
 				if ( n > 4 )
-					f = ( int )dims.dimension( 4 );
+					f = ( int ) dims.dimension( 4 );
 				else
 					f = 1;
 			}
@@ -269,8 +307,8 @@ public class ImageJFunctions
 	}
 
 	/**
-	 * Create a single channel 32-bit float {@link ImagePlus}
-	 * from a {@link RandomAccessibleInterval} using a custom {@link Converter}.
+	 * Create a single channel 32-bit float {@link ImagePlus} from a
+	 * {@link RandomAccessibleInterval} using a custom {@link Converter}.
 	 */
 	public static < T > ImagePlus wrapFloat(
 			final RandomAccessibleInterval< T > img,
@@ -337,7 +375,7 @@ public class ImageJFunctions
 	}
 
 	/**
-	 * Show a {@link RandomAccessibleInterval} as 24bit RGB  {@link ImagePlus}
+	 * Show a {@link RandomAccessibleInterval} as 24bit RGB {@link ImagePlus}
 	 * using a custom {@link Converter}.
 	 */
 	public static < T > ImagePlus showRGB( final RandomAccessibleInterval< T > img, final Converter< T, ARGBType > converter, final String title )
@@ -351,8 +389,8 @@ public class ImageJFunctions
 	}
 
 	/**
-	 * Create a single channel 8-bit unsigned integer {@link ImagePlus}
-	 * from a {@link RandomAccessibleInterval} using a custom {@link Converter}.
+	 * Create a single channel 8-bit unsigned integer {@link ImagePlus} from a
+	 * {@link RandomAccessibleInterval} using a custom {@link Converter}.
 	 */
 	public static < T extends RealType< T > > ImagePlus wrapUnsignedByte(
 			final RandomAccessibleInterval< T > img,
@@ -362,8 +400,20 @@ public class ImageJFunctions
 	}
 
 	/**
-	 * Create a single channel 8-bit unsigned integer {@link ImagePlus}
-	 * from a {@link RandomAccessibleInterval} using a custom {@link Converter}.
+	 * Create a single channel 8-bit unsigned integer {@link ImagePlus} from a
+	 * BitType {@link RandomAccessibleInterval} using a custom {@link Converter}
+	 * .
+	 */
+	public static < T extends RealType< T > > ImagePlus wrapBit(
+			final RandomAccessibleInterval< T > img,
+			final String title )
+	{
+		return wrapUnsignedByte( img, new RealUnsignedByteConverter< T >( 0, 1 ), title );
+	}
+
+	/**
+	 * Create a single channel 8-bit unsigned integer {@link ImagePlus} from a
+	 * {@link RandomAccessibleInterval} using a custom {@link Converter}.
 	 */
 	public static < T > ImagePlus wrapUnsignedByte(
 			final RandomAccessibleInterval< T > img,
@@ -418,7 +468,7 @@ public class ImageJFunctions
 	 * {@link RandomAccessibleInterval} using a default {@link Converter} (clamp
 	 * values to range [0, 65535]).
 	 */
-	public static < T extends RealType < T > > ImagePlus wrapUnsignedShort(
+	public static < T extends RealType< T > > ImagePlus wrapUnsignedShort(
 			final RandomAccessibleInterval< T > img,
 			final String title )
 	{
@@ -426,8 +476,8 @@ public class ImageJFunctions
 	}
 
 	/**
-	 * Create a single channel 16-bit unsigned integer {@link ImagePlus}
-	 * from a {@link RandomAccessibleInterval} using a custom {@link Converter}.
+	 * Create a single channel 16-bit unsigned integer {@link ImagePlus} from a
+	 * {@link RandomAccessibleInterval} using a custom {@link Converter}.
 	 */
 	public static < T > ImagePlus wrapUnsignedShort(
 			final RandomAccessibleInterval< T > img,
@@ -439,8 +489,8 @@ public class ImageJFunctions
 	}
 
 	/**
-	 * Show a {@link RandomAccessibleInterval} as single channel 16-bit
-	 * unsigned integer {@link ImagePlus} using a custom {@link Converter}.
+	 * Show a {@link RandomAccessibleInterval} as single channel 16-bit unsigned
+	 * integer {@link ImagePlus} using a custom {@link Converter}.
 	 */
 	public static < T > ImagePlus showUnsignedShort(
 			final RandomAccessibleInterval< T > img,
@@ -479,10 +529,8 @@ public class ImageJFunctions
 	}
 
 	/*
-	public static <T extends Type<T>> ImagePlus copy( final Img<T> img, String title )
-	{
-	}
-	*/
-
+	 * public static <T extends Type<T>> ImagePlus copy( final Img<T> img,
+	 * String title ) { }
+	 */
 
 }
