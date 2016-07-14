@@ -10,7 +10,7 @@
 	</parent>
 
 	<artifactId>imglib2-ij</artifactId>
-	<version>2.0.0-beta-34-SNAPSHOT</version>
+	<version>2.0.0-beta-34</version>
 
 	<name>ImgLib2 ImageJ</name>
 	<description>ImgLib2 display logic using ImageJ.</description>
@@ -18,7 +18,7 @@
 	<scm>
 		<connection>scm:git:git://github.com/imglib/imglib2-ij</connection>
 		<developerConnection>scm:git:git@github.com:imglib/imglib2-ij</developerConnection>
-		<tag>HEAD</tag>
+		<tag>imglib2-ij-2.0.0-beta-34</tag>
 		<url>https://github.com/imglib/imglib2-ij</url>
 	</scm>
 	<issueManagement>
