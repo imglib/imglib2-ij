@@ -102,8 +102,8 @@
 		<url>https://github.com/imglib/imglib2-ij/issues</url>
 	</issueManagement>
 	<ciManagement>
-		<system>Jenkins</system>
-		<url>http://jenkins.imagej.net/job/ImgLib2-IJ/</url>
+		<system>Travis CI</system>
+		<url>https://travis-ci.org/imglib/imglib2-ij</url>
 	</ciManagement>
 
 	<properties>
