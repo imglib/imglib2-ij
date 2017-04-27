@@ -76,7 +76,7 @@ final public class ImagePlusImgs
 	private ImagePlusImgs() {}
 	
 	/**
-	 * Create a {@link ByteImagePlus}<{@link UnsignedByteType}>.
+	 * Create a {@link ByteImagePlus}{@code <}{@link UnsignedByteType}{@code >}.
 	 * 
 	 * <p>(in ImageJ that would be a hyperstack of {@link ByteProcessor}s)</p>
 	 */
@@ -87,7 +87,7 @@ final public class ImagePlusImgs
 	}
 	
 	/**
-	 * Create a {@link ByteImagePlus}<{@link ByteType}>.
+	 * Create a {@link ByteImagePlus}{@code <}{@link ByteType}{@code >}.
 	 * 
 	 * <p>(in ImageJ that would be a hyperstack of {@link ByteProcessor}s)</p>
 	 */
@@ -98,7 +98,7 @@ final public class ImagePlusImgs
 	}
 	
 	/**
-	 * Create a {@link ShortImagePlus}<{@link UnsignedShortType}>.
+	 * Create a {@link ShortImagePlus}{@code <}{@link UnsignedShortType}{@code >}.
 	 * 
 	 * <p>(in ImageJ that would be a hyperstack of {@link ShortProcessor}s)</p>
 	 */
@@ -109,7 +109,7 @@ final public class ImagePlusImgs
 	}
 	
 	/**
-	 * Create a {@link ShortImagePlus}<{@link ShortType}>.
+	 * Create a {@link ShortImagePlus}{@code <}{@link ShortType}{@code >}.
 	 * 
 	 * <p>(in ImageJ that would be a hyperstack of {@link ShortProcessor}s)</p>
 	 */
@@ -120,7 +120,7 @@ final public class ImagePlusImgs
 	}
 	
 	/**
-	 * Create a {@link IntImagePlus}<{@link UnsignedIntType}>.
+	 * Create a {@link IntImagePlus}{@code <}{@link UnsignedIntType}{@code >}.
 	 * 
 	 * <p>(In ImageJ that would be a hyperstack of {@link ColorProcessor}s.
 	 * The integers, however, would be displayed as ARGB unsigned byte channels
@@ -133,7 +133,7 @@ final public class ImagePlusImgs
 	}
 	
 	/**
-	 * Create a {@link IntImagePlus}<{@link IntType}>.
+	 * Create a {@link IntImagePlus}{@code <}{@link IntType}{@code >}.
 	 * 
 	 * <p>(In ImageJ that would be a hyperstack of {@link ColorProcessor}s.
 	 * The integers, however, would be displayed as ARGB unsigned byte channels
@@ -146,7 +146,7 @@ final public class ImagePlusImgs
 	}
 	
 	/**
-	 * Create an {@link FloatImagePlusImg}<{@link FloatType}>.
+	 * Create a {@link FloatImagePlus}{@code <}{@link FloatType}{@code >}.
 	 * 
 	 * <p>(in ImageJ that would be a hyperstack of {@link FloatProcessor}s)</p>
 	 */
@@ -157,7 +157,7 @@ final public class ImagePlusImgs
 	}
 	
 	/**
-	 * Create an {@link IntImagePlus}<{@link ARGBType}>.
+	 * Create an {@link IntImagePlus}{@code <}{@link ARGBType}{@code >}.
 	 * 
 	 * <p>(in ImageJ that would be a hyperstack of {@link ColorProcessor}s)</p>
 	 */
@@ -168,7 +168,7 @@ final public class ImagePlusImgs
 	}
 	
 	/**
-	 * Create a {@link FloatImagePlus}<{@link ComplexFloatType}>.
+	 * Create a {@link FloatImagePlus}{@code <}{@link ComplexFloatType}{@code >}.
 	 * 
 	 * <p>(In ImageJ that would be a hyperstack of {@link FloatProcessor}s
 	 * with real and imaginary numbers interleaved in the plane.  That means it
@@ -181,7 +181,7 @@ final public class ImagePlusImgs
 	}
 	
 	/**
-	 * Create an {@link ImagePlusImg}<{@link ComplexDoubleType}, {@link DoubleArray}>.
+	 * Create an {@link ImagePlusImg}{@code <}{@link ComplexDoubleType}, {@link DoubleArray}{@code >}.
 	 */
 	final static public < T extends NumericType< T > & NativeType< T > > ImagePlusImg< T, ? > from( final ImagePlus imp )
 	{
