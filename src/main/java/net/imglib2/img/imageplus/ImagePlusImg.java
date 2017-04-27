@@ -238,8 +238,8 @@ public class ImagePlusImg< T extends NativeType< T >, A extends ArrayDataAccess<
 	public void close()
 	{}
 
-	protected int numEntities( final Fraction entitiesPerPixel )
+	protected int numEntities( final Fraction entities )
 	{
-		return (int) Math.ceil(width * height * entitiesPerPixel.getRatio());
+		return (int) Math.ceil(width * height * entities.getRatio());
 	}
 }
