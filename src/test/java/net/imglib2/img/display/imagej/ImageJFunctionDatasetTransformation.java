@@ -25,7 +25,7 @@ public class ImageJFunctionDatasetTransformation
 	public void transformBitDataset()
 	{
 
-		final ImgFactory< BitType > imgFactory = new CellImgFactory< BitType >( 5 );
+		final ImgFactory< BitType > imgFactory = new CellImgFactory< >( 5 );
 
 		// create an 3d-Img with dimensions 20x30x40 (here cellsize is 5x5x5)Ø
 		final Img< BitType > img1 = imgFactory.create( new long[] { 20, 30, 40 }, new BitType() );

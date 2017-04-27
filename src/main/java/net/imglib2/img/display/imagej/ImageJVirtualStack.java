@@ -98,7 +98,7 @@ public abstract class ImageJVirtualStack<S, T extends NativeType<T>> extends
 		this.numDimensions = source.numDimensions();
 
 		// if the source interval is not zero-min, we wrap it into a view that translates it to the origin
-		this.projector = new IterableIntervalProjector2D< S, T >(0,1, Views.isZeroMin( source ) ? source : Views.zeroMin( source ), img, converter );
+		this.projector = new IterableIntervalProjector2D< >(0,1, Views.isZeroMin( source ) ? source : Views.zeroMin( source ), img, converter );
 
 		switch ( ijtype )
 		{

@@ -84,7 +84,7 @@ public class ImagePlusImgFactory< T extends NativeType< T > > extends PlanarImgF
 		if ( dimensions.length > 5 )
 			throw new RuntimeException( "Unsupported dimensionality: " + dimensions.length );
 
-		return new ByteImagePlus< T >( dimensions, entitiesPerPixel );
+		return new ByteImagePlus< >( dimensions, entitiesPerPixel );
 	}
 
 	@Override
@@ -93,7 +93,7 @@ public class ImagePlusImgFactory< T extends NativeType< T > > extends PlanarImgF
 		if ( dimensions.length > 5 )
 			throw new RuntimeException( "Unsupported dimensionality: " + dimensions.length );
 
-		return new ImagePlusImg< T, CharArray >( new CharArray( 1 ), dimensions, entitiesPerPixel );
+		return new ImagePlusImg< >( new CharArray( 1 ), dimensions, entitiesPerPixel );
 	}
 
 	@Override
@@ -102,7 +102,7 @@ public class ImagePlusImgFactory< T extends NativeType< T > > extends PlanarImgF
 		if ( dimensions.length > 5 )
 			throw new RuntimeException( "Unsupported dimensionality: " + dimensions.length );
 
-		return new ImagePlusImg< T, DoubleArray >( new DoubleArray( 1 ), dimensions, entitiesPerPixel );
+		return new ImagePlusImg< >( new DoubleArray( 1 ), dimensions, entitiesPerPixel );
 	}
 
 	@Override
@@ -111,7 +111,7 @@ public class ImagePlusImgFactory< T extends NativeType< T > > extends PlanarImgF
 		if ( dimensions.length > 5 )
 			throw new RuntimeException( "Unsupported dimensionality: " + dimensions.length );
 
-		return new FloatImagePlus< T >( dimensions, entitiesPerPixel );
+		return new FloatImagePlus< >( dimensions, entitiesPerPixel );
 	}
 
 	@Override
@@ -120,7 +120,7 @@ public class ImagePlusImgFactory< T extends NativeType< T > > extends PlanarImgF
 		if ( dimensions.length > 5 )
 			throw new RuntimeException( "Unsupported dimensionality: " + dimensions.length );
 
-		return new IntImagePlus< T >( dimensions, entitiesPerPixel );
+		return new IntImagePlus< >( dimensions, entitiesPerPixel );
 	}
 
 	@Override
@@ -129,7 +129,7 @@ public class ImagePlusImgFactory< T extends NativeType< T > > extends PlanarImgF
 		if ( dimensions.length > 5 )
 			throw new RuntimeException( "Unsupported dimensionality: " + dimensions.length );
 
-		return new ImagePlusImg< T, LongArray >( new LongArray( 1 ), dimensions, entitiesPerPixel );
+		return new ImagePlusImg< >( new LongArray( 1 ), dimensions, entitiesPerPixel );
 	}
 
 	@Override
@@ -138,7 +138,7 @@ public class ImagePlusImgFactory< T extends NativeType< T > > extends PlanarImgF
 		if ( dimensions.length > 5 )
 			throw new RuntimeException( "Unsupported dimensionality: " + dimensions.length );
 
-		return new ShortImagePlus< T >( dimensions, entitiesPerPixel );
+		return new ShortImagePlus< >( dimensions, entitiesPerPixel );
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })

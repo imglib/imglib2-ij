@@ -55,7 +55,7 @@ public class ImageJVirtualStackFloat< S > extends ImageJVirtualStack< S, FloatTy
 
 	public void setMinMax ( final RandomAccessibleInterval< S > source, final Converter< S, FloatType > converter )
 	{
-		final RandomAccessibleIntervalCursor< S > cursor = new RandomAccessibleIntervalCursor< S >( Views.isZeroMin( source ) ? source : Views.zeroMin( source ) );
+		final RandomAccessibleIntervalCursor< S > cursor = new RandomAccessibleIntervalCursor< >( Views.isZeroMin( source ) ? source : Views.zeroMin( source ) );
 		final FloatType t = new FloatType();
 
 		if ( cursor.hasNext() )

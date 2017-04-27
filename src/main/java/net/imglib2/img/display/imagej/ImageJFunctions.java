@@ -170,7 +170,7 @@ public class ImageJFunctions
 	 */
 	public static < T extends ComplexType< T > > ImagePlus show( final RandomAccessibleInterval< T > img, final Converter< T, FloatType > converter, final String title )
 	{
-		final ImageJVirtualStackFloat< T > stack = new ImageJVirtualStackFloat< T >( img, converter );
+		final ImageJVirtualStackFloat< T > stack = new ImageJVirtualStackFloat< >( img, converter );
 		final ImagePlus imp = new ImagePlus( title, stack );
 		imp.show();
 
@@ -276,7 +276,7 @@ public class ImageJFunctions
 			final RandomAccessibleInterval< T > img,
 			final String title )
 	{
-		final ImageJVirtualStackFloat< T > stack = new ImageJVirtualStackFloat< T >( img, new RealFloatConverter< T >() );
+		final ImageJVirtualStackFloat< T > stack = new ImageJVirtualStackFloat< >( img, new RealFloatConverter< T >() );
 		return makeImagePlus( img, stack, title );
 	}
 
@@ -315,7 +315,7 @@ public class ImageJFunctions
 			final Converter< T, FloatType > converter,
 			final String title )
 	{
-		final ImageJVirtualStackFloat< T > stack = new ImageJVirtualStackFloat< T >( img, converter );
+		final ImageJVirtualStackFloat< T > stack = new ImageJVirtualStackFloat< >( img, converter );
 		return makeImagePlus( img, stack, title );
 	}
 
@@ -370,7 +370,7 @@ public class ImageJFunctions
 	 */
 	public static < T > ImagePlus wrapRGB( final RandomAccessibleInterval< T > img, final Converter< T, ARGBType > converter, final String title )
 	{
-		final ImageJVirtualStackARGB< T > stack = new ImageJVirtualStackARGB< T >( img, converter );
+		final ImageJVirtualStackARGB< T > stack = new ImageJVirtualStackARGB< >( img, converter );
 		return makeImagePlus( img, stack, title );
 	}
 
@@ -420,7 +420,7 @@ public class ImageJFunctions
 			final Converter< T, UnsignedByteType > converter,
 			final String title )
 	{
-		final ImageJVirtualStackUnsignedByte< T > stack = new ImageJVirtualStackUnsignedByte< T >( img, converter );
+		final ImageJVirtualStackUnsignedByte< T > stack = new ImageJVirtualStackUnsignedByte< >( img, converter );
 		return makeImagePlus( img, stack, title );
 	}
 
@@ -484,7 +484,7 @@ public class ImageJFunctions
 			final Converter< T, UnsignedShortType > converter,
 			final String title )
 	{
-		final ImageJVirtualStackUnsignedShort< T > stack = new ImageJVirtualStackUnsignedShort< T >( img, converter );
+		final ImageJVirtualStackUnsignedShort< T > stack = new ImageJVirtualStackUnsignedShort< >( img, converter );
 		return makeImagePlus( img, stack, title );
 	}
 

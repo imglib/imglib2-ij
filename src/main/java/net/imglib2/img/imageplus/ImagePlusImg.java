@@ -226,7 +226,7 @@ public class ImagePlusImg< T extends NativeType< T >, A extends ArrayDataAccess<
 	@Override
 	public ImagePlusImgFactory< T > factory()
 	{
-		return new ImagePlusImgFactory< T >();
+		return new ImagePlusImgFactory< >();
 	}
 
 	/**

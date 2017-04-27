@@ -92,7 +92,7 @@ public class ImagePlusAdapter
 	public static < T extends NumericType< T > & NativeType< T > > ImgPlus< T > wrapImgPlus( final ImagePlus imp )
 	{
 		Img< T > img = wrap( imp );
-		ImgPlus< T > image = new ImgPlus< T >( img );
+		ImgPlus< T > image = new ImgPlus< >( img );
 
 		// set calibration
 		setCalibrationFromImagePlus1( image, imp );
@@ -240,7 +240,7 @@ public class ImagePlusAdapter
 		if ( imp.getType() != ImagePlus.GRAY8)
 			return null;
 
-		final ByteImagePlus< UnsignedByteType > container = new ByteImagePlus< UnsignedByteType >( imp );
+		final ByteImagePlus< UnsignedByteType > container = new ByteImagePlus< >( imp );
 
 		// create a Type that is linked to the container
 		final UnsignedByteType linkedType = new UnsignedByteType( container );
@@ -256,7 +256,7 @@ public class ImagePlusAdapter
 		if ( imp.getType() != ImagePlus.GRAY16)
 			return null;
 
-		final ShortImagePlus< UnsignedShortType > container = new ShortImagePlus< UnsignedShortType >( imp );
+		final ShortImagePlus< UnsignedShortType > container = new ShortImagePlus< >( imp );
 
 		// create a Type that is linked to the container
 		final UnsignedShortType linkedType = new UnsignedShortType( container );
@@ -272,7 +272,7 @@ public class ImagePlusAdapter
 		if ( imp.getType() != ImagePlus.COLOR_RGB)
 			return null;
 
-		final IntImagePlus< ARGBType > container = new IntImagePlus< ARGBType >( imp );
+		final IntImagePlus< ARGBType > container = new IntImagePlus< >( imp );
 
 		// create a Type that is linked to the container
 		final ARGBType linkedType = new ARGBType( container );
@@ -288,7 +288,7 @@ public class ImagePlusAdapter
 		if ( imp.getType() != ImagePlus.GRAY32)
 			return null;
 
-		final FloatImagePlus<FloatType> container = new FloatImagePlus<FloatType>( imp );
+		final FloatImagePlus<FloatType> container = new FloatImagePlus<>( imp );
 
 		// create a Type that is linked to the container
 		final FloatType linkedType = new FloatType( container );
