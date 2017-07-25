@@ -34,6 +34,8 @@
 
 package net.imglib2.img.display.imagej;
 
+import java.util.concurrent.ExecutorService;
+
 import ij.ImagePlus;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converter;
@@ -45,9 +47,13 @@ import net.imglib2.type.numeric.integer.UnsignedByteType;
  */
 public class ImageJVirtualStackUnsignedByte< S > extends ImageJVirtualStack< S, UnsignedByteType >
 {
-	public ImageJVirtualStackUnsignedByte( RandomAccessibleInterval< S > source, Converter< S, UnsignedByteType > converter )
+	public ImageJVirtualStackUnsignedByte( RandomAccessibleInterval< S > source, Converter< S, UnsignedByteType > converter)
 	{
-		super( source, converter, new UnsignedByteType(), ImagePlus.GRAY8 );
+		this( source, converter, null );
+	}
+	public ImageJVirtualStackUnsignedByte( RandomAccessibleInterval< S > source, Converter< S, UnsignedByteType > converter, ExecutorService service )
+	{
+		super( source, converter, new UnsignedByteType(), ImagePlus.GRAY8 , service);
 		imageProcessor.setMinAndMax( 0, 255 );
 	}
 }
