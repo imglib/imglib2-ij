@@ -34,6 +34,8 @@
 
 package net.imglib2.img.display.imagej;
 
+import java.util.concurrent.ExecutorService;
+
 import ij.ImagePlus;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converter;
@@ -45,9 +47,13 @@ import net.imglib2.type.numeric.ARGBType;
  */
 public class ImageJVirtualStackARGB< S > extends ImageJVirtualStack< S, ARGBType >
 {
-	public ImageJVirtualStackARGB( RandomAccessibleInterval< S > source, Converter< S, ARGBType > converter )
+	public ImageJVirtualStackARGB( RandomAccessibleInterval< S > source, Converter< S, ARGBType > converter)
 	{
-		super( source, converter, new ARGBType(), ImagePlus.COLOR_RGB );
+		this(source, converter, null);
+	}
+	public ImageJVirtualStackARGB( RandomAccessibleInterval< S > source, Converter< S, ARGBType > converter, ExecutorService service )
+	{
+		super( source, converter, new ARGBType(), ImagePlus.COLOR_RGB, service);
 		imageProcessor.setMinAndMax( 0, 255 );
 	}
 }

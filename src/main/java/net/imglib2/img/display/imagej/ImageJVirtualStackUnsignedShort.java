@@ -34,6 +34,8 @@
 
 package net.imglib2.img.display.imagej;
 
+import java.util.concurrent.ExecutorService;
+
 import ij.ImagePlus;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converter;
@@ -48,9 +50,14 @@ import net.imglib2.util.Util;
  */
 public class ImageJVirtualStackUnsignedShort< S > extends ImageJVirtualStack< S, UnsignedShortType >
 {
-	public ImageJVirtualStackUnsignedShort( RandomAccessibleInterval< S > source, Converter< S, UnsignedShortType > converter )
+	public ImageJVirtualStackUnsignedShort( RandomAccessibleInterval< S > source, Converter< S, UnsignedShortType > converter)
 	{
-		super( source, converter, new UnsignedShortType(), ImagePlus.GRAY16 );
+		this( source, converter, null );
+	}
+
+	public ImageJVirtualStackUnsignedShort( RandomAccessibleInterval< S > source, Converter< S, UnsignedShortType > converter, ExecutorService service )
+	{
+		super( source, converter, new UnsignedShortType(), ImagePlus.GRAY16, service );
 
 		int maxDisplay = (1 << 16) - 1;
 		
