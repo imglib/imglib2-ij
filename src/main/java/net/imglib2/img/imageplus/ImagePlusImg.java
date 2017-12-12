@@ -112,30 +112,15 @@ public class ImagePlusImg< T extends NativeType< T >, A extends ArrayDataAccess<
 
 		assert dim.length < 6 : "ImagePlusContainer can only handle up to 5 dimensions.";
 
-		if ( dim.length > 0 )
-			width = ( int ) dim[ 0 ];
-		else
-			width = 1;
+		width = (int) getElementOrOne(dim, 0);
+		height = (int) getElementOrOne(dim, 1);
+		channels = (int) getElementOrOne(dim, 2);
+		depth = (int) getElementOrOne(dim, 3);
+		frames = (int) getElementOrOne(dim, 4);
+	}
 
-		if ( dim.length > 1 )
-			height = ( int ) dim[ 1 ];
-		else
-			height = 1;
-
-		if ( dim.length > 2 )
-			channels = ( int ) dim[ 2 ];
-		else
-			channels = 1;
-
-		if ( dim.length > 3 )
-			depth = ( int ) dim[ 3 ];
-		else
-			depth = 1;
-
-		if ( dim.length > 4 )
-			frames = ( int ) dim[ 4 ];
-		else
-			frames = 1;
+	private long getElementOrOne(long[] array, int index) {
+		return (array.length > index) ? ( int ) array[index] : 1;
 	}
 
 	ImagePlusImg( final A creator, final long[] dim, final Fraction entitiesPerPixel )
@@ -152,19 +137,6 @@ public class ImagePlusImg< T extends NativeType< T >, A extends ArrayDataAccess<
 	{
 		throw new ImgLibException( this, "has no ImagePlus instance, it is not a standard type of ImagePlus" );
 	}
-
-	/*
-	protected static long[] expandDimensions( final long[] dimensions )
-	{
-		if(dimensions.length >= 5)
-			return dimensions;
-
-		final long[] dim = new long[ 5 ];
-		for ( int d = 0; d < 5; ++d )
-			dim[ d ] = ( dimensions.length >= d ) ? dimensions[ d ] : 1;
-		return dim;
-	}
-	*/
 
 	/**
 	 * Compute the minimal required number of dimensions for a given
