@@ -18,24 +18,12 @@ abstract class AbstractImagePlusImg< T extends NativeType< T >, A extends ArrayD
 
 		if ( entitiesPerPixel.getRatio() == 1 )
 		{
-			final ImageStack stack = new ImageStack( width, height );
-			for ( int i = 0; i < numSlices; ++i )
-				stack.addSlice( "", createProcessor());
-			imp = new ImagePlus( "image", stack );
-			imp.setDimensions( channels, depth, frames );
-			if ( numSlices > 1 )
-				imp.setOpenAsHyperStack( true );
-
-			mirror.clear();
-			for ( int t = 0; t < frames; ++t )
-				for ( int z = 0; z < depth; ++z )
-					for ( int c = 0; c < channels; ++c )
-						mirror.add( createArray(imp.getStack().getProcessor(imp.getStackIndex(c + 1, z + 1, t + 1)).getPixels()) );
+			imp = createEmptyImagePlus();
+			fillMirror();
 		}
 		else
 		{
 			imp = null;
-
 			mirror.clear();
 			for ( int i = 0; i < numSlices; ++i )
 				mirror.add(createArray(numEntities(entitiesPerPixel)));
@@ -45,9 +33,22 @@ abstract class AbstractImagePlusImg< T extends NativeType< T >, A extends ArrayD
 	public AbstractImagePlusImg( final ImagePlus imp )
 	{
 		super( imp );
-
 		this.imp = imp;
+		fillMirror();
+	}
 
+	private ImagePlus createEmptyImagePlus() {
+		final ImageStack stack = new ImageStack( width, height );
+		for ( int i = 0; i < numSlices; ++i )
+			stack.addSlice( "", createProcessor());
+		ImagePlus imp = new ImagePlus( "image", stack );
+		imp.setDimensions( channels, depth, frames );
+		if ( numSlices > 1 )
+			imp.setOpenAsHyperStack( true );
+		return imp;
+	}
+
+	private void fillMirror() {
 		mirror.clear();
 		for ( int t = 0; t < frames; ++t )
 			for ( int z = 0; z < depth; ++z )
