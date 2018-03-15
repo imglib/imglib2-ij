@@ -44,7 +44,7 @@ import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
 import ij.process.ShortProcessor;
 import net.imglib2.Cursor;
-import net.imglib2.Interval;
+import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converter;
 import net.imglib2.display.projector.IterableIntervalProjector2D;
@@ -90,7 +90,7 @@ public abstract class ImageJVirtualStack<S, T extends NativeType< T >> extends V
 	protected ImageJVirtualStack(final RandomAccessibleInterval< S > source, final Converter< S, T > converter,
 			final T type, final int ijtype, ExecutorService service)
 	{
-		super( (int) source.dimension( 0 ), getDimension1Size( source ), null, null );
+		super( (int) source.dimension( 0 ), (int) source.dimension( 1 ), null, null );
 
 		this.source = source;
 		assert source.numDimensions() > 1;
@@ -101,7 +101,7 @@ public abstract class ImageJVirtualStack<S, T extends NativeType< T >> extends V
 		this.size = tmpsize;
 
 		final int sizeX = (int) source.dimension( 0 );
-		final int sizeY = getDimension1Size( source );
+		final int sizeY = (int) source.dimension( 1 );
 
 		img = new ArrayImgFactory<>( type ).create( new long[] { sizeX, sizeY } );
 
@@ -114,54 +114,51 @@ public abstract class ImageJVirtualStack<S, T extends NativeType< T >> extends V
 		// if the source interval is not zero-min, we wrap it into a view that
 		// translates it to the origin
 		// if we were given an ExecutorService, use a multithreaded projector
+		RandomAccessible< S > zeroMin = zeroMin( source );
 		this.projector = ( service == null )
-				? new IterableIntervalProjector2D<>( 0, 1, Views.isZeroMin( source ) ? source : Views.zeroMin( source ),
-						img, converter )
-				: new MultithreadedIterableIntervalProjector2D<>( 0, 1,
-						Views.isZeroMin( source ) ? source : Views.zeroMin( source ), img, converter, service );
+				? new IterableIntervalProjector2D<>( 0, 1, zeroMin, img, converter )
+				: new MultithreadedIterableIntervalProjector2D<>( 0, 1, zeroMin, img, converter, service );
 
 		this.service = service;
 
-		switch ( ijtype ) {
-		case ImagePlus.GRAY8:
-			this.bitDepth = 8;
-			imageProcessor = new ByteProcessor( sizeX, sizeY,
-					(byte[]) ( (ArrayDataAccess< ? >) img.update( null ) ).getCurrentStorageArray(), null );
-			break;
-		case ImagePlus.GRAY16:
-			this.bitDepth = 16;
-			imageProcessor = new ShortProcessor( sizeX, sizeY,
-					(short[]) ( (ArrayDataAccess< ? >) img.update( null ) ).getCurrentStorageArray(), null );
-			break;
-		case ImagePlus.COLOR_RGB:
-			this.bitDepth = 24;
-			imageProcessor = new ColorProcessor( sizeX, sizeY,
-					(int[]) ( (ArrayDataAccess< ? >) img.update( null ) ).getCurrentStorageArray() );
-			break;
-		case ImagePlus.GRAY32:
-			this.bitDepth = 32;
-			imageProcessor = new FloatProcessor( sizeX, sizeY,
-					(float[]) ( (ArrayDataAccess< ? >) img.update( null ) ).getCurrentStorageArray(), null );
-			// ip.setMinAndMax( display.getMin(), display.getMax() );
-			break;
-		default:
-			throw new IllegalArgumentException( "unsupported color type " + ijtype );
-		}
+		this.bitDepth = initBitDepth( ijtype );
+		this.imageProcessor = initImageProcessor( ijtype, sizeX, sizeY );
 	}
 
-	/**
-	 * Get the size of the Y-dimension. If it is a one-dimensional source,
-	 * return 1.
-	 * 
-	 * @param interval
-	 * @return 1 if only-dimensional, else the size
-	 */
-	protected static int getDimension1Size(final Interval interval)
+	private RandomAccessible< S > zeroMin( RandomAccessibleInterval< S > source )
 	{
-		if ( interval.numDimensions() == 1 )
-			return 1;
+		return Views.isZeroMin( source ) ? source : Views.zeroMin( source );
+	}
 
-		return (int) interval.dimension( 1 );
+	private ImageProcessor initImageProcessor( int ijtype, int sizeX, int sizeY )
+	{
+		Object storageArray = ( ( ArrayDataAccess< ? > ) img.update( null ) ).getCurrentStorageArray();
+		switch ( ijtype ) {
+		case ImagePlus.GRAY8:
+			return new ByteProcessor( sizeX, sizeY, (byte[]) storageArray, null );
+		case ImagePlus.GRAY16:
+			return new ShortProcessor( sizeX, sizeY, (short[]) storageArray, null );
+		case ImagePlus.COLOR_RGB:
+			return new ColorProcessor( sizeX, sizeY, (int[]) storageArray );
+		case ImagePlus.GRAY32:
+			return new FloatProcessor( sizeX, sizeY, (float[]) storageArray, null );
+		}
+		throw new IllegalArgumentException( "unsupported color type " + ijtype );
+	}
+
+	private int initBitDepth( int ijtype )
+	{
+		switch ( ijtype ) {
+		case ImagePlus.GRAY8:
+			return 8;
+		case ImagePlus.GRAY16:
+			return 16;
+		case ImagePlus.COLOR_RGB:
+			return 24;
+		case ImagePlus.GRAY32:
+			return 32;
+		}
+		throw new IllegalArgumentException( "unsupported color type " + ijtype );
 	}
 
 	/**
