@@ -36,7 +36,6 @@ package net.imglib2.img.display.imagej;
 
 import java.util.concurrent.ExecutorService;
 
-import ij.ImagePlus;
 import ij.VirtualStack;
 import ij.process.ByteProcessor;
 import ij.process.ColorProcessor;
@@ -86,13 +85,13 @@ public abstract class ImageJVirtualStack<S, T extends NativeType< T >> extends V
 
 	/* old constructor -> non-multithreaded projector */
 	protected ImageJVirtualStack(final RandomAccessibleInterval< S > source, final Converter< S, T > converter,
-			final T type, final int ijtype)
+			final T type, final int bitDepth)
 	{
-		this( source, converter, type, ijtype, null );
+		this( source, converter, type, bitDepth, null );
 	}
 
 	protected ImageJVirtualStack(final RandomAccessibleInterval< S > source, final Converter< S, T > converter,
-			final T type, final int ijtype, ExecutorService service)
+			final T type, final int bitDepth, ExecutorService service)
 	{
 		super( (int) source.dimension( 0 ), (int) source.dimension( 1 ), null, null );
 
@@ -117,7 +116,7 @@ public abstract class ImageJVirtualStack<S, T extends NativeType< T >> extends V
 
 		this.converter = converter;
 		this.service = service;
-		this.bitDepth = initBitDepth( ijtype );
+		this.bitDepth = bitDepth;
 	}
 
 	protected void setMinAndMax( double min, double max ) {
@@ -144,21 +143,6 @@ public abstract class ImageJVirtualStack<S, T extends NativeType< T >> extends V
 		if( storageArray instanceof float[] )
 			return new FloatProcessor( sizeX, sizeY, (float[]) storageArray, null );
 		throw new IllegalArgumentException( "unsupported color type" );
-	}
-
-	private int initBitDepth( int ijtype )
-	{
-		switch ( ijtype ) {
-		case ImagePlus.GRAY8:
-			return 8;
-		case ImagePlus.GRAY16:
-			return 16;
-		case ImagePlus.COLOR_RGB:
-			return 24;
-		case ImagePlus.GRAY32:
-			return 32;
-		}
-		throw new IllegalArgumentException( "unsupported color type " + ijtype );
 	}
 
 	/**

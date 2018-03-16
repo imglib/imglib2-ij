@@ -53,7 +53,7 @@ public class ImageJVirtualStackUnsignedByte< S > extends ImageJVirtualStack< S, 
 	}
 	public ImageJVirtualStackUnsignedByte( RandomAccessibleInterval< S > source, Converter< S, UnsignedByteType > converter, ExecutorService service )
 	{
-		super( source, converter, new UnsignedByteType(), ImagePlus.GRAY8 , service);
+		super( source, converter, new UnsignedByteType(), 8 , service);
 		setMinAndMax( 0, 255 );
 	}
 }

@@ -57,7 +57,7 @@ public class ImageJVirtualStackUnsignedShort< S > extends ImageJVirtualStack< S,
 
 	public ImageJVirtualStackUnsignedShort( RandomAccessibleInterval< S > source, Converter< S, UnsignedShortType > converter, ExecutorService service )
 	{
-		super( source, converter, new UnsignedShortType(), ImagePlus.GRAY16, service );
+		super( source, converter, new UnsignedShortType(), 16, service );
 
 		int maxDisplay = (1 << 16) - 1;
 		
