@@ -35,6 +35,8 @@
 package net.imglib2.img.display.imagej;
 
 import java.util.concurrent.ExecutorService;
+import java.util.stream.IntStream;
+import java.util.stream.LongStream;
 
 import ij.VirtualStack;
 import ij.process.ByteProcessor;
@@ -65,7 +67,6 @@ import net.imglib2.view.Views;
 public abstract class ImageJVirtualStack<S, T extends NativeType< T >> extends VirtualStack
 {
 	final private int size;
-	final private int numDimensions;
 	final private long[] higherSourceDimensions;
 
 	final private int bitDepth;
@@ -94,29 +95,24 @@ public abstract class ImageJVirtualStack<S, T extends NativeType< T >> extends V
 			final T type, final int bitDepth, ExecutorService service)
 	{
 		super( (int) source.dimension( 0 ), (int) source.dimension( 1 ), null, null );
-
 		// if the source interval is not zero-min, we wrap it into a view that
 		// translates it to the origin
 		// if we were given an ExecutorService, use a multithreaded projector
-		this.source = zeroMin( source );
 		assert source.numDimensions() > 1;
-
-		int tmpsize = 1;
-		for ( int d = 2; d < source.numDimensions(); ++d )
-			tmpsize *= (int) source.dimension( d );
-		this.size = tmpsize;
-
-		higherSourceDimensions = new long[3];
-		higherSourceDimensions[0] = ( source.numDimensions() > 2 ) ? source.dimension( 2 ) : 1;
-		higherSourceDimensions[1] = ( source.numDimensions() > 3 ) ? source.dimension( 3 ) : 1;
-		higherSourceDimensions[2] = ( source.numDimensions() > 4 ) ? source.dimension( 4 ) : 1;
-		this.numDimensions = source.numDimensions();
+		this.source = zeroMin( source );
+		this.higherSourceDimensions = initHigherDimensions( source );
+		this.size = ( int ) LongStream.of(higherSourceDimensions).reduce( 1, (a, b) -> a * b );
 		this.type = type;
-
-
 		this.converter = converter;
 		this.service = service;
 		this.bitDepth = bitDepth;
+	}
+
+	private long[] initHigherDimensions( RandomAccessibleInterval< S > source )
+	{
+		return IntStream.range(2, source.numDimensions())
+				.mapToLong( source::dimension )
+				.toArray();
 	}
 
 	protected void setMinAndMax( double min, double max ) {
@@ -184,15 +180,12 @@ public abstract class ImageJVirtualStack<S, T extends NativeType< T >> extends V
 		AbstractProjector2D projector = ( service == null )
 				? new IterableIntervalProjector2D<>( 0, 1, source, img, converter )
 				: new MultithreadedIterableIntervalProjector2D<>( 0, 1, source, img, converter, service );
-		if ( numDimensions > 2 )
+		if ( higherSourceDimensions.length > 0 )
 		{
-			final int[] position = new int[3];
+			final int[] position = new int[ higherSourceDimensions.length ];
 			IntervalIndexer.indexToPosition( n - 1, higherSourceDimensions, position );
-			projector.setPosition( position[0], 2 );
-			if ( numDimensions > 3 )
-				projector.setPosition( position[1], 3 );
-			if ( numDimensions > 4 )
-				projector.setPosition( position[2], 4 );
+			for ( int i = 0; i < position.length; i++ )
+				projector.setPosition( position[i], i + 2 );
 		}
 		projector.map();
 		return img;
@@ -271,17 +264,13 @@ public abstract class ImageJVirtualStack<S, T extends NativeType< T >> extends V
 				return;
 
 			RandomAccessibleInterval< S > origin = source;
-
 			// Get the 2D plane represented by the virtual array
-			if ( numDimensions > 2 )
+			if ( higherSourceDimensions.length > 0 )
 			{
-				final int[] position = new int[3];
+				final int[] position = new int[higherSourceDimensions.length];
 				IntervalIndexer.indexToPosition( n - 1, higherSourceDimensions, position );
-				origin = Views.hyperSlice( source, 2, position[0] );
-				if ( numDimensions > 3 )
-					origin = Views.hyperSlice( origin, 2, position[1] );
-				if ( numDimensions > 4 )
-					origin = Views.hyperSlice( origin, 2, position[2] );
+				for ( int i = 0; i < position.length; i++ )
+					origin = Views.hyperSlice( origin, 2, position[ i ] );
 			}
 
 			final Cursor< S > originCursor = Views.iterable( origin ).cursor();
