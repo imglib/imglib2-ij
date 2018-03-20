@@ -55,6 +55,7 @@ public abstract class AbstractVirtualStack extends VirtualStack
 	private ColorModel colorModel;
 
 	private Rectangle roi;
+	private double min = 0.0, max = 1.0;
 
 	public AbstractVirtualStack( int width, int height, int size, int bitDepth )
 	{
@@ -65,6 +66,23 @@ public abstract class AbstractVirtualStack extends VirtualStack
 		this.bitDepth = bitDepth;
 		this.colorModel = null;
 		this.roi = new Rectangle( 0, 0, width, height );
+	}
+
+	protected void setMinAndMax( double min, double max ) {
+		this.min = min;
+		this.max = max;
+	}
+
+	@Override public abstract Object getPixels( int n );
+
+	@Override
+	public ImageProcessor getProcessor(final int n)
+	{
+
+		Object pixels = getPixels( n );
+		ImageProcessor processor = ImageProcessorUtils.initProcessor( width, height, pixels, colorModel );
+		processor.setMinAndMax( min, max );
+		return processor;
 	}
 
 	@Override public void addSlice( String name )
@@ -97,14 +115,10 @@ public abstract class AbstractVirtualStack extends VirtualStack
 		// ignore
 	}
 
-	@Override public abstract Object getPixels( int n );
-
 	@Override public void setPixels( Object pixels, int n )
 	{
 		// ignore for now
 	}
-
-	@Override public abstract ImageProcessor getProcessor( int n );
 
 	/**
 	 * Currently not implemented
@@ -294,5 +308,4 @@ public abstract class AbstractVirtualStack extends VirtualStack
 	{
 		throw new UnsupportedOperationException();
 	}
-
 }

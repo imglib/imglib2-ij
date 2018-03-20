@@ -72,8 +72,6 @@ public class ImageJVirtualStack<S, T extends NativeType< T >> extends AbstractVi
 	private final Converter< S, T > converter;
 	private boolean isWritable = false;
 	final protected ExecutorService service;
-	private double min = 0.0;
-	private double max = 1.0;
 
 	/* old constructor -> non-multithreaded projector */
 	protected ImageJVirtualStack(final RandomAccessibleInterval< S > source, final Converter< S, T > converter,
@@ -109,30 +107,9 @@ public class ImageJVirtualStack<S, T extends NativeType< T >> extends AbstractVi
 				.toArray();
 	}
 
-	protected void setMinAndMax( double min, double max ) {
-		this.min = min;
-		this.max = max;
-	}
-
 	private static < S > RandomAccessibleInterval< S > zeroMin( RandomAccessibleInterval< S > source )
 	{
 		return Views.isZeroMin( source ) ? source : Views.zeroMin( source );
-	}
-
-	private ImageProcessor initImageProcessor( ArrayImg< T, ? > img )
-	{
-		int sizeX = ( int ) img.dimension( 0 );
-		int sizeY = ( int ) img.dimension( 1 );
-		Object storageArray = ( ( ArrayDataAccess< ? > ) img.update( null ) ).getCurrentStorageArray();
-		if( storageArray instanceof byte[] )
-			return new ByteProcessor( sizeX, sizeY, (byte[]) storageArray, null );
-		if( storageArray instanceof short[] )
-			return new ShortProcessor( sizeX, sizeY, (short[]) storageArray, null );
-		if( storageArray instanceof int[] )
-			return new ColorProcessor( sizeX, sizeY, (int[]) storageArray );
-		if( storageArray instanceof float[] )
-			return new FloatProcessor( sizeX, sizeY, (float[]) storageArray, null );
-		throw new IllegalArgumentException( "unsupported color type" );
 	}
 
 	/**
@@ -153,18 +130,6 @@ public class ImageJVirtualStack<S, T extends NativeType< T >> extends AbstractVi
 		return isWritable;
 	}
 
-	/**
-	 * Returns an ImageProcessor for the specified slice, where
-	 * {@code 1<=n<=nslices}. Returns null if the stack is empty.
-	 */
-	@Override
-	public ImageProcessor getProcessor(final int n)
-	{
-
-		ImageProcessor processor = initImageProcessor( getSlice( n ) );
-		processor.setMinAndMax( min, max );
-		return processor;
-	}
 
 	private ArrayImg< T, ? > getSlice( int n )
 	{
@@ -187,7 +152,8 @@ public class ImageJVirtualStack<S, T extends NativeType< T >> extends AbstractVi
 
 	@Override public Object getPixels( int n )
 	{
-		return getProcessor( n ).getPixels();
+		ArrayImg< T, ? > img = getSlice( n );
+		return ( ( ArrayDataAccess< ? > ) img.update( null ) ).getCurrentStorageArray();
 	}
 
 	@Override
