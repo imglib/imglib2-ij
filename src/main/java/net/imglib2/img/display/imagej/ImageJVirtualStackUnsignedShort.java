@@ -68,6 +68,6 @@ public class ImageJVirtualStackUnsignedShort< S > extends ImageJVirtualStack< S,
 		else if ( Unsigned12BitType.class.isInstance( s ) )
 			maxDisplay = 4095;
 		
-		imageProcessor.setMinAndMax( 0, maxDisplay );
+		setMinAndMax( 0, maxDisplay );
 	}
 }

@@ -65,7 +65,7 @@ public class ImageJVirtualStackFloat<S> extends ImageJVirtualStack< S, FloatType
 			final Converter< S, FloatType > converter, ExecutorService service)
 	{
 		super( source, converter, new FloatType(), ImagePlus.GRAY32, service );
-		imageProcessor.setMinAndMax( 0, 1 );
+		setMinAndMax( 0, 1 );
 	}
 
 	public void setMinMax(final RandomAccessibleInterval< S > source, final Converter< S, FloatType > converter)
@@ -101,7 +101,7 @@ public class ImageJVirtualStackFloat<S> extends ImageJVirtualStack< S, FloatType
 
 			System.out.println( "fmax = " + max );
 			System.out.println( "fmin = " + min );
-			imageProcessor.setMinAndMax( min, max );
+			setMinAndMax( min, max );
 		}
 	}
 
@@ -190,7 +190,7 @@ public class ImageJVirtualStackFloat<S> extends ImageJVirtualStack< S, FloatType
 
 		System.out.println( "fmax = " + max );
 		System.out.println( "fmin = " + min );
-		imageProcessor.setMinAndMax( min, max );
+		setMinAndMax( min, max );
 
 	}
 }

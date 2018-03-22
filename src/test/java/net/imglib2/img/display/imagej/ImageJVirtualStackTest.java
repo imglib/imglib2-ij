@@ -56,6 +56,8 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import static org.junit.Assert.assertNotSame;
+
 public class ImageJVirtualStackTest
 {
 	@Test
@@ -174,4 +176,14 @@ public class ImageJVirtualStackTest
 		return ( i, o ) -> o.set( i );
 	}
 
+	@Test
+	public void testProcessorPerPlane()
+	{
+		Img< UnsignedByteType > expected = RandomImgs.randomImage( new UnsignedByteType(), 100, 100, 100 );
+		ImagePlus imagePlus = ImageJFunctions.wrap( expected, "title");
+		ImageStack stack = imagePlus.getStack();
+		ImageProcessor p1 = stack.getProcessor( 1 );
+		ImageProcessor p2 = stack.getProcessor( 2 );
+		assertNotSame(p1, p2);
+	}
 }
