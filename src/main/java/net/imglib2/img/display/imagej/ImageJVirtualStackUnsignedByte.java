@@ -47,11 +47,11 @@ import net.imglib2.type.numeric.integer.UnsignedByteType;
  */
 public class ImageJVirtualStackUnsignedByte< S > extends ImageJVirtualStack< S, UnsignedByteType >
 {
-	public ImageJVirtualStackUnsignedByte( RandomAccessibleInterval< S > source, Converter< S, UnsignedByteType > converter)
+	public ImageJVirtualStackUnsignedByte( RandomAccessibleInterval< S > source, Converter< ? super S, UnsignedByteType > converter)
 	{
 		this( source, converter, null );
 	}
-	public ImageJVirtualStackUnsignedByte( RandomAccessibleInterval< S > source, Converter< S, UnsignedByteType > converter, ExecutorService service )
+	public ImageJVirtualStackUnsignedByte( RandomAccessibleInterval< S > source, Converter< ? super S, UnsignedByteType > converter, ExecutorService service )
 	{
 		super( source, converter, new UnsignedByteType(), 8 , service);
 		setMinAndMax( 0, 255 );

@@ -69,18 +69,18 @@ public class ImageJVirtualStack<S, T extends NativeType< T >> extends AbstractVi
 	final private long[] higherSourceDimensions;
 	final private RandomAccessibleInterval< S > source;
 	private final T type;
-	private final Converter< S, T > converter;
+	private final Converter< ? super S, T > converter;
 	private boolean isWritable = false;
 	final protected ExecutorService service;
 
 	/* old constructor -> non-multithreaded projector */
-	protected ImageJVirtualStack(final RandomAccessibleInterval< S > source, final Converter< S, T > converter,
+	protected ImageJVirtualStack(final RandomAccessibleInterval< S > source, final Converter< ? super S, T > converter,
 			final T type, final int bitDepth)
 	{
 		this( source, converter, type, bitDepth, null );
 	}
 
-	protected ImageJVirtualStack(final RandomAccessibleInterval< S > source, final Converter< S, T > converter,
+	protected ImageJVirtualStack(final RandomAccessibleInterval< S > source, final Converter< ? super S, T > converter,
 			final T type, final int bitDepth, ExecutorService service)
 	{
 		super( (int) source.dimension( 0 ), (int) source.dimension( 1 ), multiply( initHigherDimensions( source ) ), bitDepth );

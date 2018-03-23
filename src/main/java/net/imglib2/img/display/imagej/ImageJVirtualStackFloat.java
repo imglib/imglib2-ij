@@ -56,13 +56,13 @@ import net.imglib2.view.Views;
 public class ImageJVirtualStackFloat<S> extends ImageJVirtualStack< S, FloatType >
 {
 	public ImageJVirtualStackFloat(final RandomAccessibleInterval< S > source,
-			final Converter< S, FloatType > converter)
+			final Converter< ? super S, FloatType > converter)
 	{
 		this( source, converter, null );
 	}
 
 	public ImageJVirtualStackFloat(final RandomAccessibleInterval< S > source,
-			final Converter< S, FloatType > converter, ExecutorService service)
+			final Converter< ? super S, FloatType > converter, ExecutorService service)
 	{
 		super( source, converter, new FloatType(), 32, service );
 		setMinAndMax( 0, 1 );

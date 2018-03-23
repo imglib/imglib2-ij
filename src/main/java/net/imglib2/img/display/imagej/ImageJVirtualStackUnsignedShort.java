@@ -50,12 +50,12 @@ import net.imglib2.util.Util;
  */
 public class ImageJVirtualStackUnsignedShort< S > extends ImageJVirtualStack< S, UnsignedShortType >
 {
-	public ImageJVirtualStackUnsignedShort( RandomAccessibleInterval< S > source, Converter< S, UnsignedShortType > converter)
+	public ImageJVirtualStackUnsignedShort( RandomAccessibleInterval< S > source, Converter< ? super S, UnsignedShortType > converter)
 	{
 		this( source, converter, null );
 	}
 
-	public ImageJVirtualStackUnsignedShort( RandomAccessibleInterval< S > source, Converter< S, UnsignedShortType > converter, ExecutorService service )
+	public ImageJVirtualStackUnsignedShort( RandomAccessibleInterval< S > source, Converter< ? super S, UnsignedShortType > converter, ExecutorService service )
 	{
 		super( source, converter, new UnsignedShortType(), 16, service );
 
