@@ -42,9 +42,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import ij.ImagePlus;
+import ij.VirtualStack;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converter;
+import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.view.RandomAccessibleIntervalCursor;
 import net.imglib2.view.Views;
@@ -55,6 +56,10 @@ import net.imglib2.view.Views;
  */
 public class ImageJVirtualStackFloat<S> extends ImageJVirtualStack< S, FloatType >
 {
+	public static < T extends RealType<?> > ImageJVirtualStackFloat<T> wrap( RandomAccessibleInterval<T> source ) {
+		return new ImageJVirtualStackFloat<>( source, new FloatConverter() );
+	}
+
 	public ImageJVirtualStackFloat(final RandomAccessibleInterval< S > source,
 			final Converter< ? super S, FloatType > converter)
 	{
@@ -187,6 +192,20 @@ public class ImageJVirtualStackFloat<S> extends ImageJVirtualStack< S, FloatType
 		}
 
 		setMinAndMax( min, max );
+
+	}
+
+	private static class FloatConverter implements
+			Converter<RealType<?>, FloatType >
+	{
+
+		@Override
+		public void convert(final RealType<?> input, final FloatType output) {
+			double val = input.getRealDouble();
+			if (val < -Float.MAX_VALUE) val = -Float.MAX_VALUE;
+			else if (val > Float.MAX_VALUE) val = Float.MAX_VALUE;
+			output.setReal(val);
+		}
 
 	}
 }

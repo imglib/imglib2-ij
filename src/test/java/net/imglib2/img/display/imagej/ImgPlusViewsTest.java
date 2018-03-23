@@ -1,8 +1,8 @@
-/*
+/*-
  * #%L
  * ImgLib2: a general-purpose, multidimensional image processing library.
  * %%
- * Copyright (C) 2009 - 2016 Tobias Pietzsch, Stephan Preibisch, Stephan Saalfeld,
+ * Copyright (C) 2009 - 2018 Tobias Pietzsch, Stephan Preibisch, Stephan Saalfeld,
  * John Bogovic, Albert Cardona, Barry DeZonia, Christian Dietz, Jan Funke,
  * Aivar Grislis, Jonathan Hale, Grant Harris, Stefan Helfrich, Mark Hiner,
  * Martin Horn, Steffen Jaensch, Lee Kamentsky, Larry Lindsey, Melissa Linkert,
@@ -31,34 +31,29 @@
  * POSSIBILITY OF SUCH DAMAGE.
  * #L%
  */
-
 package net.imglib2.img.display.imagej;
 
-import java.util.concurrent.ExecutorService;
-
-import ij.ImagePlus;
 import net.imagej.ImgPlus;
-import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.converter.Converter;
-import net.imglib2.type.numeric.ARGBType;
+import net.imagej.axis.Axes;
+import net.imagej.axis.AxisType;
+import net.imglib2.img.array.ArrayImg;
+import net.imglib2.img.array.ArrayImgs;
+import net.imglib2.img.basictypeaccess.array.ByteArray;
+import net.imglib2.type.numeric.integer.UnsignedByteType;
+import org.junit.Test;
 
-/**
- * TODO
- *
- */
-public class ImageJVirtualStackARGB< S > extends ImageJVirtualStack< S, ARGBType >
-{
-	public static ImageJVirtualStackARGB< ARGBType > wrap( RandomAccessibleInterval< ARGBType > source ) {
-		return new ImageJVirtualStackARGB<>( source, ( input, output ) -> output.set( input ) );
-	}
+import static org.junit.Assert.assertEquals;
 
-	public ImageJVirtualStackARGB( RandomAccessibleInterval< S > source, Converter< ? super S, ARGBType > converter)
-	{
-		this(source, converter, null);
-	}
-	public ImageJVirtualStackARGB( RandomAccessibleInterval< S > source, Converter< ? super S, ARGBType > converter, ExecutorService service )
-	{
-		super( source, converter, new ARGBType(), 24, service);
-		setMinAndMax( 0, 255 );
+public class ImgPlusViewsTest {
+
+	@Test
+	public void testHyperSlice() {
+		ArrayImg<UnsignedByteType, ByteArray> img = ArrayImgs.unsignedBytes(1, 1, 1, 1);
+		ImgPlus<UnsignedByteType> imgPlus = new ImgPlus<>(img, "image", new AxisType[]{Axes.X, Axes.Y, Axes.Z, Axes.TIME});
+		ImgPlus<UnsignedByteType> result = ImgPlusViews.hyperSlice(imgPlus, 2, 0);
+		assertEquals(3, result.numDimensions());
+		assertEquals(Axes.X, result.axis(0).type());
+		assertEquals(Axes.Y, result.axis(1).type());
+		assertEquals(Axes.TIME, result.axis(2).type());
 	}
 }

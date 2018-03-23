@@ -37,8 +37,10 @@ package net.imglib2.img.display.imagej;
 import java.util.concurrent.ExecutorService;
 
 import ij.ImagePlus;
+import ij.VirtualStack;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converter;
+import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 
 /**
@@ -47,6 +49,10 @@ import net.imglib2.type.numeric.integer.UnsignedByteType;
  */
 public class ImageJVirtualStackUnsignedByte< S > extends ImageJVirtualStack< S, UnsignedByteType >
 {
+	public static <T extends RealType<?>> ImageJVirtualStackUnsignedByte<T> wrap( RandomAccessibleInterval<T> source ) {
+		return new ImageJVirtualStackUnsignedByte<T>( source, new ByteConverter() );
+	}
+
 	public ImageJVirtualStackUnsignedByte( RandomAccessibleInterval< S > source, Converter< ? super S, UnsignedByteType > converter)
 	{
 		this( source, converter, null );
@@ -55,5 +61,18 @@ public class ImageJVirtualStackUnsignedByte< S > extends ImageJVirtualStack< S, 
 	{
 		super( source, converter, new UnsignedByteType(), 8 , service);
 		setMinAndMax( 0, 255 );
+	}
+
+	private static class ByteConverter implements
+			Converter<RealType<?>, UnsignedByteType>
+	{
+
+		@Override
+		public void convert(final RealType<?> input, final UnsignedByteType output) {
+			double val = input.getRealDouble();
+			if (val < 0) val = 0;
+			else if (val > 255) val = 255;
+			output.setReal(val);
+		}
 	}
 }
