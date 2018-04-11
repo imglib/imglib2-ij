@@ -64,7 +64,7 @@ public class ImgToVirtualStack
 		return wrap( imgPlus2 );
 	}
 
-	private static ImagePlus wrap( ImgPlus< ? > imgPlus )
+	public static ImagePlus wrap( ImgPlus< ? > imgPlus )
 	{
 		RandomAccessibleInterval<?> sorted = ensureXYCZT(imgPlus);
 		ImageStack stack = createVirtualStack(sorted);
