@@ -77,87 +77,90 @@ public class  ImagePlusAdapterTest <T extends NumericType<T> & NativeType<T>> {
 
 	@Test 
 	public void testDimensionality() {
+		for (int i = 0; i < dim.length; i++)
+			testDimensionality(dim[i], calibration[i]);
+	}
 
-		for (int i = 0; i < dim.length; i++) {
+	private void testDimensionality(int[] dim, float[] calibration) {
+		ImagePlus imp = createCalibratedImagePlus(dim, calibration);
+		ImgPlus<T> img = ImagePlusAdapter.wrapImgPlus(imp);
+		// Print stuff
+//		System.out.println("got: "+img.getName());
+//		for (int d = 0; d < img.numDimensions(); d++) {
+//			System.out.println("    Axis "+d+"\t - "+ img.axis(d) +", spacing = "+img.calibration(d)+", dimension = "+img.dimension(d));
+//		}
+		assertEquals(getExpectedNumDimensions(dim), img.numDimensions());
+		checkDimensionality(dim, img);
+		checkCalibration(dim, calibration, img);
+	}
 
-			// Create ImagePlus
-			int slices = dim[i][2] * dim[i][3] * dim[i][4];
-			ImagePlus imp = NewImage.createByteImage("Test "+i, dim[i][0], dim[i][1], slices , NewImage.FILL_BLACK);
-			imp.setDimensions(dim[i][2], dim[i][3], dim[i][4]);
+	private ImagePlus createCalibratedImagePlus(int[] dim, float[] calibration) {
+		// Create ImagePlus
+		int slices = dim[2] * dim[3] * dim[4];
+		ImagePlus imp = NewImage.createByteImage("Test", dim[0], dim[1], slices , NewImage.FILL_BLACK);
+		imp.setDimensions(dim[2], dim[3], dim[4]);
 
-			// Set calibration
-			Calibration impCal = imp.getCalibration();
-			impCal.pixelWidth		= calibration[i][0];
-			impCal.pixelHeight		= calibration[i][1];
-			// 2 is for channels
-			impCal.pixelDepth		= calibration[i][3];
-			impCal.frameInterval 	= calibration[i][4];
-			impCal.setXUnit(units[0]);
-			impCal.setYUnit(units[1]);
-			impCal.setZUnit(units[2]);
-			impCal.setTimeUnit(units[3]);
+		// Set calibration
+		Calibration impCal = imp.getCalibration();
+		impCal.pixelWidth		= calibration[0];
+		impCal.pixelHeight		= calibration[1];
+		// 2 is for channels
+		impCal.pixelDepth		= calibration[3];
+		impCal.frameInterval 	= calibration[4];
+		impCal.setXUnit(units[0]);
+		impCal.setYUnit(units[1]);
+		impCal.setZUnit(units[2]);
+		impCal.setTimeUnit(units[3]);
 
-			// Print stuff
-//			System.out.println("\nFor ImagePlus "+imp+" with "+imp.getCalibration());
+		// Print stuff
+//		System.out.println("\nFor ImagePlus "+imp+" with "+imp.getCalibration());
+		return imp;
+	}
 
-			// Wrap ImagePlusImg
-			ImgPlus<T> img = ImagePlusAdapter.wrapImgPlus(imp);
-
-			// Print stuff
-//			System.out.println("got: "+img.getName());
-//			for (int d = 0; d < img.numDimensions(); d++) {
-//				System.out.println("    Axis "+d+"\t - "+ img.axis(d) +", spacing = "+img.calibration(d)+", dimension = "+img.dimension(d));
-//			}
-			
-			// Are num dimension correct?
-			int expectedNumDimensions = 0;
-			for (int d = 0; d < dim[i].length; d++) {
-				if (dim[i][d] > 1)
-					expectedNumDimensions++;
-			}
-
-			// Test dimensions
-			assertEquals(expectedNumDimensions, img.numDimensions());
-
-			// Test dimensionality
-			int skipDim = 0;
-			for (int d = 0; d < dim[i].length; d++) {
-				if (dim[i][d] > 1) {
-					// imglib skips singleton dimensions, so we must test only against non-singleton dimension
-					assertEquals(
-							String.format("For dimension %d,  expected %d, but got %d.", d, dim[i][d], img.dimension(skipDim)),
-							dim[i][d], img.dimension(skipDim));
-					skipDim++;
-				}
-			}
-
-			// Test calibration global
-			skipDim = 0;
-			for (int d = 0; d < calibration[i].length; d++) {
-				if (dim[i][d] > 1 ) {
-					// Is it the channel axis?
-					if (d < expectedNumDimensions && img.axis(d).type() == Axes.CHANNEL) {
-						
-						// Then the calibration should be 1,
-						assertEquals(1f, img.averageScale(skipDim),
-							Float.MIN_VALUE);
-						
-					} else {
-						
-						// otherwise it should be what we set.
-						assertEquals(calibration[i][d], img.averageScale(skipDim),
-							Float.MIN_VALUE);
-					}
-					skipDim++;
-					
-				}
-			}
-
-			
-			
-
+	private int getExpectedNumDimensions(int[] dim) {
+		// Are num dimension correct?
+		int expectedNumDimensions = 0;
+		for (int d = 0; d < dim.length; d++) {
+			if (dim[d] > 1)
+				expectedNumDimensions++;
 		}
+		return expectedNumDimensions;
+	}
 
+	private void checkDimensionality(int[] dim, ImgPlus<T> img) {
+		int skipDim = 0;
+		for (int d = 0; d < dim.length; d++) {
+			if (dim[d] > 1) {
+				// imglib skips singleton dimensions, so we must test only against non-singleton dimension
+				assertEquals(
+						String.format("For dimension %d,  expected %d, but got %d.", d, dim[d], img.dimension(skipDim)),
+						dim[d], img.dimension(skipDim));
+				skipDim++;
+			}
+		}
+	}
+
+	private void checkCalibration(int[] dim, float[] calibration, ImgPlus<T> img) {
+		int skipDim = 0;
+		for (int d = 0; d < calibration.length; d++) {
+			if (dim[d] > 1 ) {
+				// Is it the channel axis?
+				if (d < getExpectedNumDimensions(dim) && img.axis(d).type() == Axes.CHANNEL) {
+
+					// Then the calibration should be 1,
+					assertEquals(1f, img.averageScale(skipDim),
+							Float.MIN_VALUE);
+
+				} else {
+
+					// otherwise it should be what we set.
+					assertEquals(calibration[d], img.averageScale(skipDim),
+							Float.MIN_VALUE);
+				}
+				skipDim++;
+
+			}
+		}
 	}
 
 }
