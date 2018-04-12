@@ -58,6 +58,7 @@ public class ArrayImgToVirtualStack
 
 	public static boolean isSupported( ImgPlus< ? > imgPlus )
 	{
+		imgPlus = ImgPlusViews.fixAxes( imgPlus );
 		return imgPlus.getImg() instanceof ArrayImg &&
 				imgPlus.numDimensions() == 2 &&
 				checkAxis( getAxes( imgPlus ) ) &&
@@ -66,6 +67,7 @@ public class ArrayImgToVirtualStack
 
 	public static ImagePlus wrap( ImgPlus< ? > imgPlus )
 	{
+		imgPlus = ImgPlusViews.fixAxes( imgPlus );
 		Img< ? > img = imgPlus.getImg();
 		if ( !( img instanceof ArrayImg ) )
 			throw new IllegalArgumentException( "Expecting ArrayImg" );

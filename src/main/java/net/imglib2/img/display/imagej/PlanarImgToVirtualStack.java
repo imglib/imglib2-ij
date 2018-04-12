@@ -68,6 +68,7 @@ public class PlanarImgToVirtualStack extends AbstractVirtualStack
 
 	public static boolean isSupported( ImgPlus< ? > imgPlus )
 	{
+		imgPlus = ImgPlusViews.fixAxes( imgPlus );
 		return imgPlus.getImg() instanceof PlanarImg &&
 				checkAxisOrder( getAxes( imgPlus ) ) &&
 				ImageProcessorUtils.isSupported( ( NativeType< ? > ) imgPlus.randomAccess().get() );
@@ -75,6 +76,7 @@ public class PlanarImgToVirtualStack extends AbstractVirtualStack
 
 	public static ImagePlus wrap( ImgPlus< ? > imgPlus )
 	{
+		imgPlus = ImgPlusViews.fixAxes( imgPlus );
 		Img< ? > img = imgPlus.getImg();
 		if ( !( img instanceof PlanarImg ) )
 			throw new IllegalArgumentException( "Image must be a PlanarImg." );

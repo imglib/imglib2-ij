@@ -116,7 +116,7 @@ public class ImgToVirtualStackTest
 		assertArrayEquals( new byte[]{ 3 }, (byte[]) imagePlus.getStack().getPixels( imagePlus.getStackIndex( 2, 1, 1 ) ) );
 	}
 
-	@Ignore("not supporting more the five dimensions yet")
+	@Ignore("not supporting more than five dimensions yet")
 	@Test
 	public void test6d() {
 		Img< UnsignedByteType> img = ArrayImgs.unsignedBytes( 2, 2, 2, 2, 2, 2 );
@@ -235,7 +235,6 @@ public class ImgToVirtualStackTest
 		Views.flatIterable( img ).forEach( pixel -> pixel.setInteger( i.incrementAndGet() ) );
 	}
 
-	@Ignore("not working yet")
 	@Test
 	public void testUnknownAxes() {
 		byte[] array = {1, 2, 3, 4, 5, 6};

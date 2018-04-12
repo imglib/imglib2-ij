@@ -46,13 +46,8 @@ import net.imglib2.type.numeric.RealType;
 import net.imglib2.view.MixedTransformView;
 import net.imglib2.view.Views;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -66,6 +61,7 @@ public class ImgToVirtualStack
 
 	public static ImagePlus wrap( ImgPlus< ? > imgPlus )
 	{
+		imgPlus = ImgPlusViews.fixAxes( imgPlus );
 		RandomAccessibleInterval<?> sorted = ensureXYCZT(imgPlus);
 		ImageStack stack = createVirtualStack(sorted);
 		ImagePlus result = new ImagePlus( imgPlus.getName(), stack );

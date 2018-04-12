@@ -35,6 +35,8 @@ package net.imglib2.img.display.imagej;
 
 import net.imagej.ImgPlus;
 import net.imagej.axis.Axes;
+import net.imagej.axis.AxisType;
+import net.imagej.axis.CalibratedAxis;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converters;
@@ -48,6 +50,16 @@ import net.imglib2.view.Views;
 import net.imglib2.view.composite.Composite;
 
 import java.util.function.IntUnaryOperator;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 // TODO: migrate to imagej-common
 public class ImgPlusViews {
@@ -119,6 +131,20 @@ public class ImgPlusViews {
 		);
 	}
 
+	/**
+	 * Change the axis types of an image, such that each axis is uniquely typed as X, Y, Z, channel or time.
+	 * Existing unique axis of type: X, Y, Z, channel or time are preserved.
+	 */
+	public static <T> ImgPlus<T> fixAxes( ImgPlus< T > in ) {
+		List< AxisType > newAxisTypes = fixAxes( getAxes( in ) );
+		CalibratedAxis[] newAxes = IntStream.range(0, in.numDimensions() ).mapToObj( i -> {
+			CalibratedAxis newAxis = in.axis( i ).copy();
+			newAxis.setType( newAxisTypes.get( i ) );
+			return newAxis;
+		} ).toArray( CalibratedAxis[]::new );
+		return new ImgPlus< T >( in.getImg(), in.getName(), newAxes );
+	}
+
 	// -- Helper methods --
 
 	private static < T extends Type< T > > ImgPlus< T > newImgPlus( ImgPlus< ? > image, RandomAccessibleInterval< T > newContent, IntUnaryOperator axesMapping )
@@ -151,5 +177,41 @@ public class ImgPlusViews {
 	private static int toInt( RealType< ? > realType )
 	{
 		return ( int ) realType.getRealFloat();
+	}
+
+	private static final List<AxisType > imagePlusAxisOrder =
+			Arrays.asList( Axes.X, Axes.Y, Axes.CHANNEL, Axes.Z, Axes.TIME );
+
+	private static List< AxisType > fixAxes(List<AxisType> in) {
+		List<AxisType> unusedAxis = new ArrayList<>(imagePlusAxisOrder);
+		unusedAxis.removeAll(in);
+		Predicate<AxisType> isDuplicate = createIsDuplicatePredicate();
+		Predicate<AxisType> replaceIf = axis -> isDuplicate.test(axis) || !imagePlusAxisOrder.contains( axis );
+		Iterator< AxisType > iterator = unusedAxis.iterator();
+		Supplier< AxisType > replacements = () -> iterator.hasNext() ? iterator.next() : Axes.unknown();
+		return replaceMatches(in, replaceIf, replacements );
+	}
+
+	// NB: Package-private to allow tests.
+	static List< AxisType > getAxes( ImgPlus< ? > in )
+	{
+		return IntStream.range(0, in.numDimensions())
+				.mapToObj(in::axis).map(CalibratedAxis::type )
+				.collect( Collectors.toList() );
+	}
+
+	// NB: Package-private to allow tests.
+	static < T > Predicate< T > createIsDuplicatePredicate() {
+		Set<T> before = new HashSet<>();
+		return element -> {
+			boolean isDuplicate = before.contains(element);
+			if(!isDuplicate) before.add(element);
+			return isDuplicate;
+		};
+	}
+
+	// NB: Package-private to allow tests.
+	static < T > List< T > replaceMatches( List< T > in, Predicate< T > predicate, Supplier< T > replacements ) {
+		return in.stream().map( value -> predicate.test(value) ? replacements.get() : value ).collect( Collectors.toList());
 	}
 }
