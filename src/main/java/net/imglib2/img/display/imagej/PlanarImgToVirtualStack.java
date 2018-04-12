@@ -82,6 +82,7 @@ public class PlanarImgToVirtualStack extends AbstractVirtualStack
 		VirtualStack stack = new PlanarImgToVirtualStack( ( PlanarImg< ?, ? > ) img, indexer );
 		ImagePlus imagePlus = new ImagePlus( imgPlus.getName(), stack );
 		imagePlus.setDimensions( dimension( imgPlus, Axes.CHANNEL ), dimension( imgPlus, Axes.Z ), dimension( imgPlus, Axes.TIME ) );
+		CalibrationUtils.copyCalibrationToImagePlus( imgPlus, imagePlus );
 		return imagePlus;
 	}
 

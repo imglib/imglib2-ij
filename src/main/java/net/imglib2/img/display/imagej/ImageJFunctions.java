@@ -36,14 +36,11 @@ package net.imglib2.img.display.imagej;
 
 import ij.ImagePlus;
 import ij.VirtualStack;
-import ij.measure.Calibration;
 
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import net.imagej.ImgPlus;
-import net.imagej.axis.Axes;
 import net.imglib2.Dimensions;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.ComplexPowerGLogFloatConverter;
@@ -246,36 +243,7 @@ public class ImageJFunctions
 		{
 
 			final ImgPlus< T > imgplus = ( ImgPlus< T > ) img;
-			final Calibration impcal = target.getCalibration();
-
-			// TODO - using averageScale() introduces error for nonlinear axes
-
-			final int xaxis = imgplus.dimensionIndex( Axes.X );
-			if ( xaxis >= 0 )
-			{
-				impcal.pixelWidth = imgplus.averageScale( xaxis );
-				impcal.xOrigin = imgplus.axis( xaxis ).calibratedValue( 0 );
-			}
-
-			final int yaxis = imgplus.dimensionIndex( Axes.Y );
-			if ( yaxis >= 0 )
-			{
-				impcal.pixelHeight = imgplus.averageScale( yaxis );
-				impcal.yOrigin = imgplus.axis( yaxis ).calibratedValue( 0 );
-			}
-
-			final int zaxis = imgplus.dimensionIndex( Axes.Z );
-			if ( zaxis >= 0 )
-			{
-				impcal.pixelDepth = imgplus.averageScale( zaxis );
-				impcal.zOrigin = imgplus.axis( zaxis ).calibratedValue( 0 );
-			}
-
-			final int taxis = imgplus.dimensionIndex( Axes.TIME );
-			if ( taxis >= 0 )
-			{
-				impcal.frameInterval = imgplus.averageScale( taxis );
-			}
+			CalibrationUtils.copyCalibrationToImagePlus(imgplus, target);
 			target.setTitle( imgplus.getName() );
 		}
 

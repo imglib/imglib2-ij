@@ -35,11 +35,8 @@
 package net.imglib2.img;
 
 import ij.ImagePlus;
-import ij.measure.Calibration;
 import net.imagej.ImgPlus;
-import net.imagej.axis.Axes;
 import net.imagej.axis.CalibratedAxis;
-import net.imagej.axis.DefaultLinearAxis;
 import net.imglib2.cache.Cache;
 import net.imglib2.cache.ref.SoftRefLoaderRemoverCache;
 import net.imglib2.exception.IncompatibleTypeException;
@@ -55,6 +52,7 @@ import net.imglib2.img.basictypeaccess.array.ByteArray;
 import net.imglib2.img.basictypeaccess.array.FloatArray;
 import net.imglib2.img.basictypeaccess.array.IntArray;
 import net.imglib2.img.basictypeaccess.array.ShortArray;
+import net.imglib2.img.display.imagej.CalibrationUtils;
 import net.imglib2.img.planar.PlanarImg;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.NativeTypeFactory;
@@ -65,8 +63,6 @@ import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.Fraction;
 
 import java.util.AbstractList;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 import java.util.stream.LongStream;
@@ -125,7 +121,7 @@ public class VirtualStackAdapter
 		final long[] dimensions = getNonTrivialDimensions(image);
 		PlanarImg< T, A > cached = new PlanarImg<T, A>( loader, dimensions, new Fraction() );
 		cached.setLinkedType( (( NativeTypeFactory< T, A > ) type.getNativeTypeFactory()).createLinkedType( cached ) );
-		CalibratedAxis[] axes = getNonTrivialAxes( image );
+		CalibratedAxis[] axes = CalibrationUtils.getNonTrivialAxes( image );
 		ImgPlus< T > wrap = new ImgPlus<>(cached, image.getTitle(), axes);
 		return wrap;
 	}
@@ -134,20 +130,6 @@ public class VirtualStackAdapter
 		LongStream xy = LongStream.of(image.getWidth(), image.getHeight());
 		LongStream czt = LongStream.of(image.getNChannels(), image.getNSlices(), image.getNFrames());
 		return LongStream.concat(xy, czt.filter(x -> x > 1)).toArray();
-	}
-
-	private static CalibratedAxis[] getNonTrivialAxes( ImagePlus image ) {
-		List<CalibratedAxis> result = new ArrayList<>();
-		Calibration calibration = image.getCalibration();
-		result.add(new DefaultLinearAxis(Axes.X, calibration.getXUnit(), calibration.pixelWidth, calibration.xOrigin));
-		result.add(new DefaultLinearAxis(Axes.Y, calibration.getYUnit(), calibration.pixelHeight, calibration.yOrigin));
-		if(image.getNChannels() > 1)
-			result.add(new DefaultLinearAxis(Axes.CHANNEL));
-		if(image.getNSlices() > 1)
-			result.add(new DefaultLinearAxis(Axes.Z, calibration.getZUnit(), calibration.pixelDepth, calibration.zOrigin));
-		if(image.getNFrames() > 1)
-			result.add(new DefaultLinearAxis(Axes.TIME, calibration.getTimeUnit(), calibration.frameInterval));
-		return result.toArray(new CalibratedAxis[0]);
 	}
 
 	private static class ImagePlusLoader< A extends ArrayDataAccess< A > > extends AbstractList< A >

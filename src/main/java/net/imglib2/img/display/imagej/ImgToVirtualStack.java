@@ -70,6 +70,7 @@ public class ImgToVirtualStack
 		ImageStack stack = createVirtualStack(sorted);
 		ImagePlus result = new ImagePlus( imgPlus.getName(), stack );
 		result.setDimensions( (int) sorted.dimension(2), (int) sorted.dimension(3), (int) sorted.dimension(4) );
+		CalibrationUtils.copyCalibrationToImagePlus(imgPlus, result);
 		return result;
 	}
 

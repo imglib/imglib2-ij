@@ -74,7 +74,9 @@ public class ArrayImgToVirtualStack
 		int sizeY = ( int ) img.dimension( 1 );
 		Object pixels = arrayImg.update( null ).getCurrentStorageArray();
 		ImageProcessor processor = ImageProcessorUtils.initProcessor( sizeX, sizeY, pixels, null );
-		return new ImagePlus( imgPlus.getName(), processor );
+		ImagePlus imagePlus = new ImagePlus(imgPlus.getName(), processor);
+		CalibrationUtils.copyCalibrationToImagePlus( imgPlus, imagePlus );
+		return imagePlus;
 	}
 
 	private static boolean checkAxis( List< AxisType > axes )

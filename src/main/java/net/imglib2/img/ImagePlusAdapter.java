@@ -35,13 +35,11 @@
 package net.imglib2.img;
 
 import ij.ImagePlus;
-import ij.measure.Calibration;
 import net.imagej.ImgPlus;
 import net.imagej.axis.Axes;
-import net.imagej.axis.CalibratedAxis;
-import net.imagej.axis.LinearAxis;
 import net.imglib2.Cursor;
 import net.imglib2.converter.Converter;
+import net.imglib2.img.display.imagej.CalibrationUtils;
 import net.imglib2.img.imageplus.ByteImagePlus;
 import net.imglib2.img.imageplus.FloatImagePlus;
 import net.imglib2.img.imageplus.ImagePlusImg;
@@ -56,8 +54,6 @@ import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.type.numeric.real.FloatType;
-
-import java.util.Arrays;
 
 /**
  * Provides convenience functions to wrap ImageJ 1.x data structures as ImgLib2
@@ -92,18 +88,7 @@ public class ImagePlusAdapter
 	public static < T extends NumericType< T > & NativeType< T > > ImgPlus< T > wrapImgPlus( final ImagePlus imp )
 	{
 		Img< T > img = wrap( imp );
-		ImgPlus< T > image = new ImgPlus< >( img );
-
-		// set calibration
-		setCalibrationFromImagePlus1( image, imp );
-
-		// set title
-		image.setName( imp.getTitle() );
-
-		// set axes
-		setAxesFromImagePlus( image, imp );
-
-		return image;
+		return new ImgPlus< >( img, imp.getTitle(), CalibrationUtils.getNonTrivialAxes(imp) );
 	}
 
 	protected static ImagePlusImg< ?, ? > wrapLocal( final ImagePlus imp )
@@ -175,64 +160,6 @@ public class ImagePlusAdapter
 			image.axis(currentDim).setType(Axes.TIME);
 		}
 
-	}
-
-	protected static < T extends NumericType< T > & NativeType< T > > void setCalibrationFromImagePlus1( final ImgPlus<T> image, final ImagePlus imp ) 
-	{
-		final int d = image.numDimensions();
-		final double[] spacing = new double[d];
-		final double[] origin = new double[d];
-
-		Arrays.fill(spacing, 1.0);
-
-		final Calibration c = imp.getCalibration();
-		String unit = null;
-
-		/* Fill out calibration array. We must make sure that the element
-		 * matches the dimension; the resulting ImgPlus skips singleton dimensions. */
-		if( c != null ) 
-		{
-			unit = c.getUnit();
-
-			if (d >= 1) {
-				spacing[0] = c.pixelWidth;
-				origin[0] = c.xOrigin;
-			}
-
-			if (d >= 2) {
-				spacing[1] = c.pixelHeight;
-				origin[1] = c.yOrigin;
-			}
-
-			/* Extra dimensions. We must take  care of the dimensions order and
-			 * of singleton dimensions. */
-			int currentDim = 2;
-
-			if (imp.getNChannels() > 1) {
-				spacing[currentDim] = 1;
-				currentDim++;
-			}
-
-			if (imp.getNSlices() > 1) {
-				spacing[currentDim] = c.pixelDepth;
-				origin[currentDim] = c.zOrigin;
-				currentDim++;
-			}
-
-			if (imp.getNFrames() > 1) {
-				spacing[currentDim] = c.frameInterval;
-			}
-
-		}
-
-		for (int i = 0; i < spacing.length; i++) {
-			CalibratedAxis axis = image.axis(i);
-			if (axis instanceof LinearAxis) {
-				((LinearAxis) axis).setScale(spacing[i]);
-				((LinearAxis) axis).setOrigin(origin[i]);
-				axis.setUnit(unit);
-			}
-		}
 	}
 
 	public static ByteImagePlus<UnsignedByteType> wrapByte( final ImagePlus imp )
