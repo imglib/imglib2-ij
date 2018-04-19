@@ -40,6 +40,7 @@ import ij.ImagePlus;
 import ij.VirtualStack;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converter;
+import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 
@@ -50,7 +51,11 @@ import net.imglib2.type.numeric.integer.UnsignedByteType;
 public class ImageJVirtualStackUnsignedByte< S > extends ImageJVirtualStack< S, UnsignedByteType >
 {
 	public static <T extends RealType<?>> ImageJVirtualStackUnsignedByte<T> wrap( RandomAccessibleInterval<T> source ) {
-		return new ImageJVirtualStackUnsignedByte<T>( source, new ByteConverter() );
+		return new ImageJVirtualStackUnsignedByte<>( source, new ByteConverter() );
+	}
+
+	public static ImageJVirtualStackUnsignedByte<BitType> wrapAndScaleBitType( RandomAccessibleInterval<BitType> source ) {
+		return new ImageJVirtualStackUnsignedByte<>( source, new BitToByteConverter() );
 	}
 
 	public ImageJVirtualStackUnsignedByte( RandomAccessibleInterval< S > source, Converter< ? super S, UnsignedByteType > converter)
@@ -73,6 +78,16 @@ public class ImageJVirtualStackUnsignedByte< S > extends ImageJVirtualStack< S, 
 			if (val < 0) val = 0;
 			else if (val > 255) val = 255;
 			output.setReal(val);
+		}
+	}
+
+	private static class BitToByteConverter implements
+			Converter<BitType, UnsignedByteType>
+	{
+
+		@Override
+		public void convert(final BitType input, final UnsignedByteType output) {
+			output.set(input.get() ? 255 : 0);
 		}
 	}
 }

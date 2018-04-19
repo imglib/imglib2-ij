@@ -41,6 +41,7 @@ import net.imagej.axis.Axes;
 import net.imagej.axis.AxisType;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.transform.integer.MixedTransform;
+import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.view.MixedTransformView;
@@ -48,6 +49,7 @@ import net.imglib2.view.Views;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -61,13 +63,30 @@ public class ImgToVirtualStack
 
 	public static ImagePlus wrap( ImgPlus< ? > imgPlus )
 	{
+		return wrap( imgPlus, ImgToVirtualStack::createVirtualStack );
+	}
+
+	public static ImagePlus wrapAndScaleBitType( ImgPlus<BitType > imgPlus )
+	{
+		return wrap( imgPlus, ImgToVirtualStack::createVirtualStackBits );
+	}
+
+	private static <T> ImagePlus wrap( ImgPlus< T > imgPlus, Function< RandomAccessibleInterval< T >, ImageStack > imageStackWrapper )
+	{
 		imgPlus = ImgPlusViews.fixAxes( imgPlus );
-		RandomAccessibleInterval<?> sorted = ensureXYCZT(imgPlus);
-		ImageStack stack = createVirtualStack(sorted);
+		RandomAccessibleInterval<T> sorted = ensureXYCZT(imgPlus);
+		ImageStack stack = imageStackWrapper.apply( sorted );
 		ImagePlus result = new ImagePlus( imgPlus.getName(), stack );
 		result.setDimensions( (int) sorted.dimension(2), (int) sorted.dimension(3), (int) sorted.dimension(4) );
 		CalibrationUtils.copyCalibrationToImagePlus(imgPlus, result);
 		return result;
+	}
+
+	private static ImageJVirtualStackUnsignedByte< BitType > createVirtualStackBits( RandomAccessibleInterval< BitType > sorted )
+	{
+		ImageJVirtualStackUnsignedByte< BitType > stack = ImageJVirtualStackUnsignedByte.wrapAndScaleBitType( sorted );
+		stack.setWritable( true );
+		return stack;
 	}
 
 	private static ImageStack createVirtualStack( RandomAccessibleInterval< ? > rai )

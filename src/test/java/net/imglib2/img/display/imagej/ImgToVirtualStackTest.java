@@ -71,12 +71,7 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
 
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertArrayEquals;
@@ -258,5 +253,19 @@ public class ImgToVirtualStackTest
 		imagePlus.getStack().setPixels(processor.getPixels(), 1); // NB: required to signal data changed
 		// test
 		assertEquals(expected, img.cursor().next().get(), 0.0f);
+	}
+
+	@Test
+	public void testPersistenceBits() {
+		// setup
+		Img<BitType> img = ArrayImgs.bits(1, 1);
+		ImgPlus<BitType> imgPlus = new ImgPlus<BitType>(img, "title", new AxisType[]{ Axes.X, Axes.Y });
+		ImagePlus imagePlus = ImgToVirtualStack.wrapAndScaleBitType(imgPlus);
+		// process
+		ImageProcessor processor = imagePlus.getStack().getProcessor(1);
+		processor.setf(0, 0, 255);
+		imagePlus.getStack().setPixels(processor.getPixels(), 1); // NB: required to signal data changed
+		// test
+		assertEquals(true, img.cursor().next().get());
 	}
 }
