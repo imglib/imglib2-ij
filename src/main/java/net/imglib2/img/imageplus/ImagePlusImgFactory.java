@@ -48,15 +48,12 @@ import net.imglib2.util.Util;
 
 /**
  * Factory that creates an appropriate {@link ImagePlusImg}.
- * 
- * @author Funke
- * @author Preibisch
- * @author Saalfeld
- * @author Schindelin
+ *
  * @author Jan Funke
  * @author Stephan Preibisch
  * @author Stephan Saalfeld
  * @author Johannes Schindelin
+ * @author Tobias Pietzsch
  */
 public class ImagePlusImgFactory< T extends NativeType< T > > extends PlanarImgFactory< T >
 {

@@ -45,10 +45,6 @@ import net.imglib2.util.Fraction;
 /**
  * {@link ImagePlusImg} for byte-stored data.
  *
- * @author Funke
- * @author Preibisch
- * @author Saalfeld
- * @author Schindelin
  * @author Jan Funke
  * @author Stephan Preibisch
  * @author Stephan Saalfeld
