@@ -61,11 +61,11 @@ public class ImagePlusImgTest
 			if ( dim[ i ].length < 6 )
 			{
 				assertTrue( "ArrayImg vs ImagePlusImg failed for dim = " + Util.printCoordinates( dim[ i ] ),
-				            ImgTestHelper.testImg( dim[ i ], new ArrayImgFactory< FloatType >(), new ImagePlusImgFactory< FloatType >() ) );
+				            ImgTestHelper.testImg( dim[ i ], new ArrayImgFactory<>( new FloatType() ), new ImagePlusImgFactory<>( new FloatType() ) ) );
 				assertTrue( "ImagePlusImg vs ArrayImg failed for dim = " + Util.printCoordinates( dim[ i ] ),
-				            ImgTestHelper.testImg( dim[ i ], new ImagePlusImgFactory< FloatType >(), new ArrayImgFactory< FloatType >() ) );
+				            ImgTestHelper.testImg( dim[ i ], new ImagePlusImgFactory<>( new FloatType() ), new ArrayImgFactory<>( new FloatType() ) ) );
 				assertTrue( "ImagePlusImg vs ImagePlusImg failed for dim = " + Util.printCoordinates( dim[ i ] ),
-				            ImgTestHelper.testImg( dim[ i ], new ImagePlusImgFactory< FloatType >(), new ImagePlusImgFactory< FloatType >() ) );
+				            ImgTestHelper.testImg( dim[ i ], new ImagePlusImgFactory<>( new FloatType() ), new ImagePlusImgFactory<>( new FloatType() ) ) );
 			}
 		}
 	}

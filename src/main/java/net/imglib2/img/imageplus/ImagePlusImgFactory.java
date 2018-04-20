@@ -37,17 +37,14 @@ package net.imglib2.img.imageplus;
 import net.imglib2.Dimensions;
 import net.imglib2.exception.IncompatibleTypeException;
 import net.imglib2.img.ImgFactory;
-import net.imglib2.img.NativeImg;
-import net.imglib2.img.basictypeaccess.array.ByteArray;
-import net.imglib2.img.basictypeaccess.array.CharArray;
-import net.imglib2.img.basictypeaccess.array.DoubleArray;
-import net.imglib2.img.basictypeaccess.array.FloatArray;
-import net.imglib2.img.basictypeaccess.array.IntArray;
-import net.imglib2.img.basictypeaccess.array.LongArray;
-import net.imglib2.img.basictypeaccess.array.ShortArray;
+import net.imglib2.img.basictypeaccess.ArrayDataAccessFactory;
+import net.imglib2.img.basictypeaccess.array.ArrayDataAccess;
 import net.imglib2.img.planar.PlanarImgFactory;
 import net.imglib2.type.NativeType;
+import net.imglib2.type.NativeTypeFactory;
 import net.imglib2.util.Fraction;
+import net.imglib2.util.Intervals;
+import net.imglib2.util.Util;
 
 /**
  * Factory that creates an appropriate {@link ImagePlusImg}.
@@ -63,90 +60,95 @@ import net.imglib2.util.Fraction;
  */
 public class ImagePlusImgFactory< T extends NativeType< T > > extends PlanarImgFactory< T >
 {
-	@Override
-	public ImagePlusImg< T, ? > create( final long[] dim, final T type )
+	public ImagePlusImgFactory( final T type )
 	{
-		return ( ImagePlusImg< T, ? > ) type.createSuitableNativeImg( this, dim );
+		super( type );
 	}
 
 	@Override
-	public ImagePlusImg< T, ? > create( final Dimensions dim, final T type )
+	public ImagePlusImg< T, ? > create( final long... dimensions )
 	{
-		final long[] size = new long[ dim.numDimensions() ];
-		dim.dimensions( size );
-
-		return create( size, type );
+		@SuppressWarnings( { "unchecked", "rawtypes" } )
+		final ImagePlusImg< T, ? > img = create( dimensions, type(), ( NativeTypeFactory ) type().getNativeTypeFactory() );
+		return img;
 	}
 
 	@Override
-	public NativeImg< T, ByteArray > createByteInstance( final long[] dimensions, final Fraction entitiesPerPixel )
+	public ImagePlusImg< T, ? > create( final Dimensions dimensions )
 	{
-		if ( dimensions.length > 5 )
-			throw new RuntimeException( "Unsupported dimensionality: " + dimensions.length );
-
-		return new ByteImagePlus< >( dimensions, entitiesPerPixel );
+		return create( Intervals.dimensionsAsLongArray( dimensions ) );
 	}
 
 	@Override
-	public NativeImg< T, CharArray > createCharInstance( final long[] dimensions, final Fraction entitiesPerPixel )
+	public ImagePlusImg< T, ? > create( final int[] dimensions )
 	{
-		if ( dimensions.length > 5 )
-			throw new RuntimeException( "Unsupported dimensionality: " + dimensions.length );
-
-		return new ImagePlusImg< >( new CharArray( 1 ), dimensions, entitiesPerPixel );
+		return create( Util.int2long( dimensions ) );
 	}
 
-	@Override
-	public NativeImg< T, DoubleArray > createDoubleInstance( final long[] dimensions, final Fraction entitiesPerPixel )
+	@SuppressWarnings( "unchecked" )
+	private < A extends ArrayDataAccess< A > > ImagePlusImg< T, ? > create(
+			final long[] dimensions,
+			final T type,
+			final NativeTypeFactory< T, A > typeFactory )
 	{
-		if ( dimensions.length > 5 )
-			throw new RuntimeException( "Unsupported dimensionality: " + dimensions.length );
-
-		return new ImagePlusImg< >( new DoubleArray( 1 ), dimensions, entitiesPerPixel );
-	}
-
-	@Override
-	public NativeImg< T, FloatArray > createFloatInstance( final long[] dimensions, final Fraction entitiesPerPixel )
-	{
-		if ( dimensions.length > 5 )
-			throw new RuntimeException( "Unsupported dimensionality: " + dimensions.length );
-
-		return new FloatImagePlus< >( dimensions, entitiesPerPixel );
-	}
-
-	@Override
-	public NativeImg< T, IntArray > createIntInstance( final long[] dimensions, final Fraction entitiesPerPixel )
-	{
-		if ( dimensions.length > 5 )
-			throw new RuntimeException( "Unsupported dimensionality: " + dimensions.length );
-
-		return new IntImagePlus< >( dimensions, entitiesPerPixel );
-	}
-
-	@Override
-	public NativeImg< T, LongArray > createLongInstance( final long[] dimensions, final Fraction entitiesPerPixel )
-	{
-		if ( dimensions.length > 5 )
-			throw new RuntimeException( "Unsupported dimensionality: " + dimensions.length );
-
-		return new ImagePlusImg< >( new LongArray( 1 ), dimensions, entitiesPerPixel );
-	}
-
-	@Override
-	public NativeImg< T, ShortArray > createShortInstance( final long[] dimensions, final Fraction entitiesPerPixel )
-	{
-		if ( dimensions.length > 5 )
-			throw new RuntimeException( "Unsupported dimensionality: " + dimensions.length );
-
-		return new ShortImagePlus< >( dimensions, entitiesPerPixel );
+		final Fraction entitiesPerPixel = type.getEntitiesPerPixel();
+		final ImagePlusImg< T, A > img;
+		switch ( typeFactory.getPrimitiveType() )
+		{
+		case BYTE:
+			img = new ByteImagePlus( dimensions, entitiesPerPixel );
+			break;
+		case FLOAT:
+			img = new FloatImagePlus( dimensions, entitiesPerPixel );
+			break;
+		case INT:
+			img = new IntImagePlus( dimensions, entitiesPerPixel );
+			break;
+		case SHORT:
+			img = new ShortImagePlus( dimensions, entitiesPerPixel );
+			break;
+		default:
+			img = new ImagePlusImg<>( ArrayDataAccessFactory.get( typeFactory ), dimensions, entitiesPerPixel );
+		}
+		img.setLinkedType( typeFactory.createLinkedType( img ) );
+		return img;
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
-	public <S> ImgFactory<S> imgFactory( final S type ) throws IncompatibleTypeException
+	public < S > ImgFactory< S > imgFactory( final S type ) throws IncompatibleTypeException
 	{
 		if ( NativeType.class.isInstance( type ) )
-			return new ImagePlusImgFactory();
+			return new ImagePlusImgFactory( ( NativeType ) type );
 		throw new IncompatibleTypeException( this, type.getClass().getCanonicalName() + " does not implement NativeType." );
-	}	
+	}
+
+
+	/*
+	 * -----------------------------------------------------------------------
+	 *
+	 * Deprecated API.
+	 *
+	 * Supports backwards compatibility with ImgFactories that are constructed
+	 * without a type instance or supplier.
+	 *
+	 * -----------------------------------------------------------------------
+	 */
+
+	@Deprecated
+	public ImagePlusImgFactory()
+	{
+		super();
+	}
+
+	@Deprecated
+	@Override
+	public ImagePlusImg< T, ? > create( final long[] dimensions, final T type )
+	{
+		cache( type );
+		@SuppressWarnings( { "unchecked", "rawtypes" } )
+		final ImagePlusImg< T, ? > img = create( dimensions, type, ( NativeTypeFactory ) type.getNativeTypeFactory() );
+		return img;
+	}
+
 }

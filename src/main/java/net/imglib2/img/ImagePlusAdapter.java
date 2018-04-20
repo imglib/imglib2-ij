@@ -347,8 +347,8 @@ public class ImagePlusAdapter
 
 	protected static < T extends Type< T > > Img< FloatType > convertToFloat(
 			final Img< T > input, final Converter< T, FloatType > c )
-			{		
-		final ImagePlusImg< FloatType, ? > output = new ImagePlusImgFactory< FloatType >().create( input, new FloatType() );
+			{
+		final ImagePlusImg< FloatType, ? > output = new ImagePlusImgFactory<>( new FloatType() ).create( input );
 
 		final Cursor< T > in = input.cursor();
 		final Cursor< FloatType > out = output.cursor();

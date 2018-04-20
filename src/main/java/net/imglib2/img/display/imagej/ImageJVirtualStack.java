@@ -103,7 +103,7 @@ public abstract class ImageJVirtualStack<S, T extends NativeType< T >> extends V
 		final int sizeX = (int) source.dimension( 0 );
 		final int sizeY = getDimension1Size( source );
 
-		img = new ArrayImgFactory< T >().create( new long[] { sizeX, sizeY }, type );
+		img = new ArrayImgFactory<>( type ).create( new long[] { sizeX, sizeY } );
 
 		higherSourceDimensions = new long[3];
 		higherSourceDimensions[0] = ( source.numDimensions() > 2 ) ? source.dimension( 2 ) : 1;
