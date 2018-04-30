@@ -99,8 +99,6 @@ public class ImageJVirtualStackFloat<S> extends ImageJVirtualStack< S, FloatType
 					max = value;
 			}
 
-			System.out.println( "fmax = " + max );
-			System.out.println( "fmin = " + min );
 			setMinAndMax( min, max );
 		}
 	}
@@ -188,8 +186,6 @@ public class ImageJVirtualStackFloat<S> extends ImageJVirtualStack< S, FloatType
 				max = maxs.get( t );
 		}
 
-		System.out.println( "fmax = " + max );
-		System.out.println( "fmin = " + min );
 		setMinAndMax( min, max );
 
 	}
