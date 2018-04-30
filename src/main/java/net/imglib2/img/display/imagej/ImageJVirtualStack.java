@@ -176,7 +176,7 @@ public class ImageJVirtualStack<S, T extends NativeType< T >> extends AbstractVi
 					origin = Views.hyperSlice( origin, 2, position[ i ] );
 			}
 
-			final Cursor< S > originCursor = Views.iterable( origin ).cursor();
+			final Cursor< S > originCursor = Views.flatIterable( origin ).cursor();
 			final Cursor< ? extends RealType<?> > cursor = createArrayImg( (int) source.dimension( 0 ), (int) source.dimension( 1 ), pixels).cursor();
 
 			// Replace the origin values with the current state of the virtual
