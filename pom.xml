@@ -121,6 +121,8 @@ Jean-Yves Tinevez and Michael Zinsmaier.</license.copyrightOwners>
 
 		<!-- NB: Deploy releases to the ImageJ Maven repository. -->
 		<releaseProfiles>deploy-to-imagej</releaseProfiles>
+
+		<imglib2.version>5.1.0</imglib2.version>
 	</properties>
 
 	<repositories>
@@ -136,7 +138,6 @@ Jean-Yves Tinevez and Michael Zinsmaier.</license.copyrightOwners>
 		<dependency>
 			<groupId>net.imglib2</groupId>
 			<artifactId>imglib2</artifactId>
-			<version>5.0.0</version>
 		</dependency>
 
 		<!-- ImageJ dependencies -->
@@ -158,7 +159,7 @@ Jean-Yves Tinevez and Michael Zinsmaier.</license.copyrightOwners>
 		<dependency>
 			<groupId>net.imglib2</groupId>
 			<artifactId>imglib2</artifactId>
-			<version>2.0.1</version>
+			<version>${imglib2.version}</version>
 			<classifier>tests</classifier>
 			<scope>test</scope>
 		</dependency>
