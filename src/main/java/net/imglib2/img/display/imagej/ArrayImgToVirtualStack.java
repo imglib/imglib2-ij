@@ -44,6 +44,10 @@ import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImg;
 import net.imglib2.img.basictypeaccess.array.ArrayDataAccess;
 import net.imglib2.type.NativeType;
+import net.imglib2.type.numeric.ARGBType;
+import net.imglib2.type.numeric.integer.UnsignedByteType;
+import net.imglib2.type.numeric.integer.UnsignedShortType;
+import net.imglib2.type.numeric.real.FloatType;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -56,6 +60,12 @@ public class ArrayImgToVirtualStack
 		// prevent from instantiation
 	}
 
+	/**
+	 * Indicates if {@link #wrap(ImgPlus)} wrap} supports the image.
+	 *
+	 * @see PlanarImgToVirtualStack
+	 * @see ImgToVirtualStack
+	 */
 	public static boolean isSupported( ImgPlus< ? > imgPlus )
 	{
 		imgPlus = ImgPlusViews.fixAxes( imgPlus );
@@ -65,6 +75,20 @@ public class ArrayImgToVirtualStack
 				ImageProcessorUtils.isSupported( ( NativeType< ? > ) imgPlus.randomAccess().get() );
 	}
 
+	/**
+	 * Takes an {@link ImgPlus} (IJ2) and wraps it into an {@link ImagePlus} (IJ1).
+	 * This only works when {@link ImgPlus} is backed by a two dimensional {@link ArrayImg}.
+	 * Type of the image must be {@link UnsignedByteType}, {@link UnsignedShortType}, {@link ARGBType} or {@link FloatType}.
+	 * <p>
+	 * The returned {@link ImagePlus} uses the same pixel buffer as the given image.
+	 * Changes to the {@link ImagePlus} are therefore correctly reflected in the {@link ImgPlus}.
+	 * The title and calibration are derived from the given image.
+	 * <p>
+	 * Use {@link #isSupported(ImgPlus)} to check if an {@link ImagePlus} is supported.
+	 *
+	 * @see PlanarImgToVirtualStack
+	 * @see ImgToVirtualStack
+	 */
 	public static ImagePlus wrap( ImgPlus< ? > imgPlus )
 	{
 		imgPlus = ImgPlusViews.fixAxes( imgPlus );

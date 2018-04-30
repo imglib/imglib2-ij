@@ -39,14 +39,6 @@ import net.imagej.ImgPlus;
 import net.imagej.axis.CalibratedAxis;
 import net.imglib2.cache.Cache;
 import net.imglib2.cache.ref.SoftRefLoaderRemoverCache;
-import net.imglib2.exception.IncompatibleTypeException;
-import net.imglib2.img.basictypeaccess.ByteAccess;
-import net.imglib2.img.basictypeaccess.CharAccess;
-import net.imglib2.img.basictypeaccess.DoubleAccess;
-import net.imglib2.img.basictypeaccess.FloatAccess;
-import net.imglib2.img.basictypeaccess.IntAccess;
-import net.imglib2.img.basictypeaccess.LongAccess;
-import net.imglib2.img.basictypeaccess.ShortAccess;
 import net.imglib2.img.basictypeaccess.array.ArrayDataAccess;
 import net.imglib2.img.basictypeaccess.array.ByteArray;
 import net.imglib2.img.basictypeaccess.array.FloatArray;
@@ -77,26 +69,52 @@ import java.util.stream.LongStream;
 public class VirtualStackAdapter
 {
 
+	/**
+	 * Wraps a 8 bit {@link ImagePlus}, into an {@link ImgPlus}, that is backed by a {@link PlanarImg}.
+	 * The {@link PlanarImg} loads the planes only if needed, and caches them.
+	 * The axes of the returned image are set according to the calibration of the given image.
+	 */
 	public static ImgPlus< UnsignedByteType > wrapByte( ImagePlus image )
 	{
 		return internWrap( image, ImagePlus.GRAY8, new UnsignedByteType(), array -> new ByteArray( ( byte[] ) array ) );
 	}
 
+	/**
+	 * Wraps a 16 bit {@link ImagePlus}, into an {@link ImgPlus}, that is backed by a {@link PlanarImg}.
+	 * The {@link PlanarImg} loads the planes only if needed, and caches them.
+	 * The axes of the returned image are set according to the calibration of the given image.
+	 */
 	public static ImgPlus< UnsignedShortType > wrapShort( ImagePlus image )
 	{
 		return internWrap( image, ImagePlus.GRAY16, new UnsignedShortType(), array -> new ShortArray( ( short[] ) array ) );
 	}
 
+	/**
+	 * Wraps a 32 bit {@link ImagePlus}, into an {@link ImgPlus}, that is backed by a {@link PlanarImg}.
+	 * The {@link PlanarImg} loads the planes only if needed, and caches them.
+	 * The axes of the returned image are set according to the calibration of the given image.
+	 */
 	public static ImgPlus< FloatType > wrapFloat( ImagePlus image )
 	{
 		return internWrap( image, ImagePlus.GRAY32, new FloatType(), array -> new FloatArray( ( float[] ) array ) );
 	}
 
+	/**
+	 * Wraps a 24 bit {@link ImagePlus}, into an {@link ImgPlus}, that is backed by a {@link PlanarImg}.
+	 * The {@link PlanarImg} loads the planes only if needed, and caches them.
+	 * The axes of the returned image are set according to the calibration of the given image.
+	 */
 	public static ImgPlus< ARGBType > wrapRGBA( ImagePlus image )
 	{
 		return internWrap( image, ImagePlus.COLOR_RGB, new ARGBType(), array -> new IntArray( ( int[] ) array ) );
 	}
 
+	/**
+	 * Wraps an {@link ImagePlus}, into an {@link ImgPlus}, that is backed by a {@link PlanarImg}.
+	 * The {@link PlanarImg} loads the planes only if needed, and caches them.
+	 * The pixel type of the returned image depends on the type of the ImagePlus.
+	 * The axes of the returned image are set according to the calibration of the given image.
+	 */
 	public static ImgPlus< ? > wrap( ImagePlus image )
 	{
 		switch ( image.getType() )

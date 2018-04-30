@@ -66,6 +66,12 @@ public class PlanarImgToVirtualStack extends AbstractVirtualStack
 
 	// static
 
+	/**
+	 * Returns true, if {@link #wrap(ImgPlus)} supports the given image.
+	 *
+	 * @see ArrayImgToVirtualStack
+	 * @see ImgToVirtualStack
+	 */
 	public static boolean isSupported( ImgPlus< ? > imgPlus )
 	{
 		imgPlus = ImgPlusViews.fixAxes( imgPlus );
@@ -74,6 +80,22 @@ public class PlanarImgToVirtualStack extends AbstractVirtualStack
 				ImageProcessorUtils.isSupported( ( NativeType< ? > ) imgPlus.randomAccess().get() );
 	}
 
+	/**
+	 * Wraps an {@link ImgPlus}, that is backed by an {@link PlanarImg} into and {@link ImagePlus}.
+	 * The returned {@link ImagePlus} uses the same pixel buffer as the given image.
+	 * Changes to the {@link ImagePlus} are therefore reflected in the {@link ImgPlus}.
+	 * <p>
+	 * The image must be {@link UnsignedByteType}, {@link UnsignedShortType}, {@link ARGBType} or {@link FloatType}.
+	 * Only up to five dimensions are support. Axes oder must start with X, Y axes.
+	 * Channel, Time and Z axes might follow in arbitrary order.
+	 * The image title and calibration are derived from the given image.
+	 * <p>
+	 * Use {@link #isSupported(ImgPlus)} to check if an {@link ImagePlus} is supported.
+	 *
+	 * @see #isSupported(ImgPlus)
+	 * @see ArrayImgToVirtualStack
+	 * @see ImgToVirtualStack
+	 */
 	public static ImagePlus wrap( ImgPlus< ? > imgPlus )
 	{
 		imgPlus = ImgPlusViews.fixAxes( imgPlus );

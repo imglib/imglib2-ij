@@ -55,17 +55,37 @@ import java.util.stream.IntStream;
 
 public class ImgToVirtualStack
 {
+	// TODO move to image-legacy
 	public static ImagePlus wrap( ImgPlus< ? extends RealType< ? > > imgPlus, boolean mergeRGB )
 	{
 		ImgPlus< ? > imgPlus2 = mergeRGB && ImgPlusViews.canFuseColor( imgPlus ) ? ImgPlusViews.fuseColor( imgPlus ) : imgPlus;
 		return wrap( imgPlus2 );
 	}
 
+	/**
+	 * Wraps an {@link ImgPlus} into an {@link ImagePlus}.
+	 * The image can be {@link RealType} or {@link ARGBType}.
+	 * The {@link ImagePlus} is backed by a special {@link ij.VirtualStack},
+	 * which copies an plane from the given image, instead of it plane from a file.
+	 * <p>
+	 * Only up to five dimensions are support. Axes can might be arbitrary.
+	 * The image title and calibration are derived from the given image.
+	 *
+	 * @see ArrayImgToVirtualStack
+	 * @see ImgToVirtualStack
+	 */
 	public static ImagePlus wrap( ImgPlus< ? > imgPlus )
 	{
 		return wrap( imgPlus, ImgToVirtualStack::createVirtualStack );
 	}
 
+	/**
+	 * Similar to {@link #wrap(ImgPlus)}, but works only for {@link ImgPlus} of {@link BitType}.
+	 * The pixel values of 0 and 1 are scaled to 0 and 255.
+	 *
+	 * @see ArrayImgToVirtualStack
+	 * @see ImgToVirtualStack
+	 */
 	public static ImagePlus wrapAndScaleBitType( ImgPlus<BitType > imgPlus )
 	{
 		return wrap( imgPlus, ImgToVirtualStack::createVirtualStackBits );
