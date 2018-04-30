@@ -35,9 +35,8 @@
 package net.imglib2.img.imageplus;
 
 import ij.ImagePlus;
-import ij.ImageStack;
+import ij.process.ImageProcessor;
 import ij.process.ShortProcessor;
-import net.imglib2.exception.ImgLibException;
 import net.imglib2.img.basictypeaccess.array.ShortArray;
 import net.imglib2.type.NativeType;
 import net.imglib2.util.Fraction;
@@ -50,79 +49,34 @@ import net.imglib2.util.Fraction;
  * @author Stephan Saalfeld
  * @author Johannes Schindelin
  */
-public class ShortImagePlus< T extends NativeType< T > > extends ImagePlusImg< T, ShortArray >
+public class ShortImagePlus< T extends NativeType< T > > extends AbstractImagePlusImg< T, ShortArray >
 {
-	final ImagePlus imp;
-
-	public ShortImagePlus( final long[] dim, final Fraction entitiesPerPixel )
-	{
-		super( dim, entitiesPerPixel );
-
-		if ( entitiesPerPixel.getRatio() == 1 )
-		{
-			final ImageStack stack = new ImageStack( width, height );
-			for ( int i = 0; i < numSlices; ++i )
-				stack.addSlice( "", new ShortProcessor( width, height ) );
-			imp = new ImagePlus( "image", stack );
-			imp.setDimensions( channels, depth, frames );
-			if ( numSlices > 1 )
-				imp.setOpenAsHyperStack( true );
-
-			mirror.clear();
-			for ( int t = 0; t < frames; ++t )
-				for ( int z = 0; z < depth; ++z )
-					for ( int c = 0; c < channels; ++c )
-						mirror.add( new ShortArray( ( short[] )imp.getStack().getProcessor( imp.getStackIndex( c + 1, z + 1 , t + 1 ) ).getPixels() ) );
-		}
-		else
-		{
-			imp = null;
-
-			mirror.clear();
-			for ( int i = 0; i < numSlices; ++i )
-				mirror.add( new ShortArray( numEntities(entitiesPerPixel) ) );
-		}
+	public ShortImagePlus(long[] dim, Fraction entitiesPerPixel) {
+		super(dim, entitiesPerPixel);
 	}
 
-	public ShortImagePlus( final ImagePlus imp )
-	{
-		super( imp );
-
-		this.imp = imp;
-
-		mirror.clear();
-		for ( int t = 0; t < frames; ++t )
-			for ( int z = 0; z < depth; ++z )
-				for ( int c = 0; c < channels; ++c )
-					mirror.add( new ShortArray( ( short[] )imp.getStack().getProcessor( imp.getStackIndex( c + 1, z + 1 , t + 1 ) ).getPixels() ) );
-	}
-
-	/**
-	 * This has to be overwritten, otherwise two different instances exist (one in the imageplus, one in the mirror)
-	 */
-	@Override
-	public void setPlane( final int no, final ShortArray plane )
-	{
-		// TODO: this should work, but does not for plane 0, why???
-		//mirror.set( no, plane );
-		//imp.getStack().setPixels( plane.getCurrentStorageArray(), no + 1 );
-
-		System.arraycopy( plane.getCurrentStorageArray(), 0, mirror.get( no ).getCurrentStorageArray(), 0, plane.getCurrentStorageArray().length );
+	public ShortImagePlus(ImagePlus imp) {
+		super(imp);
 	}
 
 	@Override
-	public void close()
-	{
-		if ( imp != null )
-			imp.close();
+	protected ShortArray createArray(Object pixels) {
+		return new ShortArray( (short[]) pixels );
 	}
 
 	@Override
-	public ImagePlus getImagePlus() throws ImgLibException
-	{
-		if ( imp == null )
-			throw new ImgLibException( this, "has no ImagePlus instance, it is not a standard type of ImagePlus (" + entitiesPerPixel + " entities per pixel)" );
-		return imp;
+	protected ShortArray createArray(int numEntities) {
+		return new ShortArray( numEntities );
+	}
+
+	@Override
+	protected ImageProcessor createProcessor() {
+		return new ShortProcessor( width, height );
+	}
+
+	@Override
+	protected int getArrayLength(ShortArray plane) {
+		return plane.getCurrentStorageArray().length;
 	}
 }
 
