@@ -34,8 +34,12 @@
 
 package net.imglib2.img.display.imagej;
 
-import ij.ImagePlus;
-import ij.VirtualStack;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
+
+import java.util.concurrent.atomic.AtomicInteger;
+
 import net.imagej.ImgPlus;
 import net.imagej.axis.Axes;
 import net.imagej.axis.AxisType;
@@ -48,39 +52,40 @@ import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.view.Views;
+
 import org.junit.Test;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertSame;
+import ij.ImagePlus;
+import ij.VirtualStack;
 
 public class PlanarImgToVirtualStackTest
 {
 	@Test
-	public void testStorageArray() {
-		PlanarImg< UnsignedByteType, ? > img = example();
-		VirtualStack stack = PlanarImgToVirtualStack.wrap( img );
+	public void testStorageArray()
+	{
+		final PlanarImg< UnsignedByteType, ? > img = example();
+		final VirtualStack stack = PlanarImgToVirtualStack.wrap( img );
 		assertSame( img.getPlane( 1 ).getCurrentStorageArray(), stack.getPixels( 2 ) );
 	}
 
 	@Test
-	public void testPixelValues() {
-		PlanarImg< UnsignedByteType, ? > img = example();
-		VirtualStack stack = PlanarImgToVirtualStack.wrap( img );
-		assertArrayEquals( new byte[]{ 1, 2, 3 }, (byte[]) stack.getPixels( 1 ));
-		assertArrayEquals( new byte[]{ 4, 5, 6 }, (byte[]) stack.getPixels( 2 ));
+	public void testPixelValues()
+	{
+		final PlanarImg< UnsignedByteType, ? > img = example();
+		final VirtualStack stack = PlanarImgToVirtualStack.wrap( img );
+		assertArrayEquals( new byte[] { 1, 2, 3 }, ( byte[] ) stack.getPixels( 1 ) );
+		assertArrayEquals( new byte[] { 4, 5, 6 }, ( byte[] ) stack.getPixels( 2 ) );
 	}
 
 	@Test
-	public void testImgPlus() {
+	public void testImgPlus()
+	{
 		// setup
-		PlanarImg< UnsignedByteType, ? > img = example();
-		String title = "test image";
-		ImgPlus< UnsignedByteType > imgPlus = new ImgPlus<>( img, title, new AxisType[] { Axes.X, Axes.Y, Axes.TIME } );
+		final PlanarImg< UnsignedByteType, ? > img = example();
+		final String title = "test image";
+		final ImgPlus< UnsignedByteType > imgPlus = new ImgPlus<>( img, title, new AxisType[] { Axes.X, Axes.Y, Axes.TIME } );
 		// process
-		ImagePlus imagePlus = PlanarImgToVirtualStack.wrap( imgPlus );
+		final ImagePlus imagePlus = PlanarImgToVirtualStack.wrap( imgPlus );
 		// test
 		assertEquals( title, imagePlus.getTitle() );
 		assertEquals( 3, imagePlus.getWidth() );
@@ -91,39 +96,41 @@ public class PlanarImgToVirtualStackTest
 	}
 
 	@Test
-	public void testAxisOrder() {
-		PlanarImg< UnsignedByteType, ? > img = new PlanarImgFactory< UnsignedByteType >().create( new long[] { 1, 1, 2, 3, 4 }, new UnsignedByteType() );
+	public void testAxisOrder()
+	{
+		final PlanarImg< UnsignedByteType, ? > img = new PlanarImgFactory< UnsignedByteType >().create( new long[] { 1, 1, 2, 3, 4 }, new UnsignedByteType() );
 		fill( img );
-		ImgPlus< UnsignedByteType > imgPlus = new ImgPlus<>( img, "title", new AxisType[] { Axes.X, Axes.Y, Axes.TIME, Axes.CHANNEL, Axes.Z } );
-		ImagePlus imagePlus = PlanarImgToVirtualStack.wrap( imgPlus );
+		final ImgPlus< UnsignedByteType > imgPlus = new ImgPlus<>( img, "title", new AxisType[] { Axes.X, Axes.Y, Axes.TIME, Axes.CHANNEL, Axes.Z } );
+		final ImagePlus imagePlus = PlanarImgToVirtualStack.wrap( imgPlus );
 		assertEquals( 2, imagePlus.getStack().getProcessor( imagePlus.getStackIndex( 1, 1, 2 ) ).get( 0, 0 ) );
 		assertEquals( 7, imagePlus.getStack().getProcessor( imagePlus.getStackIndex( 1, 2, 1 ) ).get( 0, 0 ) );
 		assertEquals( 3, imagePlus.getStack().getProcessor( imagePlus.getStackIndex( 2, 1, 1 ) ).get( 0, 0 ) );
 	}
 
-	private void fill( RandomAccessibleInterval< ? extends IntegerType > img )
+	private void fill( final RandomAccessibleInterval< ? extends IntegerType > img )
 	{
-		AtomicInteger i = new AtomicInteger();
+		final AtomicInteger i = new AtomicInteger();
 		Views.flatIterable( img ).forEach( pixel -> pixel.setInteger( i.incrementAndGet() ) );
 	}
 
 	private PlanarImg< UnsignedByteType, ? > example()
 	{
-		PlanarImg< UnsignedByteType, ? > img = new PlanarImgFactory< UnsignedByteType >().create( new long[] { 3, 1, 2 }, new UnsignedByteType() );
+		final PlanarImg< UnsignedByteType, ? > img = new PlanarImgFactory< UnsignedByteType >().create( new long[] { 3, 1, 2 }, new UnsignedByteType() );
 		fill( img );
 		return img;
 	}
 
 	@Test
-	public void testPersistence() {
+	public void testPersistence()
+	{
 		// setup
-		PlanarImg<FloatType, FloatArray> img = PlanarImgs.floats(1, 1);
-		ImgPlus<FloatType> imgPlus = new ImgPlus<FloatType>(img, "title", new AxisType[]{ Axes.X, Axes.Y });
-		ImagePlus imagePlus = PlanarImgToVirtualStack.wrap(imgPlus);
-		float expected = 42.0f;
+		final PlanarImg< FloatType, FloatArray > img = PlanarImgs.floats( 1, 1 );
+		final ImgPlus< FloatType > imgPlus = new ImgPlus< FloatType >( img, "title", new AxisType[] { Axes.X, Axes.Y } );
+		final ImagePlus imagePlus = PlanarImgToVirtualStack.wrap( imgPlus );
+		final float expected = 42.0f;
 		// process
-		imagePlus.getProcessor().setf(0, 0, expected);
+		imagePlus.getProcessor().setf( 0, 0, expected );
 		// test
-		assertEquals(expected, img.cursor().next().get(), 0.0f);
+		assertEquals( expected, img.cursor().next().get(), 0.0f );
 	}
 }

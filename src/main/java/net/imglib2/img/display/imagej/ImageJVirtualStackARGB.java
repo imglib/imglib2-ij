@@ -11,13 +11,13 @@
  * %%
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -36,8 +36,6 @@ package net.imglib2.img.display.imagej;
 
 import java.util.concurrent.ExecutorService;
 
-import ij.ImagePlus;
-import net.imagej.ImgPlus;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converter;
 import net.imglib2.type.numeric.ARGBType;
@@ -48,17 +46,19 @@ import net.imglib2.type.numeric.ARGBType;
  */
 public class ImageJVirtualStackARGB< S > extends ImageJVirtualStack< S, ARGBType >
 {
-	public static ImageJVirtualStackARGB< ARGBType > wrap( RandomAccessibleInterval< ARGBType > source ) {
+	public static ImageJVirtualStackARGB< ARGBType > wrap( final RandomAccessibleInterval< ARGBType > source )
+	{
 		return new ImageJVirtualStackARGB<>( source, ( input, output ) -> output.set( input ) );
 	}
 
-	public ImageJVirtualStackARGB( RandomAccessibleInterval< S > source, Converter< ? super S, ARGBType > converter)
+	public ImageJVirtualStackARGB( final RandomAccessibleInterval< S > source, final Converter< ? super S, ARGBType > converter )
 	{
-		this(source, converter, null);
+		this( source, converter, null );
 	}
-	public ImageJVirtualStackARGB( RandomAccessibleInterval< S > source, Converter< ? super S, ARGBType > converter, ExecutorService service )
+
+	public ImageJVirtualStackARGB( final RandomAccessibleInterval< S > source, final Converter< ? super S, ARGBType > converter, final ExecutorService service )
 	{
-		super( source, converter, new ARGBType(), 24, service);
+		super( source, converter, new ARGBType(), 24, service );
 		setMinAndMax( 0, 255 );
 	}
 }

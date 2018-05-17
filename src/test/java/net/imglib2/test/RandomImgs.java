@@ -34,6 +34,9 @@
 
 package net.imglib2.test;
 
+import java.util.Random;
+import java.util.function.Consumer;
+
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgFactory;
@@ -47,29 +50,26 @@ import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.Util;
 import net.imglib2.view.Views;
 
-import java.util.Random;
-import java.util.function.Consumer;
-
 public class RandomImgs
 {
 	// TODO generalize & move to imglib2
-	public static < T extends NativeType< T > > Img< T > randomImage( T type, long... dims )
+	public static < T extends NativeType< T > > Img< T > randomImage( final T type, final long... dims )
 	{
-		Img< T > expected = new ArrayImgFactory< T >().create( dims, type );
+		final Img< T > expected = new ArrayImgFactory< T >().create( dims, type );
 		return setRandomValues( expected );
 	}
 
 	private static < I extends RandomAccessibleInterval< T >, T extends NativeType< T > >
-	I setRandomValues( I image )
+			I setRandomValues( final I image )
 	{
-		T type = Util.getTypeFromInterval( image );
+		final T type = Util.getTypeFromInterval( image );
 		Views.iterable( image ).forEach( randomSetter( type ) );
 		return image;
 	}
 
-	private static < T extends NativeType< T > > Consumer< T > randomSetter( T type )
+	private static < T extends NativeType< T > > Consumer< T > randomSetter( final T type )
 	{
-		Random random = new Random();
+		final Random random = new Random();
 		if ( type instanceof UnsignedByteType )
 			return b -> ( ( UnsignedByteType ) b ).setInteger( random.nextInt( ( 2 << 8 ) - 1 ) );
 		if ( type instanceof UnsignedShortType )

@@ -11,13 +11,13 @@
  * %%
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -34,12 +34,13 @@
 
 package net.imglib2.img.imageplus;
 
-import ij.ImagePlus;
 import net.imglib2.exception.ImgLibException;
 import net.imglib2.img.basictypeaccess.array.ArrayDataAccess;
 import net.imglib2.img.planar.PlanarImg;
 import net.imglib2.type.NativeType;
 import net.imglib2.util.Fraction;
+
+import ij.ImagePlus;
 
 /**
  * A container that stores data in an array of 2D slices each as a linear array
@@ -54,7 +55,7 @@ import net.imglib2.util.Fraction;
  * access to the pixels of an {@link ImagePlus} instance that can be accessed
  * via {@link #getImagePlus()}.
  * </p>
- * 
+ *
  * @author Jan Funke
  * @author Tobias Pietzsch
  * @author Stephan Preibisch
@@ -62,7 +63,7 @@ import net.imglib2.util.Fraction;
  * @author Stephan Saalfeld
  * @author Johannes Schindelin
  */
-public class ImagePlusImg< T extends NativeType< T >, A extends ArrayDataAccess<A> > extends PlanarImg< T, A >
+public class ImagePlusImg< T extends NativeType< T >, A extends ArrayDataAccess< A > > extends PlanarImg< T, A >
 {
 	final protected int width, height, depth, frames, channels;
 
@@ -99,7 +100,7 @@ public class ImagePlusImg< T extends NativeType< T >, A extends ArrayDataAccess<
 	 *
 	 * <em>Note that this constructor does not know about the meaning of
 	 * dimensions > 1, and will use them in the {@link ImagePlus} default order
-	 * x,y,c,z,t.  That is, from two dimensions, it will create an x,y image,
+	 * x,y,c,z,t. That is, from two dimensions, it will create an x,y image,
 	 * from three dimensions, an x,y,c image, and from four dimensions, an
 	 * x,y,c,z image.</em>
 	 *
@@ -110,7 +111,7 @@ public class ImagePlusImg< T extends NativeType< T >, A extends ArrayDataAccess<
 	{
 		super( dim, entitiesPerPixel );
 
-		assert dim.length < 6 : "ImagePlusContainer can only handle up to 5 dimensions.";
+		assert dim.length < 6: "ImagePlusContainer can only handle up to 5 dimensions.";
 
 		if ( dim.length > 0 )
 			width = ( int ) dim[ 0 ];
@@ -145,7 +146,7 @@ public class ImagePlusImg< T extends NativeType< T >, A extends ArrayDataAccess<
 		mirror.clear();
 
 		for ( int i = 0; i < numSlices; ++i )
-			mirror.add( creator.createArray( (int) Math.ceil(width * height * entitiesPerPixel.getRatio()) ) );
+			mirror.add( creator.createArray( ( int ) Math.ceil( width * height * entitiesPerPixel.getRatio() ) ) );
 	}
 
 	public ImagePlus getImagePlus() throws ImgLibException
@@ -154,17 +155,12 @@ public class ImagePlusImg< T extends NativeType< T >, A extends ArrayDataAccess<
 	}
 
 	/*
-	protected static long[] expandDimensions( final long[] dimensions )
-	{
-		if(dimensions.length >= 5)
-			return dimensions;
-
-		final long[] dim = new long[ 5 ];
-		for ( int d = 0; d < 5; ++d )
-			dim[ d ] = ( dimensions.length >= d ) ? dimensions[ d ] : 1;
-		return dim;
-	}
-	*/
+	 * protected static long[] expandDimensions( final long[] dimensions ) {
+	 * if(dimensions.length >= 5) return dimensions;
+	 *
+	 * final long[] dim = new long[ 5 ]; for ( int d = 0; d < 5; ++d ) dim[ d ]
+	 * = ( dimensions.length >= d ) ? dimensions[ d ] : 1; return dim; }
+	 */
 
 	/**
 	 * Compute the minimal required number of dimensions for a given
@@ -172,9 +168,9 @@ public class ImagePlusImg< T extends NativeType< T >, A extends ArrayDataAccess<
 	 *
 	 * E.g. a gray-scale 2d time series would have three dimensions
 	 * [width,height,frames], a gray-scale 3d stack [width,height,depth] and a
-	 * 2d composite image [width,height,channels] as well.  A composite 3d
-	 * stack has four dimensions [width,height,channels,depth], as a time
-	 * series five [width,height,channels,depth,frames].
+	 * 2d composite image [width,height,channels] as well. A composite 3d stack
+	 * has four dimensions [width,height,channels,depth], as a time series five
+	 * [width,height,channels,depth,frames].
 	 */
 	protected static long[] reduceDimensions( final ImagePlus imp )
 	{
@@ -187,10 +183,13 @@ public class ImagePlusImg< T extends NativeType< T >, A extends ArrayDataAccess<
 
 	protected static long[] reduceDimensions( final long[] impDimensions )
 	{
-		/* ImagePlus is at least 2d, x,y are mapped to an index on a stack slice */
+		/*
+		 * ImagePlus is at least 2d, x,y are mapped to an index on a stack slice
+		 */
 		int n = 2;
 		for ( int d = 2; d < impDimensions.length; ++d )
-			if ( impDimensions[ d ] > 1 ) ++n;
+			if ( impDimensions[ d ] > 1 )
+				++n;
 
 		final long[] dim = new long[ n ];
 		dim[ 0 ] = impDimensions[ 0 ];
@@ -213,15 +212,30 @@ public class ImagePlusImg< T extends NativeType< T >, A extends ArrayDataAccess<
 		return dim;
 	}
 
-	public int getWidth() { return width; }
+	public int getWidth()
+	{
+		return width;
+	}
 
-	public int getHeight() { return height; }
+	public int getHeight()
+	{
+		return height;
+	}
 
-	public int getChannels() { return channels; }
+	public int getChannels()
+	{
+		return channels;
+	}
 
-	public int getDepth() { return depth; }
+	public int getDepth()
+	{
+		return depth;
+	}
 
-	public int getFrames() { return frames; }
+	public int getFrames()
+	{
+		return frames;
+	}
 
 	@Override
 	public ImagePlusImgFactory< T > factory()
@@ -230,8 +244,8 @@ public class ImagePlusImg< T extends NativeType< T >, A extends ArrayDataAccess<
 	}
 
 	/**
-	 * Free resources.
-	 * The container can no longer be used after calling close().
+	 * Free resources. The container can no longer be used after calling
+	 * close().
 	 *
 	 * Subclasses override this to close the underlying {@link ImagePlus}.
 	 */
@@ -240,6 +254,6 @@ public class ImagePlusImg< T extends NativeType< T >, A extends ArrayDataAccess<
 
 	protected int numEntities( final Fraction entities )
 	{
-		return (int) Math.ceil(width * height * entities.getRatio());
+		return ( int ) Math.ceil( width * height * entities.getRatio() );
 	}
 }

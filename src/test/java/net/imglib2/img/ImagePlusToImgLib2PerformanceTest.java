@@ -11,13 +11,13 @@
  * %%
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -33,63 +33,73 @@
  */
 package net.imglib2.img;
 
+import static junit.framework.TestCase.assertTrue;
+
+import java.util.concurrent.atomic.AtomicInteger;
+
+import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.type.numeric.RealType;
+import net.imglib2.view.Views;
+
+import org.junit.Test;
+
 import ij.ImagePlus;
 import ij.VirtualStack;
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
-import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.type.numeric.RealType;
-import net.imglib2.view.Views;
-import org.junit.Test;
-
-import java.util.concurrent.atomic.AtomicInteger;
-
-import static junit.framework.TestCase.assertTrue;
 
 public class ImagePlusToImgLib2PerformanceTest
 {
 
 	@Test
-	public void testIterateVirtualStack() {
-		AtomicInteger counter = new AtomicInteger();
-		ImagePlus image = countingImagePlus(counter);
-		Img<? extends RealType<?>> img = VirtualStackAdapter.wrapByte(image);
-		runFlatIteration(img);
-		assertTrue(counter.get() < 120); // don't call getProcessor too often
+	public void testIterateVirtualStack()
+	{
+		final AtomicInteger counter = new AtomicInteger();
+		final ImagePlus image = countingImagePlus( counter );
+		final Img< ? extends RealType< ? > > img = VirtualStackAdapter.wrapByte( image );
+		runFlatIteration( img );
+		assertTrue( counter.get() < 120 ); // don't call getProcessor too often
 	}
 
 	@Test
-	public void testIteratePermutedVirtualStack() {
-		AtomicInteger counter = new AtomicInteger();
-		ImagePlus image = countingImagePlus(counter);
-		Img<? extends RealType<?>> img = VirtualStackAdapter.wrapByte(image);
-		runFlatIteration(Views.permute(img, 0, 2));
-		assertTrue(counter.get() < 120); // don't call getProcessor too often
+	public void testIteratePermutedVirtualStack()
+	{
+		final AtomicInteger counter = new AtomicInteger();
+		final ImagePlus image = countingImagePlus( counter );
+		final Img< ? extends RealType< ? > > img = VirtualStackAdapter.wrapByte( image );
+		runFlatIteration( Views.permute( img, 0, 2 ) );
+		assertTrue( counter.get() < 120 ); // don't call getProcessor too often
 	}
 
 	@Test
-	public void testIterateImagePlusAdapter() {
-		AtomicInteger counter = new AtomicInteger();
-		ImagePlus image = countingImagePlus(counter);
-		Img<? extends RealType<?>> img = ImagePlusAdapter.wrapByte(image);
-		runFlatIteration(Views.permute(img, 0, 2));
-		assertTrue(counter.get() < 120); // don't call getProcessor too often
+	public void testIterateImagePlusAdapter()
+	{
+		final AtomicInteger counter = new AtomicInteger();
+		final ImagePlus image = countingImagePlus( counter );
+		final Img< ? extends RealType< ? > > img = ImagePlusAdapter.wrapByte( image );
+		runFlatIteration( Views.permute( img, 0, 2 ) );
+		assertTrue( counter.get() < 120 ); // don't call getProcessor too often
 	}
 
-	private ImagePlus countingImagePlus(AtomicInteger counter) {
-		// NB: create an ImagePlus that counts how many ImageProcessors are accessed
-		VirtualStack stack = new VirtualStack(100, 100, 100) {
-			@Override public ImageProcessor getProcessor( int n )
+	private ImagePlus countingImagePlus( final AtomicInteger counter )
+	{
+		// NB: create an ImagePlus that counts how many ImageProcessors are
+		// accessed
+		final VirtualStack stack = new VirtualStack( 100, 100, 100 )
+		{
+			@Override
+			public ImageProcessor getProcessor( final int n )
 			{
 				counter.incrementAndGet();
 				return new ByteProcessor( getWidth(), getHeight() );
 			}
 		};
-		return new ImagePlus("title", stack);
+		return new ImagePlus( "title", stack );
 	}
 
-	private void runFlatIteration(RandomAccessibleInterval<? extends RealType<?>> imgPlus) {
-		for(RealType pixel : Views.flatIterable(imgPlus))
+	private void runFlatIteration( final RandomAccessibleInterval< ? extends RealType< ? > > imgPlus )
+	{
+		for ( final RealType pixel : Views.flatIterable( imgPlus ) )
 			;
 	}
 

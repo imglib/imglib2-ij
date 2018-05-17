@@ -34,7 +34,11 @@
 
 package net.imglib2.img.display.imagej;
 
-import ij.ImagePlus;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
 import net.imagej.ImgPlus;
 import net.imagej.axis.Axes;
 import net.imagej.axis.AxisType;
@@ -44,23 +48,21 @@ import net.imglib2.img.cell.CellImg;
 import net.imglib2.img.cell.CellImgFactory;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.real.FloatType;
+
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
+import ij.ImagePlus;
 
 public class ArrayImgToVirtualStackTest
 {
 	@Test
 	public void testSharedBuffer()
 	{
-		int width = 2;
-		int height = 3;
-		byte[] buffer = new byte[ width * height ];
-		ImgPlus< UnsignedByteType > img = new ImgPlus<>( ArrayImgs.unsignedBytes( buffer, width, height ) );
-		ImagePlus imagePlus = ArrayImgToVirtualStack.wrap( img );
+		final int width = 2;
+		final int height = 3;
+		final byte[] buffer = new byte[ width * height ];
+		final ImgPlus< UnsignedByteType > img = new ImgPlus<>( ArrayImgs.unsignedBytes( buffer, width, height ) );
+		final ImagePlus imagePlus = ArrayImgToVirtualStack.wrap( img );
 		assertEquals( width, imagePlus.getWidth() );
 		assertEquals( height, imagePlus.getHeight() );
 		assertSame( buffer, imagePlus.getProcessor().getPixels() );
@@ -69,25 +71,26 @@ public class ArrayImgToVirtualStackTest
 	@Test
 	public void testIsSupported()
 	{
-		ImgPlus< UnsignedByteType > supported = new ImgPlus<>( ArrayImgs.unsignedBytes( 2, 2 ), "image", new AxisType[] { Axes.X, Axes.Y } );
-		ImgPlus< UnsignedByteType > unsupported1 = new ImgPlus<>( ArrayImgs.unsignedBytes( 2, 2, 3 ), "image", new AxisType[] { Axes.X, Axes.Y, Axes.Z } );
-		CellImg< UnsignedByteType, ? > cellImg = new CellImgFactory< UnsignedByteType >().create( new long[] { 2, 2 }, new UnsignedByteType() );
-		ImgPlus< UnsignedByteType > unsupported2 = new ImgPlus<>( cellImg, "image", new AxisType[] { Axes.X, Axes.Y } );
+		final ImgPlus< UnsignedByteType > supported = new ImgPlus<>( ArrayImgs.unsignedBytes( 2, 2 ), "image", new AxisType[] { Axes.X, Axes.Y } );
+		final ImgPlus< UnsignedByteType > unsupported1 = new ImgPlus<>( ArrayImgs.unsignedBytes( 2, 2, 3 ), "image", new AxisType[] { Axes.X, Axes.Y, Axes.Z } );
+		final CellImg< UnsignedByteType, ? > cellImg = new CellImgFactory< UnsignedByteType >().create( new long[] { 2, 2 }, new UnsignedByteType() );
+		final ImgPlus< UnsignedByteType > unsupported2 = new ImgPlus<>( cellImg, "image", new AxisType[] { Axes.X, Axes.Y } );
 		assertTrue( ArrayImgToVirtualStack.isSupported( supported ) );
 		assertFalse( ArrayImgToVirtualStack.isSupported( unsupported1 ) );
 		assertFalse( ArrayImgToVirtualStack.isSupported( unsupported2 ) );
 	}
 
 	@Test
-	public void testPersistence() {
+	public void testPersistence()
+	{
 		// setup
-		float expected = 42.0f;
-		Img<FloatType> img = ArrayImgs.floats(1, 1);
-		ImgPlus<FloatType> imgPlus = new ImgPlus<FloatType>(img, "title", new AxisType[]{ Axes.X, Axes.Y });
-		ImagePlus imagePlus = ArrayImgToVirtualStack.wrap(imgPlus);
+		final float expected = 42.0f;
+		final Img< FloatType > img = ArrayImgs.floats( 1, 1 );
+		final ImgPlus< FloatType > imgPlus = new ImgPlus< FloatType >( img, "title", new AxisType[] { Axes.X, Axes.Y } );
+		final ImagePlus imagePlus = ArrayImgToVirtualStack.wrap( imgPlus );
 		// process
-		imagePlus.getProcessor().setf(0, 0, expected);
+		imagePlus.getProcessor().setf( 0, 0, expected );
 		// test
-		assertEquals(expected, img.cursor().next().getRealFloat(), 0.0f);
+		assertEquals( expected, img.cursor().next().getRealFloat(), 0.0f );
 	}
 }

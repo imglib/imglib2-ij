@@ -34,8 +34,14 @@
 
 package net.imglib2.img.display.imagej;
 
-import ij.ImagePlus;
-import ij.VirtualStack;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.function.IntUnaryOperator;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
 import net.imagej.ImgPlus;
 import net.imagej.axis.Axes;
 import net.imagej.axis.AxisType;
@@ -53,13 +59,8 @@ import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.IntervalIndexer;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.function.IntUnaryOperator;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
+import ij.ImagePlus;
+import ij.VirtualStack;
 
 public class PlanarImgToVirtualStack extends AbstractVirtualStack
 {
@@ -81,16 +82,19 @@ public class PlanarImgToVirtualStack extends AbstractVirtualStack
 	}
 
 	/**
-	 * Wraps an {@link ImgPlus}, that is backed by an {@link PlanarImg} into and {@link ImagePlus}.
-	 * The returned {@link ImagePlus} uses the same pixel buffer as the given image.
-	 * Changes to the {@link ImagePlus} are therefore reflected in the {@link ImgPlus}.
+	 * Wraps an {@link ImgPlus}, that is backed by an {@link PlanarImg} into and
+	 * {@link ImagePlus}. The returned {@link ImagePlus} uses the same pixel
+	 * buffer as the given image. Changes to the {@link ImagePlus} are therefore
+	 * reflected in the {@link ImgPlus}.
 	 * <p>
-	 * The image must be {@link UnsignedByteType}, {@link UnsignedShortType}, {@link ARGBType} or {@link FloatType}.
-	 * Only up to five dimensions are support. Axes oder must start with X, Y axes.
-	 * Channel, Time and Z axes might follow in arbitrary order.
-	 * The image title and calibration are derived from the given image.
+	 * The image must be {@link UnsignedByteType}, {@link UnsignedShortType},
+	 * {@link ARGBType} or {@link FloatType}. Only up to five dimensions are
+	 * support. Axes oder must start with X, Y axes. Channel, Time and Z axes
+	 * might follow in arbitrary order. The image title and calibration are
+	 * derived from the given image.
 	 * <p>
-	 * Use {@link #isSupported(ImgPlus)} to check if an {@link ImagePlus} is supported.
+	 * Use {@link #isSupported(ImgPlus)} to check if an {@link ImagePlus} is
+	 * supported.
 	 *
 	 * @see #isSupported(ImgPlus)
 	 * @see ArrayImgToVirtualStack
@@ -99,24 +103,24 @@ public class PlanarImgToVirtualStack extends AbstractVirtualStack
 	public static ImagePlus wrap( ImgPlus< ? > imgPlus )
 	{
 		imgPlus = ImgPlusViews.fixAxes( imgPlus );
-		Img< ? > img = imgPlus.getImg();
+		final Img< ? > img = imgPlus.getImg();
 		if ( !( img instanceof PlanarImg ) )
 			throw new IllegalArgumentException( "Image must be a PlanarImg." );
-		IntUnaryOperator indexer = getIndexer( imgPlus );
-		VirtualStack stack = new PlanarImgToVirtualStack( ( PlanarImg< ?, ? > ) img, indexer );
-		ImagePlus imagePlus = new ImagePlus( imgPlus.getName(), stack );
+		final IntUnaryOperator indexer = getIndexer( imgPlus );
+		final VirtualStack stack = new PlanarImgToVirtualStack( ( PlanarImg< ?, ? > ) img, indexer );
+		final ImagePlus imagePlus = new ImagePlus( imgPlus.getName(), stack );
 		imagePlus.setDimensions( dimension( imgPlus, Axes.CHANNEL ), dimension( imgPlus, Axes.Z ), dimension( imgPlus, Axes.TIME ) );
 		CalibrationUtils.copyCalibrationToImagePlus( imgPlus, imagePlus );
 		return imagePlus;
 	}
 
-	private static int dimension( ImgPlus imgPlus, AxisType axisType )
+	private static int dimension( final ImgPlus imgPlus, final AxisType axisType )
 	{
-		int index = imgPlus.dimensionIndex( axisType );
+		final int index = imgPlus.dimensionIndex( axisType );
 		return index < 0 ? 1 : ( int ) imgPlus.dimension( index );
 	}
 
-	public static VirtualStack wrap( PlanarImg< ?, ? > img )
+	public static VirtualStack wrap( final PlanarImg< ?, ? > img )
 	{
 		return new PlanarImgToVirtualStack( img, x -> x - 1 );
 	}
@@ -129,14 +133,14 @@ public class PlanarImgToVirtualStack extends AbstractVirtualStack
 
 	// constructor
 
-	private PlanarImgToVirtualStack( PlanarImg< ?, ? > img, IntUnaryOperator indexer )
+	private PlanarImgToVirtualStack( final PlanarImg< ?, ? > img, final IntUnaryOperator indexer )
 	{
 		super( ( int ) img.dimension( 0 ), ( int ) img.dimension( 1 ), initSize( img ), getBitDepth( img.randomAccess().get() ) );
 		this.img = img;
 		this.indexer = indexer;
 	}
 
-	private static int initSize( Interval interval )
+	private static int initSize( final Interval interval )
 	{
 		return IntStream.range( 2, interval.numDimensions() ).map( x -> ( int ) interval.dimension( x ) ).reduce( 1, ( a, b ) -> a * b );
 	}
@@ -144,14 +148,14 @@ public class PlanarImgToVirtualStack extends AbstractVirtualStack
 	// public methods
 
 	@Override
-	public Object getPixels( int n )
+	public Object getPixels( final int n )
 	{
 		return img.getPlane( indexer.applyAsInt( n ) ).getCurrentStorageArray();
 	}
 
 	// Helper methods
 
-	private static int getBitDepth( Type< ? > type )
+	private static int getBitDepth( final Type< ? > type )
 	{
 		if ( type instanceof UnsignedByteType )
 			return 8;
@@ -164,30 +168,30 @@ public class PlanarImgToVirtualStack extends AbstractVirtualStack
 		throw new IllegalArgumentException( "unsupported type" );
 	}
 
-	private static IntUnaryOperator getIndexer( ImgPlus< ? > imgPlus )
+	private static IntUnaryOperator getIndexer( final ImgPlus< ? > imgPlus )
 	{
-		List< AxisType > axes = getAxes( imgPlus );
+		final List< AxisType > axes = getAxes( imgPlus );
 		if ( !checkAxisOrder( axes ) )
 			throw new IllegalArgumentException( "Unsupported axis order, first axis must be X, second axis must be Y, and then optionally, arbitrary ordered: channel, Z and time." );
 		if ( inPreferredOrder( axes ) )
 			return x -> x - 1;
-		int[] stackSizes = { dimension( imgPlus, Axes.CHANNEL ), dimension( imgPlus, Axes.Z ), dimension( imgPlus, Axes.TIME ) };
-		int channelSkip = getSkip( imgPlus, Axes.CHANNEL );
-		int zSkip = getSkip( imgPlus, Axes.Z );
-		int timeSkip = getSkip( imgPlus, Axes.TIME );
+		final int[] stackSizes = { dimension( imgPlus, Axes.CHANNEL ), dimension( imgPlus, Axes.Z ), dimension( imgPlus, Axes.TIME ) };
+		final int channelSkip = getSkip( imgPlus, Axes.CHANNEL );
+		final int zSkip = getSkip( imgPlus, Axes.Z );
+		final int timeSkip = getSkip( imgPlus, Axes.TIME );
 		return stackIndex -> {
-			int[] stackPosition = new int[ 3 ];
+			final int[] stackPosition = new int[ 3 ];
 			IntervalIndexer.indexToPosition( stackIndex - 1, stackSizes, stackPosition );
 			return channelSkip * stackPosition[ 0 ] + zSkip * stackPosition[ 1 ] + timeSkip * stackPosition[ 2 ];
 		};
 	}
 
-	private static List< AxisType > getAxes( ImgPlus< ? > img )
+	private static List< AxisType > getAxes( final ImgPlus< ? > img )
 	{
 		return IntStream.range( 0, img.numDimensions() ).mapToObj( img::axis ).map( CalibratedAxis::type ).collect( Collectors.toList() );
 	}
 
-	private static boolean checkAxisOrder( List< AxisType > axes )
+	private static boolean checkAxisOrder( final List< AxisType > axes )
 	{
 		return axes.size() >= 2 && axes.size() <= 5 && testUnique( axes ) &&
 				axes.get( 0 ) == Axes.X && axes.get( 1 ) == Axes.Y &&
@@ -196,7 +200,7 @@ public class PlanarImgToVirtualStack extends AbstractVirtualStack
 
 	private static final List< AxisType > ALLOWED_AXES = Arrays.asList( Axes.X, Axes.Y, Axes.CHANNEL, Axes.Z, Axes.TIME );
 
-	private static boolean inPreferredOrder( List< AxisType > axes )
+	private static boolean inPreferredOrder( final List< AxisType > axes )
 	{
 		for ( int i = 0; i < axes.size() - 1; i++ )
 			if ( preferredPosition( axes.get( i ) ) >= preferredPosition( axes.get( i + 1 ) ) )
@@ -204,7 +208,7 @@ public class PlanarImgToVirtualStack extends AbstractVirtualStack
 		return true;
 	}
 
-	private static int preferredPosition( AxisType axisType )
+	private static int preferredPosition( final AxisType axisType )
 	{
 		if ( axisType == Axes.X )
 			return 0;
@@ -219,15 +223,15 @@ public class PlanarImgToVirtualStack extends AbstractVirtualStack
 		throw new IllegalArgumentException( "unknown axis" );
 	}
 
-	private static int getSkip( ImgPlus< ? > imgPlus, AxisType axis )
+	private static int getSkip( final ImgPlus< ? > imgPlus, final AxisType axis )
 	{
-		int channelIndex = imgPlus.dimensionIndex( axis );
+		final int channelIndex = imgPlus.dimensionIndex( axis );
 		return IntStream.range( 2, channelIndex ).map( i -> ( int ) imgPlus.dimension( i ) ).reduce( 1, ( a, b ) -> a * b );
 	}
 
-	private static < T > boolean testUnique( List< T > list )
+	private static < T > boolean testUnique( final List< T > list )
 	{
-		Set< T > set = new HashSet<>( list );
+		final Set< T > set = new HashSet<>( list );
 		return set.size() == list.size();
 	}
 

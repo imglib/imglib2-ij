@@ -34,19 +34,19 @@
 
 package net.imglib2.img.display.imagej;
 
+import java.awt.image.ColorModel;
+
+import net.imglib2.type.Type;
+import net.imglib2.type.numeric.ARGBType;
+import net.imglib2.type.numeric.integer.UnsignedByteType;
+import net.imglib2.type.numeric.integer.UnsignedShortType;
+import net.imglib2.type.numeric.real.FloatType;
+
 import ij.process.ByteProcessor;
 import ij.process.ColorProcessor;
 import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
 import ij.process.ShortProcessor;
-import net.imglib2.type.Type;
-import net.imglib2.type.numeric.ARGBType;
-import net.imglib2.type.numeric.integer.IntType;
-import net.imglib2.type.numeric.integer.UnsignedByteType;
-import net.imglib2.type.numeric.integer.UnsignedShortType;
-import net.imglib2.type.numeric.real.FloatType;
-
-import java.awt.image.ColorModel;
 
 public class ImageProcessorUtils
 {
@@ -55,7 +55,7 @@ public class ImageProcessorUtils
 		// prevent from instantiation
 	}
 
-	public static ImageProcessor initProcessor( int sizeX, int sizeY, Object pixels, ColorModel colorModel )
+	public static ImageProcessor initProcessor( final int sizeX, final int sizeY, final Object pixels, final ColorModel colorModel )
 	{
 		if ( pixels instanceof byte[] )
 			return new ByteProcessor( sizeX, sizeY, ( byte[] ) pixels, colorModel );
@@ -68,9 +68,9 @@ public class ImageProcessorUtils
 		throw new IllegalArgumentException( "unsupported color type" );
 	}
 
-	public static boolean isSupported( Type< ? > type )
+	public static boolean isSupported( final Type< ? > type )
 	{
 		return ( type instanceof UnsignedByteType ) || ( type instanceof UnsignedShortType ) ||
-				( type instanceof ARGBType ) || ( type instanceof FloatType);
+				( type instanceof ARGBType ) || ( type instanceof FloatType );
 	}
 }

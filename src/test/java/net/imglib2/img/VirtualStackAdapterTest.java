@@ -34,7 +34,6 @@
 
 package net.imglib2.img;
 
-import ij.ImagePlus;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.test.AssertImgs;
 import net.imglib2.test.RandomImgs;
@@ -44,14 +43,16 @@ import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.type.numeric.real.FloatType;
+
 import org.junit.Test;
+
+import ij.ImagePlus;
 
 /**
  * Tests {@link VirtualStackAdapter}.
  *
  * @author Matthias Arzt
  */
-
 public class VirtualStackAdapterTest
 {
 
@@ -61,7 +62,7 @@ public class VirtualStackAdapterTest
 	@Test
 	public void testUnsignedByte()
 	{
-		ImagePlus image = randomImagePlus( new UnsignedByteType(), DIMENSIONS );
+		final ImagePlus image = randomImagePlus( new UnsignedByteType(), DIMENSIONS );
 		final Img< UnsignedByteType > actual = VirtualStackAdapter.wrapByte( image );
 		final Img< UnsignedByteType > expected = ImagePlusAdapter.wrapByte( image );
 		AssertImgs.assertImageEquals( expected, actual );
@@ -70,7 +71,7 @@ public class VirtualStackAdapterTest
 	@Test
 	public void testUnsignedShort()
 	{
-		ImagePlus image = randomImagePlus( new UnsignedShortType(), DIMENSIONS );
+		final ImagePlus image = randomImagePlus( new UnsignedShortType(), DIMENSIONS );
 		final Img< UnsignedShortType > actual = VirtualStackAdapter.wrapShort( image );
 		final Img< UnsignedShortType > expected = ImagePlusAdapter.wrapShort( image );
 		AssertImgs.assertImageEquals( expected, actual );
@@ -79,7 +80,7 @@ public class VirtualStackAdapterTest
 	@Test
 	public void testRGB()
 	{
-		ImagePlus image = randomImagePlus( new ARGBType(), DIMENSIONS );
+		final ImagePlus image = randomImagePlus( new ARGBType(), DIMENSIONS );
 		final Img< ARGBType > actual = VirtualStackAdapter.wrapRGBA( image );
 		final Img< ARGBType > expected = ImagePlusAdapter.wrapRGBA( image );
 		AssertImgs.assertImageEquals( expected, actual );
@@ -88,7 +89,7 @@ public class VirtualStackAdapterTest
 	@Test
 	public void testFloat()
 	{
-		ImagePlus image = randomImagePlus( new FloatType(), DIMENSIONS );
+		final ImagePlus image = randomImagePlus( new FloatType(), DIMENSIONS );
 		final Img< FloatType > actual = VirtualStackAdapter.wrapFloat( image );
 		final Img< FloatType > expected = ImagePlusAdapter.wrapFloat( image );
 		AssertImgs.assertImageEquals( expected, actual );
@@ -97,7 +98,7 @@ public class VirtualStackAdapterTest
 	@Test
 	public void testLowerNumDimensions()
 	{
-		ImagePlus image = randomImagePlus( new UnsignedByteType(), 2, 3, 6 );
+		final ImagePlus image = randomImagePlus( new UnsignedByteType(), 2, 3, 6 );
 		final Img< UnsignedByteType > actual = VirtualStackAdapter.wrapByte( image );
 		final Img< UnsignedByteType > expected = ImagePlusAdapter.wrapByte( image );
 		AssertImgs.assertImageEquals( expected, actual );
@@ -106,15 +107,15 @@ public class VirtualStackAdapterTest
 	@Test
 	public void testSingletonDimensions()
 	{
-		ImagePlus image = randomImagePlus( new UnsignedByteType(), 2, 1, 1, 6 );
+		final ImagePlus image = randomImagePlus( new UnsignedByteType(), 2, 1, 1, 6 );
 		final Img< UnsignedByteType > actual = VirtualStackAdapter.wrapByte( image );
 		final Img< UnsignedByteType > expected = ImagePlusAdapter.wrapByte( image );
 		AssertImgs.assertImageEquals( expected, actual );
 	}
 
-	private < T extends NativeType< T > & NumericType< T > > ImagePlus randomImagePlus( T type, long... dimensions )
+	private < T extends NativeType< T > & NumericType< T > > ImagePlus randomImagePlus( final T type, final long... dimensions )
 	{
-		Img< T > random = RandomImgs.randomImage( type, dimensions );
+		final Img< T > random = RandomImgs.randomImage( type, dimensions );
 		return ImageJFunctions.wrap( random, "test" );
 	}
 

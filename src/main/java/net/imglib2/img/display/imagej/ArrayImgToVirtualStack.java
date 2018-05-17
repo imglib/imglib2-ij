@@ -34,8 +34,10 @@
 
 package net.imglib2.img.display.imagej;
 
-import ij.ImagePlus;
-import ij.process.ImageProcessor;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
 import net.imagej.ImgPlus;
 import net.imagej.axis.Axes;
 import net.imagej.axis.AxisType;
@@ -49,9 +51,8 @@ import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.type.numeric.real.FloatType;
 
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
+import ij.ImagePlus;
+import ij.process.ImageProcessor;
 
 public class ArrayImgToVirtualStack
 {
@@ -76,15 +77,19 @@ public class ArrayImgToVirtualStack
 	}
 
 	/**
-	 * Takes an {@link ImgPlus} (IJ2) and wraps it into an {@link ImagePlus} (IJ1).
-	 * This only works when {@link ImgPlus} is backed by a two dimensional {@link ArrayImg}.
-	 * Type of the image must be {@link UnsignedByteType}, {@link UnsignedShortType}, {@link ARGBType} or {@link FloatType}.
+	 * Takes an {@link ImgPlus} (IJ2) and wraps it into an {@link ImagePlus}
+	 * (IJ1). This only works when {@link ImgPlus} is backed by a two
+	 * dimensional {@link ArrayImg}. Type of the image must be
+	 * {@link UnsignedByteType}, {@link UnsignedShortType}, {@link ARGBType} or
+	 * {@link FloatType}.
 	 * <p>
-	 * The returned {@link ImagePlus} uses the same pixel buffer as the given image.
-	 * Changes to the {@link ImagePlus} are therefore correctly reflected in the {@link ImgPlus}.
-	 * The title and calibration are derived from the given image.
+	 * The returned {@link ImagePlus} uses the same pixel buffer as the given
+	 * image. Changes to the {@link ImagePlus} are therefore correctly reflected
+	 * in the {@link ImgPlus}. The title and calibration are derived from the
+	 * given image.
 	 * <p>
-	 * Use {@link #isSupported(ImgPlus)} to check if an {@link ImagePlus} is supported.
+	 * Use {@link #isSupported(ImgPlus)} to check if an {@link ImagePlus} is
+	 * supported.
 	 *
 	 * @see PlanarImgToVirtualStack
 	 * @see ImgToVirtualStack
@@ -92,25 +97,25 @@ public class ArrayImgToVirtualStack
 	public static ImagePlus wrap( ImgPlus< ? > imgPlus )
 	{
 		imgPlus = ImgPlusViews.fixAxes( imgPlus );
-		Img< ? > img = imgPlus.getImg();
+		final Img< ? > img = imgPlus.getImg();
 		if ( !( img instanceof ArrayImg ) )
 			throw new IllegalArgumentException( "Expecting ArrayImg" );
-		ArrayImg< ?, ArrayDataAccess< ? > > arrayImg = ( ArrayImg< ?, ArrayDataAccess< ? > > ) img;
-		int sizeX = ( int ) img.dimension( 0 );
-		int sizeY = ( int ) img.dimension( 1 );
-		Object pixels = arrayImg.update( null ).getCurrentStorageArray();
-		ImageProcessor processor = ImageProcessorUtils.initProcessor( sizeX, sizeY, pixels, null );
-		ImagePlus imagePlus = new ImagePlus(imgPlus.getName(), processor);
+		final ArrayImg< ?, ArrayDataAccess< ? > > arrayImg = ( ArrayImg< ?, ArrayDataAccess< ? > > ) img;
+		final int sizeX = ( int ) img.dimension( 0 );
+		final int sizeY = ( int ) img.dimension( 1 );
+		final Object pixels = arrayImg.update( null ).getCurrentStorageArray();
+		final ImageProcessor processor = ImageProcessorUtils.initProcessor( sizeX, sizeY, pixels, null );
+		final ImagePlus imagePlus = new ImagePlus( imgPlus.getName(), processor );
 		CalibrationUtils.copyCalibrationToImagePlus( imgPlus, imagePlus );
 		return imagePlus;
 	}
 
-	private static boolean checkAxis( List< AxisType > axes )
+	private static boolean checkAxis( final List< AxisType > axes )
 	{
 		return axes.size() == 2 && axes.get( 0 ) == Axes.X && axes.get( 1 ) == Axes.Y;
 	}
 
-	private static List< AxisType > getAxes( ImgPlus< ? > img )
+	private static List< AxisType > getAxes( final ImgPlus< ? > img )
 	{
 		return IntStream.range( 0, img.numDimensions() ).mapToObj( img::axis ).map( CalibratedAxis::type ).collect( Collectors.toList() );
 	}

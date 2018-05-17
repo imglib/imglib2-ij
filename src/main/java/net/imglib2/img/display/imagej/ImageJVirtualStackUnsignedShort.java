@@ -11,13 +11,13 @@
  * %%
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -50,41 +50,45 @@ import net.imglib2.util.Util;
  */
 public class ImageJVirtualStackUnsignedShort< S > extends ImageJVirtualStack< S, UnsignedShortType >
 {
-	public static < T extends RealType<?> > ImageJVirtualStackUnsignedShort< T > wrap( RandomAccessibleInterval< T > source ) {
+	public static < T extends RealType< ? > > ImageJVirtualStackUnsignedShort< T > wrap( final RandomAccessibleInterval< T > source )
+	{
 		return new ImageJVirtualStackUnsignedShort<>( source, new ShortConverter() );
 	}
 
-	public ImageJVirtualStackUnsignedShort( RandomAccessibleInterval< S > source, Converter< ? super S, UnsignedShortType > converter)
+	public ImageJVirtualStackUnsignedShort( final RandomAccessibleInterval< S > source, final Converter< ? super S, UnsignedShortType > converter )
 	{
 		this( source, converter, null );
 	}
 
-	public ImageJVirtualStackUnsignedShort( RandomAccessibleInterval< S > source, Converter< ? super S, UnsignedShortType > converter, ExecutorService service )
+	public ImageJVirtualStackUnsignedShort( final RandomAccessibleInterval< S > source, final Converter< ? super S, UnsignedShortType > converter, final ExecutorService service )
 	{
 		super( source, converter, new UnsignedShortType(), 16, service );
 
-		int maxDisplay = (1 << 16) - 1;
-		
+		int maxDisplay = ( 1 << 16 ) - 1;
+
 		final S s = Util.getTypeFromInterval( source );
-		
+
 		if ( BitType.class.isInstance( s ) )
 			maxDisplay = 1;
 		else if ( Unsigned12BitType.class.isInstance( s ) )
 			maxDisplay = 4095;
-		
+
 		setMinAndMax( 0, maxDisplay );
 	}
 
 	private static class ShortConverter implements
-			Converter<RealType<?>, UnsignedShortType >
+			Converter< RealType< ? >, UnsignedShortType >
 	{
 
 		@Override
-		public void convert(final RealType<?> input, final UnsignedShortType output) {
+		public void convert( final RealType< ? > input, final UnsignedShortType output )
+		{
 			double val = input.getRealDouble();
-			if (val < 0) val = 0;
-			else if (val > 65535) val = 65535;
-			output.setReal(val);
+			if ( val < 0 )
+				val = 0;
+			else if ( val > 65535 )
+				val = 65535;
+			output.setReal( val );
 		}
 
 	}

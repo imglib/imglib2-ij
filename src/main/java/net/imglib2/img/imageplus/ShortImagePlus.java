@@ -11,13 +11,13 @@
  * %%
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -34,13 +34,14 @@
 
 package net.imglib2.img.imageplus;
 
-import ij.ImagePlus;
-import ij.ImageStack;
-import ij.process.ShortProcessor;
 import net.imglib2.exception.ImgLibException;
 import net.imglib2.img.basictypeaccess.array.ShortArray;
 import net.imglib2.type.NativeType;
 import net.imglib2.util.Fraction;
+
+import ij.ImagePlus;
+import ij.ImageStack;
+import ij.process.ShortProcessor;
 
 /**
  * {@link ImagePlusImg} for short-stored data.
@@ -72,7 +73,7 @@ public class ShortImagePlus< T extends NativeType< T > > extends ImagePlusImg< T
 			for ( int t = 0; t < frames; ++t )
 				for ( int z = 0; z < depth; ++z )
 					for ( int c = 0; c < channels; ++c )
-						mirror.add( new ShortArray( ( short[] )imp.getStack().getProcessor( imp.getStackIndex( c + 1, z + 1 , t + 1 ) ).getPixels() ) );
+						mirror.add( new ShortArray( ( short[] ) imp.getStack().getProcessor( imp.getStackIndex( c + 1, z + 1, t + 1 ) ).getPixels() ) );
 		}
 		else
 		{
@@ -80,7 +81,7 @@ public class ShortImagePlus< T extends NativeType< T > > extends ImagePlusImg< T
 
 			mirror.clear();
 			for ( int i = 0; i < numSlices; ++i )
-				mirror.add( new ShortArray( numEntities(entitiesPerPixel) ) );
+				mirror.add( new ShortArray( numEntities( entitiesPerPixel ) ) );
 		}
 	}
 
@@ -94,18 +95,19 @@ public class ShortImagePlus< T extends NativeType< T > > extends ImagePlusImg< T
 		for ( int t = 0; t < frames; ++t )
 			for ( int z = 0; z < depth; ++z )
 				for ( int c = 0; c < channels; ++c )
-					mirror.add( new ShortArray( ( short[] )imp.getStack().getProcessor( imp.getStackIndex( c + 1, z + 1 , t + 1 ) ).getPixels() ) );
+					mirror.add( new ShortArray( ( short[] ) imp.getStack().getProcessor( imp.getStackIndex( c + 1, z + 1, t + 1 ) ).getPixels() ) );
 	}
 
 	/**
-	 * This has to be overwritten, otherwise two different instances exist (one in the imageplus, one in the mirror)
+	 * This has to be overwritten, otherwise two different instances exist (one
+	 * in the imageplus, one in the mirror)
 	 */
 	@Override
 	public void setPlane( final int no, final ShortArray plane )
 	{
 		// TODO: this should work, but does not for plane 0, why???
-		//mirror.set( no, plane );
-		//imp.getStack().setPixels( plane.getCurrentStorageArray(), no + 1 );
+		// mirror.set( no, plane );
+		// imp.getStack().setPixels( plane.getCurrentStorageArray(), no + 1 );
 
 		System.arraycopy( plane.getCurrentStorageArray(), 0, mirror.get( no ).getCurrentStorageArray(), 0, plane.getCurrentStorageArray().length );
 	}
@@ -125,4 +127,3 @@ public class ShortImagePlus< T extends NativeType< T > > extends ImagePlusImg< T
 		return imp;
 	}
 }
-

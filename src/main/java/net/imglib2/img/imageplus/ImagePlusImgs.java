@@ -11,13 +11,13 @@
  * %%
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -34,11 +34,6 @@
 
 package net.imglib2.img.imageplus;
 
-import ij.ImagePlus;
-import ij.process.ByteProcessor;
-import ij.process.ColorProcessor;
-import ij.process.FloatProcessor;
-import ij.process.ShortProcessor;
 import net.imglib2.img.ImagePlusAdapter;
 import net.imglib2.img.basictypeaccess.array.DoubleArray;
 import net.imglib2.type.NativeType;
@@ -55,133 +50,160 @@ import net.imglib2.type.numeric.integer.UnsignedIntType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.type.numeric.real.FloatType;
 
+import ij.ImagePlus;
+import ij.process.ByteProcessor;
+import ij.process.ColorProcessor;
+import ij.process.FloatProcessor;
+import ij.process.ShortProcessor;
+
 /**
  * Convenience factory methods for creation of {@link ImagePlusImg} instances
- * with the most common pixel {@link Type} variants.  Keep in mind that this
+ * with the most common pixel {@link Type} variants. Keep in mind that this
  * cannot be a complete collection since the number of existing pixel
  * {@link Type}s may be extended.
- * 
+ *
  * For pixel {@link Type}s T not present in this collection, use the generic
- * {@link ImagePlusImgFactory#create(long[], net.imglib2.type.NativeType)},
- * e.g.
- * 
+ * {@link ImagePlusImgFactory#create(long[], net.imglib2.type.NativeType)}, e.g.
+ *
  * <pre>
- * img = new ImagePlusImgFactory&lt;MyType&gt;.create(new long[]{100, 200}, new MyType());
+ * img = new ImagePlusImgFactory&lt; MyType &gt;.create( new long[] { 100, 200 }, new MyType() );
  * </pre>
  *
  * @author Stephan Saalfeld
  */
 final public class ImagePlusImgs
 {
-	private ImagePlusImgs() {}
-	
+	private ImagePlusImgs()
+	{}
+
 	/**
 	 * Create a {@link ByteImagePlus}{@code <}{@link UnsignedByteType}{@code >}.
-	 * 
-	 * <p>(in ImageJ that would be a hyperstack of {@link ByteProcessor}s)</p>
+	 *
+	 * <p>
+	 * (in ImageJ that would be a hyperstack of {@link ByteProcessor}s)
+	 * </p>
 	 */
 	@SuppressWarnings( "unchecked" )
 	final static public ByteImagePlus< UnsignedByteType > unsignedBytes( final long... dim )
 	{
-		return ( ByteImagePlus< UnsignedByteType > )new ImagePlusImgFactory< UnsignedByteType >().create( dim, new UnsignedByteType() );
+		return ( ByteImagePlus< UnsignedByteType > ) new ImagePlusImgFactory< UnsignedByteType >().create( dim, new UnsignedByteType() );
 	}
-	
+
 	/**
 	 * Create a {@link ByteImagePlus}{@code <}{@link ByteType}{@code >}.
-	 * 
-	 * <p>(in ImageJ that would be a hyperstack of {@link ByteProcessor}s)</p>
+	 *
+	 * <p>
+	 * (in ImageJ that would be a hyperstack of {@link ByteProcessor}s)
+	 * </p>
 	 */
 	@SuppressWarnings( "unchecked" )
 	final static public ByteImagePlus< ByteType > bytes( final long... dim )
 	{
-		return ( ByteImagePlus< ByteType > )new ImagePlusImgFactory< ByteType >().create( dim, new ByteType() );
+		return ( ByteImagePlus< ByteType > ) new ImagePlusImgFactory< ByteType >().create( dim, new ByteType() );
 	}
-	
+
 	/**
-	 * Create a {@link ShortImagePlus}{@code <}{@link UnsignedShortType}{@code >}.
-	 * 
-	 * <p>(in ImageJ that would be a hyperstack of {@link ShortProcessor}s)</p>
+	 * Create a
+	 * {@link ShortImagePlus}{@code <}{@link UnsignedShortType}{@code >}.
+	 *
+	 * <p>
+	 * (in ImageJ that would be a hyperstack of {@link ShortProcessor}s)
+	 * </p>
 	 */
 	@SuppressWarnings( "unchecked" )
 	final static public ShortImagePlus< UnsignedShortType > unsignedShorts( final long... dim )
 	{
-		return ( ShortImagePlus< UnsignedShortType > )new ImagePlusImgFactory< UnsignedShortType >().create( dim, new UnsignedShortType() );
+		return ( ShortImagePlus< UnsignedShortType > ) new ImagePlusImgFactory< UnsignedShortType >().create( dim, new UnsignedShortType() );
 	}
-	
+
 	/**
 	 * Create a {@link ShortImagePlus}{@code <}{@link ShortType}{@code >}.
-	 * 
-	 * <p>(in ImageJ that would be a hyperstack of {@link ShortProcessor}s)</p>
+	 *
+	 * <p>
+	 * (in ImageJ that would be a hyperstack of {@link ShortProcessor}s)
+	 * </p>
 	 */
 	@SuppressWarnings( "unchecked" )
 	final static public ShortImagePlus< ShortType > shorts( final long... dim )
 	{
-		return ( ShortImagePlus< ShortType > )new ImagePlusImgFactory< ShortType >().create( dim, new ShortType() );
+		return ( ShortImagePlus< ShortType > ) new ImagePlusImgFactory< ShortType >().create( dim, new ShortType() );
 	}
-	
+
 	/**
 	 * Create a {@link IntImagePlus}{@code <}{@link UnsignedIntType}{@code >}.
-	 * 
-	 * <p>(In ImageJ that would be a hyperstack of {@link ColorProcessor}s.
-	 * The integers, however, would be displayed as ARGB unsigned byte channels
-	 * and thus look weird.)</p>
+	 *
+	 * <p>
+	 * (In ImageJ that would be a hyperstack of {@link ColorProcessor}s. The
+	 * integers, however, would be displayed as ARGB unsigned byte channels and
+	 * thus look weird.)
+	 * </p>
 	 */
 	@SuppressWarnings( "unchecked" )
 	final static public IntImagePlus< UnsignedIntType > unsignedInts( final long... dim )
 	{
-		return ( IntImagePlus< UnsignedIntType > )new ImagePlusImgFactory< UnsignedIntType >().create( dim, new UnsignedIntType() );
+		return ( IntImagePlus< UnsignedIntType > ) new ImagePlusImgFactory< UnsignedIntType >().create( dim, new UnsignedIntType() );
 	}
-	
+
 	/**
 	 * Create a {@link IntImagePlus}{@code <}{@link IntType}{@code >}.
-	 * 
-	 * <p>(In ImageJ that would be a hyperstack of {@link ColorProcessor}s.
-	 * The integers, however, would be displayed as ARGB unsigned byte channels
-	 * and thus look weird.)</p>
+	 *
+	 * <p>
+	 * (In ImageJ that would be a hyperstack of {@link ColorProcessor}s. The
+	 * integers, however, would be displayed as ARGB unsigned byte channels and
+	 * thus look weird.)
+	 * </p>
 	 */
 	@SuppressWarnings( "unchecked" )
 	final static public IntImagePlus< IntType > ints( final long... dim )
 	{
-		return ( IntImagePlus< IntType > )new ImagePlusImgFactory< IntType >().create( dim, new IntType() );
+		return ( IntImagePlus< IntType > ) new ImagePlusImgFactory< IntType >().create( dim, new IntType() );
 	}
-	
+
 	/**
 	 * Create a {@link FloatImagePlus}{@code <}{@link FloatType}{@code >}.
-	 * 
-	 * <p>(in ImageJ that would be a hyperstack of {@link FloatProcessor}s)</p>
+	 *
+	 * <p>
+	 * (in ImageJ that would be a hyperstack of {@link FloatProcessor}s)
+	 * </p>
 	 */
 	@SuppressWarnings( "unchecked" )
 	final static public FloatImagePlus< FloatType > floats( final long... dim )
 	{
-		return ( FloatImagePlus< FloatType > )new ImagePlusImgFactory< FloatType >().create( dim, new FloatType() );
+		return ( FloatImagePlus< FloatType > ) new ImagePlusImgFactory< FloatType >().create( dim, new FloatType() );
 	}
-	
+
 	/**
 	 * Create an {@link IntImagePlus}{@code <}{@link ARGBType}{@code >}.
-	 * 
-	 * <p>(in ImageJ that would be a hyperstack of {@link ColorProcessor}s)</p>
+	 *
+	 * <p>
+	 * (in ImageJ that would be a hyperstack of {@link ColorProcessor}s)
+	 * </p>
 	 */
 	@SuppressWarnings( "unchecked" )
 	final static public IntImagePlus< ARGBType > argbs( final long... dim )
 	{
-		return ( IntImagePlus< ARGBType > )new ImagePlusImgFactory< ARGBType >().create( dim, new ARGBType() );
+		return ( IntImagePlus< ARGBType > ) new ImagePlusImgFactory< ARGBType >().create( dim, new ARGBType() );
 	}
-	
+
 	/**
-	 * Create a {@link FloatImagePlus}{@code <}{@link ComplexFloatType}{@code >}.
-	 * 
-	 * <p>(In ImageJ that would be a hyperstack of {@link FloatProcessor}s
-	 * with real and imaginary numbers interleaved in the plane.  That means it
-	 * would look weird.)</p>
+	 * Create a
+	 * {@link FloatImagePlus}{@code <}{@link ComplexFloatType}{@code >}.
+	 *
+	 * <p>
+	 * (In ImageJ that would be a hyperstack of {@link FloatProcessor}s with
+	 * real and imaginary numbers interleaved in the plane. That means it would
+	 * look weird.)
+	 * </p>
 	 */
 	@SuppressWarnings( "unchecked" )
 	final static public FloatImagePlus< ComplexFloatType > complexFloats( final long... dim )
 	{
-		return ( FloatImagePlus< ComplexFloatType > )new ImagePlusImgFactory< ComplexFloatType >().create( dim, new ComplexFloatType() );
+		return ( FloatImagePlus< ComplexFloatType > ) new ImagePlusImgFactory< ComplexFloatType >().create( dim, new ComplexFloatType() );
 	}
-	
+
 	/**
-	 * Create an {@link ImagePlusImg}{@code <}{@link ComplexDoubleType}, {@link DoubleArray}{@code >}.
+	 * Create an {@link ImagePlusImg}{@code <}{@link ComplexDoubleType},
+	 * {@link DoubleArray}{@code >}.
 	 */
 	final static public < T extends NumericType< T > & NativeType< T > > ImagePlusImg< T, ? > from( final ImagePlus imp )
 	{

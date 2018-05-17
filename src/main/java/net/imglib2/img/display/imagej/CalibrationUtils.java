@@ -11,13 +11,13 @@
  * %%
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -33,64 +33,70 @@
  */
 package net.imglib2.img.display.imagej;
 
-import ij.ImagePlus;
-import ij.measure.Calibration;
+import java.util.ArrayList;
+import java.util.List;
+
 import net.imagej.ImgPlus;
 import net.imagej.axis.Axes;
 import net.imagej.axis.CalibratedAxis;
 import net.imagej.axis.DefaultLinearAxis;
 
-import java.util.ArrayList;
-import java.util.List;
+import ij.ImagePlus;
+import ij.measure.Calibration;
 
-public class CalibrationUtils {
-
+public class CalibrationUtils
+{
 	/**
 	 * Sets the {@link Calibration} data on the provided {@link ImagePlus}.
 	 */
-	public static void copyCalibrationToImagePlus(final ImgPlus<?> imgPlus, final ImagePlus imp)
+	public static void copyCalibrationToImagePlus( final ImgPlus< ? > imgPlus, final ImagePlus imp )
 	{
 		final Calibration calibration = imp.getCalibration();
-		final int xIndex = imgPlus.dimensionIndex(Axes.X);
-		final int yIndex = imgPlus.dimensionIndex(Axes.Y);
-		final int zIndex = imgPlus.dimensionIndex(Axes.Z);
-		final int tIndex = imgPlus.dimensionIndex(Axes.TIME);
+		final int xIndex = imgPlus.dimensionIndex( Axes.X );
+		final int yIndex = imgPlus.dimensionIndex( Axes.Y );
+		final int zIndex = imgPlus.dimensionIndex( Axes.Z );
+		final int tIndex = imgPlus.dimensionIndex( Axes.TIME );
 
-		if (xIndex >= 0) {
+		if ( xIndex >= 0 )
+		{
 			calibration.pixelWidth = imgPlus.averageScale( xIndex );
-			CalibratedAxis axis = imgPlus.axis( xIndex );
+			final CalibratedAxis axis = imgPlus.axis( xIndex );
 			calibration.xOrigin = axis.calibratedValue( 0 );
-			calibration.setXUnit( axis.unit());
+			calibration.setXUnit( axis.unit() );
 		}
-		if (yIndex >= 0) {
+		if ( yIndex >= 0 )
+		{
 			calibration.pixelHeight = imgPlus.averageScale( yIndex );
-			CalibratedAxis axis = imgPlus.axis( yIndex );
+			final CalibratedAxis axis = imgPlus.axis( yIndex );
 			calibration.yOrigin = axis.calibratedValue( 0 );
-			calibration.setYUnit( axis.unit());
+			calibration.setYUnit( axis.unit() );
 		}
-		if (zIndex >= 0) {
+		if ( zIndex >= 0 )
+		{
 			calibration.pixelDepth = imgPlus.averageScale( zIndex );
-			CalibratedAxis axis = imgPlus.axis( zIndex );
+			final CalibratedAxis axis = imgPlus.axis( zIndex );
 			calibration.zOrigin = axis.calibratedValue( 0 );
-			calibration.setZUnit( axis.unit());
+			calibration.setZUnit( axis.unit() );
 		}
-		if (tIndex >= 0) {
+		if ( tIndex >= 0 )
+		{
 			calibration.frameInterval = imgPlus.averageScale( tIndex );
-			calibration.setTimeUnit(imgPlus.axis(tIndex).unit());
+			calibration.setTimeUnit( imgPlus.axis( tIndex ).unit() );
 		}
 	}
 
-	public static CalibratedAxis[] getNonTrivialAxes( ImagePlus image ) {
-		List<CalibratedAxis> result = new ArrayList<>();
-		Calibration calibration = image.getCalibration();
-		result.add(new DefaultLinearAxis(Axes.X, calibration.getXUnit(), calibration.pixelWidth, calibration.xOrigin));
-		result.add(new DefaultLinearAxis(Axes.Y, calibration.getYUnit(), calibration.pixelHeight, calibration.yOrigin));
-		if(image.getNChannels() > 1)
-			result.add(new DefaultLinearAxis(Axes.CHANNEL));
-		if(image.getNSlices() > 1)
-			result.add(new DefaultLinearAxis(Axes.Z, calibration.getZUnit(), calibration.pixelDepth, calibration.zOrigin));
-		if(image.getNFrames() > 1)
-			result.add(new DefaultLinearAxis(Axes.TIME, calibration.getTimeUnit(), calibration.frameInterval));
-		return result.toArray(new CalibratedAxis[0]);
+	public static CalibratedAxis[] getNonTrivialAxes( final ImagePlus image )
+	{
+		final List< CalibratedAxis > result = new ArrayList<>();
+		final Calibration calibration = image.getCalibration();
+		result.add( new DefaultLinearAxis( Axes.X, calibration.getXUnit(), calibration.pixelWidth, calibration.xOrigin ) );
+		result.add( new DefaultLinearAxis( Axes.Y, calibration.getYUnit(), calibration.pixelHeight, calibration.yOrigin ) );
+		if ( image.getNChannels() > 1 )
+			result.add( new DefaultLinearAxis( Axes.CHANNEL ) );
+		if ( image.getNSlices() > 1 )
+			result.add( new DefaultLinearAxis( Axes.Z, calibration.getZUnit(), calibration.pixelDepth, calibration.zOrigin ) );
+		if ( image.getNFrames() > 1 )
+			result.add( new DefaultLinearAxis( Axes.TIME, calibration.getTimeUnit(), calibration.frameInterval ) );
+		return result.toArray( new CalibratedAxis[ 0 ] );
 	}
 }

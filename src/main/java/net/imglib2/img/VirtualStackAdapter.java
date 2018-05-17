@@ -34,7 +34,11 @@
 
 package net.imglib2.img;
 
-import ij.ImagePlus;
+import java.util.AbstractList;
+import java.util.concurrent.ExecutionException;
+import java.util.function.Function;
+import java.util.stream.LongStream;
+
 import net.imagej.ImgPlus;
 import net.imagej.axis.CalibratedAxis;
 import net.imglib2.cache.Cache;
@@ -54,68 +58,68 @@ import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.Fraction;
 
-import java.util.AbstractList;
-import java.util.concurrent.ExecutionException;
-import java.util.function.Function;
-import java.util.stream.LongStream;
+import ij.ImagePlus;
 
 /**
- * Wrapper for ImagePlus using imglib2-caches.
- * It loads the planes lazily, which is especially useful when wrapping a virtual stack.
+ * Wrapper for ImagePlus using imglib2-caches. It loads the planes lazily, which
+ * is especially useful when wrapping a virtual stack.
  *
  * @author Matthias Arzt
  */
-
 public class VirtualStackAdapter
 {
-
 	/**
-	 * Wraps a 8 bit {@link ImagePlus}, into an {@link ImgPlus}, that is backed by a {@link PlanarImg}.
-	 * The {@link PlanarImg} loads the planes only if needed, and caches them.
-	 * The axes of the returned image are set according to the calibration of the given image.
+	 * Wraps a 8 bit {@link ImagePlus}, into an {@link ImgPlus}, that is backed
+	 * by a {@link PlanarImg}. The {@link PlanarImg} loads the planes only if
+	 * needed, and caches them. The axes of the returned image are set according
+	 * to the calibration of the given image.
 	 */
-	public static ImgPlus< UnsignedByteType > wrapByte( ImagePlus image )
+	public static ImgPlus< UnsignedByteType > wrapByte( final ImagePlus image )
 	{
 		return internWrap( image, ImagePlus.GRAY8, new UnsignedByteType(), array -> new ByteArray( ( byte[] ) array ) );
 	}
 
 	/**
-	 * Wraps a 16 bit {@link ImagePlus}, into an {@link ImgPlus}, that is backed by a {@link PlanarImg}.
-	 * The {@link PlanarImg} loads the planes only if needed, and caches them.
-	 * The axes of the returned image are set according to the calibration of the given image.
+	 * Wraps a 16 bit {@link ImagePlus}, into an {@link ImgPlus}, that is backed
+	 * by a {@link PlanarImg}. The {@link PlanarImg} loads the planes only if
+	 * needed, and caches them. The axes of the returned image are set according
+	 * to the calibration of the given image.
 	 */
-	public static ImgPlus< UnsignedShortType > wrapShort( ImagePlus image )
+	public static ImgPlus< UnsignedShortType > wrapShort( final ImagePlus image )
 	{
 		return internWrap( image, ImagePlus.GRAY16, new UnsignedShortType(), array -> new ShortArray( ( short[] ) array ) );
 	}
 
 	/**
-	 * Wraps a 32 bit {@link ImagePlus}, into an {@link ImgPlus}, that is backed by a {@link PlanarImg}.
-	 * The {@link PlanarImg} loads the planes only if needed, and caches them.
-	 * The axes of the returned image are set according to the calibration of the given image.
+	 * Wraps a 32 bit {@link ImagePlus}, into an {@link ImgPlus}, that is backed
+	 * by a {@link PlanarImg}. The {@link PlanarImg} loads the planes only if
+	 * needed, and caches them. The axes of the returned image are set according
+	 * to the calibration of the given image.
 	 */
-	public static ImgPlus< FloatType > wrapFloat( ImagePlus image )
+	public static ImgPlus< FloatType > wrapFloat( final ImagePlus image )
 	{
 		return internWrap( image, ImagePlus.GRAY32, new FloatType(), array -> new FloatArray( ( float[] ) array ) );
 	}
 
 	/**
-	 * Wraps a 24 bit {@link ImagePlus}, into an {@link ImgPlus}, that is backed by a {@link PlanarImg}.
-	 * The {@link PlanarImg} loads the planes only if needed, and caches them.
-	 * The axes of the returned image are set according to the calibration of the given image.
+	 * Wraps a 24 bit {@link ImagePlus}, into an {@link ImgPlus}, that is backed
+	 * by a {@link PlanarImg}. The {@link PlanarImg} loads the planes only if
+	 * needed, and caches them. The axes of the returned image are set according
+	 * to the calibration of the given image.
 	 */
-	public static ImgPlus< ARGBType > wrapRGBA( ImagePlus image )
+	public static ImgPlus< ARGBType > wrapRGBA( final ImagePlus image )
 	{
 		return internWrap( image, ImagePlus.COLOR_RGB, new ARGBType(), array -> new IntArray( ( int[] ) array ) );
 	}
 
 	/**
-	 * Wraps an {@link ImagePlus}, into an {@link ImgPlus}, that is backed by a {@link PlanarImg}.
-	 * The {@link PlanarImg} loads the planes only if needed, and caches them.
-	 * The pixel type of the returned image depends on the type of the ImagePlus.
-	 * The axes of the returned image are set according to the calibration of the given image.
+	 * Wraps an {@link ImagePlus}, into an {@link ImgPlus}, that is backed by a
+	 * {@link PlanarImg}. The {@link PlanarImg} loads the planes only if needed,
+	 * and caches them. The pixel type of the returned image depends on the type
+	 * of the ImagePlus. The axes of the returned image are set according to the
+	 * calibration of the given image.
 	 */
-	public static ImgPlus< ? > wrap( ImagePlus image )
+	public static ImgPlus< ? > wrap( final ImagePlus image )
 	{
 		switch ( image.getType() )
 		{
@@ -131,55 +135,62 @@ public class VirtualStackAdapter
 		throw new RuntimeException( "Only 8, 16, 32-bit and RGB supported!" );
 	}
 
-	private static < T extends NativeType< T >, A extends ArrayDataAccess< A > > ImgPlus< T > internWrap( ImagePlus image, int expectedType, T type, Function< Object, A > createArrayAccess )
+	private static < T extends NativeType< T >, A extends ArrayDataAccess< A > > ImgPlus< T > internWrap( final ImagePlus image, final int expectedType, final T type, final Function< Object, A > createArrayAccess )
 	{
 		if ( image.getType() != expectedType )
 			throw new IllegalArgumentException();
-		ImagePlusLoader< A > loader = new ImagePlusLoader<>( image, createArrayAccess );
-		final long[] dimensions = getNonTrivialDimensions(image);
-		PlanarImg< T, A > cached = new PlanarImg<T, A>( loader, dimensions, new Fraction() );
-		cached.setLinkedType( (( NativeTypeFactory< T, A > ) type.getNativeTypeFactory()).createLinkedType( cached ) );
-		CalibratedAxis[] axes = CalibrationUtils.getNonTrivialAxes( image );
-		ImgPlus< T > wrap = new ImgPlus<>(cached, image.getTitle(), axes);
+		final ImagePlusLoader< A > loader = new ImagePlusLoader<>( image, createArrayAccess );
+		final long[] dimensions = getNonTrivialDimensions( image );
+		final PlanarImg< T, A > cached = new PlanarImg<>( loader, dimensions, new Fraction() );
+		cached.setLinkedType( ( ( NativeTypeFactory< T, A > ) type.getNativeTypeFactory() ).createLinkedType( cached ) );
+		final CalibratedAxis[] axes = CalibrationUtils.getNonTrivialAxes( image );
+		final ImgPlus< T > wrap = new ImgPlus<>( cached, image.getTitle(), axes );
 		return wrap;
 	}
 
-	private static long[] getNonTrivialDimensions(ImagePlus image) {
-		LongStream xy = LongStream.of(image.getWidth(), image.getHeight());
-		LongStream czt = LongStream.of(image.getNChannels(), image.getNSlices(), image.getNFrames());
-		return LongStream.concat(xy, czt.filter(x -> x > 1)).toArray();
+	private static long[] getNonTrivialDimensions( final ImagePlus image )
+	{
+		final LongStream xy = LongStream.of( image.getWidth(), image.getHeight() );
+		final LongStream czt = LongStream.of( image.getNChannels(), image.getNSlices(), image.getNFrames() );
+		return LongStream.concat( xy, czt.filter( x -> x > 1 ) ).toArray();
 	}
 
 	private static class ImagePlusLoader< A extends ArrayDataAccess< A > > extends AbstractList< A >
 	{
 		private final ImagePlus image;
 
-		private final Cache<Integer, A> cache;
+		private final Cache< Integer, A > cache;
 
 		private final Function< Object, A > arrayFactory;
 
-		public ImagePlusLoader( final ImagePlus image, Function< Object, A > arrayFactory )
+		public ImagePlusLoader( final ImagePlus image, final Function< Object, A > arrayFactory )
 		{
 			this.arrayFactory = arrayFactory;
 			this.image = image;
-			cache = new SoftRefLoaderRemoverCache<Integer, A>().withLoader(this::load).withRemover((key, value) -> {});
+			cache = new SoftRefLoaderRemoverCache< Integer, A >().withLoader( this::load ).withRemover( ( key, value ) -> {} );
 		}
 
 		@Override
-		public A get(int key) {
-			try {
-				return cache.get(key);
-			} catch (ExecutionException e) {
-				throw new RuntimeException(e);
+		public A get( final int key )
+		{
+			try
+			{
+				return cache.get( key );
+			}
+			catch ( final ExecutionException e )
+			{
+				throw new RuntimeException( e );
 			}
 		}
 
-		private A load(Integer key) {
-			return arrayFactory.apply( image.getStack().getPixels(key + 1) );
+		private A load( final Integer key )
+		{
+			return arrayFactory.apply( image.getStack().getPixels( key + 1 ) );
 		}
 
 		@Override
-		public int size() {
+		public int size()
+		{
 			return image.getStackSize();
 		}
 	}

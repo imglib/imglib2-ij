@@ -11,13 +11,13 @@
  * %%
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -36,8 +36,6 @@ package net.imglib2.img.display.imagej;
 
 import java.util.concurrent.ExecutorService;
 
-import ij.ImagePlus;
-import ij.VirtualStack;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converter;
 import net.imglib2.type.logic.BitType;
@@ -50,44 +48,51 @@ import net.imglib2.type.numeric.integer.UnsignedByteType;
  */
 public class ImageJVirtualStackUnsignedByte< S > extends ImageJVirtualStack< S, UnsignedByteType >
 {
-	public static <T extends RealType<?>> ImageJVirtualStackUnsignedByte<T> wrap( RandomAccessibleInterval<T> source ) {
+	public static < T extends RealType< ? > > ImageJVirtualStackUnsignedByte< T > wrap( final RandomAccessibleInterval< T > source )
+	{
 		return new ImageJVirtualStackUnsignedByte<>( source, new ByteConverter() );
 	}
 
-	public static ImageJVirtualStackUnsignedByte<BitType> wrapAndScaleBitType( RandomAccessibleInterval<BitType> source ) {
+	public static ImageJVirtualStackUnsignedByte< BitType > wrapAndScaleBitType( final RandomAccessibleInterval< BitType > source )
+	{
 		return new ImageJVirtualStackUnsignedByte<>( source, new BitToByteConverter() );
 	}
 
-	public ImageJVirtualStackUnsignedByte( RandomAccessibleInterval< S > source, Converter< ? super S, UnsignedByteType > converter)
+	public ImageJVirtualStackUnsignedByte( final RandomAccessibleInterval< S > source, final Converter< ? super S, UnsignedByteType > converter )
 	{
 		this( source, converter, null );
 	}
-	public ImageJVirtualStackUnsignedByte( RandomAccessibleInterval< S > source, Converter< ? super S, UnsignedByteType > converter, ExecutorService service )
+
+	public ImageJVirtualStackUnsignedByte( final RandomAccessibleInterval< S > source, final Converter< ? super S, UnsignedByteType > converter, final ExecutorService service )
 	{
-		super( source, converter, new UnsignedByteType(), 8 , service);
+		super( source, converter, new UnsignedByteType(), 8, service );
 		setMinAndMax( 0, 255 );
 	}
 
 	private static class ByteConverter implements
-			Converter<RealType<?>, UnsignedByteType>
+			Converter< RealType< ? >, UnsignedByteType >
 	{
 
 		@Override
-		public void convert(final RealType<?> input, final UnsignedByteType output) {
+		public void convert( final RealType< ? > input, final UnsignedByteType output )
+		{
 			double val = input.getRealDouble();
-			if (val < 0) val = 0;
-			else if (val > 255) val = 255;
-			output.setReal(val);
+			if ( val < 0 )
+				val = 0;
+			else if ( val > 255 )
+				val = 255;
+			output.setReal( val );
 		}
 	}
 
 	private static class BitToByteConverter implements
-			Converter<BitType, UnsignedByteType>
+			Converter< BitType, UnsignedByteType >
 	{
 
 		@Override
-		public void convert(final BitType input, final UnsignedByteType output) {
-			output.set(input.get() ? 255 : 0);
+		public void convert( final BitType input, final UnsignedByteType output )
+		{
+			output.set( input.get() ? 255 : 0 );
 		}
 	}
 }

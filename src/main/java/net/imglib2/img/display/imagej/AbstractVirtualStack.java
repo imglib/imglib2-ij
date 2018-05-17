@@ -34,13 +34,13 @@
 
 package net.imglib2.img.display.imagej;
 
+import java.awt.Rectangle;
+import java.awt.image.ColorModel;
+import java.util.stream.IntStream;
+
 import ij.ImageStack;
 import ij.VirtualStack;
 import ij.process.ImageProcessor;
-
-import java.awt.*;
-import java.awt.image.ColorModel;
-import java.util.stream.IntStream;
 
 public abstract class AbstractVirtualStack extends VirtualStack
 {
@@ -55,9 +55,10 @@ public abstract class AbstractVirtualStack extends VirtualStack
 	private ColorModel colorModel;
 
 	private Rectangle roi;
+
 	private double min = 0.0, max = 1.0;
 
-	public AbstractVirtualStack( int width, int height, int size, int bitDepth )
+	public AbstractVirtualStack( final int width, final int height, final int size, final int bitDepth )
 	{
 		super( 10, 10, null, "" );
 		this.width = width;
@@ -68,54 +69,63 @@ public abstract class AbstractVirtualStack extends VirtualStack
 		this.roi = new Rectangle( 0, 0, width, height );
 	}
 
-	protected void setMinAndMax( double min, double max ) {
+	protected void setMinAndMax( final double min, final double max )
+	{
 		this.min = min;
 		this.max = max;
 	}
 
-	@Override public abstract Object getPixels( int n );
+	@Override
+	public abstract Object getPixels( int n );
 
 	@Override
-	public ImageProcessor getProcessor(final int n)
+	public ImageProcessor getProcessor( final int n )
 	{
 
-		Object pixels = getPixels( n );
-		ImageProcessor processor = ImageProcessorUtils.initProcessor( width, height, pixels, colorModel );
+		final Object pixels = getPixels( n );
+		final ImageProcessor processor = ImageProcessorUtils.initProcessor( width, height, pixels, colorModel );
 		processor.setMinAndMax( min, max );
 		return processor;
 	}
 
-	@Override public void addSlice( String name )
+	@Override
+	public void addSlice( final String name )
 	{
 		// ignore
 	}
 
-	@Override public void addSlice( String sliceLabel, Object pixels )
+	@Override
+	public void addSlice( final String sliceLabel, final Object pixels )
 	{
 		// ignore
 	}
 
-	@Override public void addSlice( String sliceLabel, ImageProcessor ip )
+	@Override
+	public void addSlice( final String sliceLabel, final ImageProcessor ip )
 	{
 		// ignore
 	}
 
-	@Override public void addSlice( String sliceLabel, ImageProcessor ip, int n )
+	@Override
+	public void addSlice( final String sliceLabel, final ImageProcessor ip, final int n )
 	{
 		// ignore
 	}
 
-	@Override public void deleteSlice( int n )
+	@Override
+	public void deleteSlice( final int n )
 	{
 		// ignore
 	}
 
-	@Override public void deleteLastSlice()
+	@Override
+	public void deleteLastSlice()
 	{
 		// ignore
 	}
 
-	@Override public void setPixels( Object pixels, int n )
+	@Override
+	public void setPixels( final Object pixels, final int n )
 	{
 		// ignore for now
 	}
@@ -123,188 +133,225 @@ public abstract class AbstractVirtualStack extends VirtualStack
 	/**
 	 * Currently not implemented
 	 */
-	@Override public int saveChanges( int n )
+	@Override
+	public int saveChanges( final int n )
 	{
 		return -1;
 	}
 
-	@Override public int getSize()
+	@Override
+	public int getSize()
 	{
 		return size;
 	}
 
-	@Override public String getSliceLabel( int n )
+	@Override
+	public String getSliceLabel( final int n )
 	{
 		return Integer.toString( n );
 	}
 
-	@Override public Object[] getImageArray()
+	@Override
+	public Object[] getImageArray()
 	{
 		return null; // this is the same as VirtualStack
 	}
 
-	@Override public void setSliceLabel( String label, int n )
+	@Override
+	public void setSliceLabel( final String label, final int n )
 	{
 		// slice labels are not supported -> do nothing
 	}
 
-	@Override public boolean isVirtual()
+	@Override
+	public boolean isVirtual()
 	{
 		return true;
 	}
 
-	@Override public void trim()
+	@Override
+	public void trim()
 	{
 		// ignore
 	}
 
-	@Override public String getDirectory()
+	@Override
+	public String getDirectory()
 	{
 		return ""; // there is no directory that can be returned
 	}
 
-	@Override public String getFileName( int n )
+	@Override
+	public String getFileName( final int n )
 	{
 		return ""; // there is no filename, but I don't want to return null
 	}
 
-	@Override public void setBitDepth( int bitDepth )
+	@Override
+	public void setBitDepth( final int bitDepth )
 	{
 		// ignore
 	}
 
-	@Override public int getBitDepth()
+	@Override
+	public int getBitDepth()
 	{
 		return bitDepth;
 	}
 
-	@Override public ImageStack sortDicom( String[] strings, String[] info, int maxDigits )
+	@Override
+	public ImageStack sortDicom( final String[] strings, final String[] info, final int maxDigits )
 	{
 		// ignore
 		return this;
 	}
 
-	@Override public void addUnsignedShortSlice( String sliceLabel, Object pixels )
+	@Override
+	public void addUnsignedShortSlice( final String sliceLabel, final Object pixels )
 	{
 		super.addUnsignedShortSlice( sliceLabel, pixels );
 	}
 
-	@Override public void addSlice( ImageProcessor ip )
+	@Override
+	public void addSlice( final ImageProcessor ip )
 	{
 		// ignore
 	}
 
-	@Override public int getWidth()
+	@Override
+	public int getWidth()
 	{
 		return width;
 	}
 
-	@Override public int getHeight()
+	@Override
+	public int getHeight()
 	{
 		return height;
 	}
 
-	@Override public void setRoi( Rectangle roi )
+	@Override
+	public void setRoi( final Rectangle roi )
 	{
 		this.roi = roi;
 	}
 
-	@Override public Rectangle getRoi()
+	@Override
+	public Rectangle getRoi()
 	{
 		return roi;
 	}
 
-	@Override public void update( ImageProcessor ip )
+	@Override
+	public void update( final ImageProcessor ip )
 	{
 		colorModel = ip.getColorModel();
 	}
 
-	@Override public int size()
+	@Override
+	public int size()
 	{
 		return size;
 	}
 
-	@Override public String[] getSliceLabels()
+	@Override
+	public String[] getSliceLabels()
 	{
 		return IntStream.range( 0, size ).mapToObj( this::getSliceLabel ).toArray( String[]::new );
 	}
 
-	@Override public String getShortSliceLabel( int n )
+	@Override
+	public String getShortSliceLabel( final int n )
 	{
 		return getSliceLabel( n );
 	}
 
-	@Override public void setProcessor( ImageProcessor ip, int n )
+	@Override
+	public void setProcessor( final ImageProcessor ip, final int n )
 	{
 		// ignore
 	}
 
-	@Override public void setColorModel( ColorModel cm )
+	@Override
+	public void setColorModel( final ColorModel cm )
 	{
 		this.colorModel = cm;
 	}
 
-	@Override public ColorModel getColorModel()
+	@Override
+	public ColorModel getColorModel()
 	{
 		return colorModel;
 	}
 
-	@Override public boolean isRGB()
+	@Override
+	public boolean isRGB()
 	{
 		return false;
 	}
 
-	@Override public boolean isHSB()
+	@Override
+	public boolean isHSB()
 	{
 		return false;
 	}
 
-	@Override public boolean isLab()
+	@Override
+	public boolean isLab()
 	{
 		return false;
 	}
 
-	@Override public String toString()
+	@Override
+	public String toString()
 	{
 		return super.toString();
 	}
 
-	@Override public float[] getVoxels( int x0, int y0, int z0, int w, int h, int d, float[] voxels )
+	@Override
+	public float[] getVoxels( final int x0, final int y0, final int z0, final int w, final int h, final int d, final float[] voxels )
 	{
 		throw new UnsupportedOperationException();
 	}
 
-	@Override public float[] getVoxels( int x0, int y0, int z0, int w, int h, int d, float[] voxels, int channel )
+	@Override
+	public float[] getVoxels( final int x0, final int y0, final int z0, final int w, final int h, final int d, final float[] voxels, final int channel )
 	{
 		throw new UnsupportedOperationException();
 	}
 
-	@Override public void setVoxels( int x0, int y0, int z0, int w, int h, int d, float[] voxels )
+	@Override
+	public void setVoxels( final int x0, final int y0, final int z0, final int w, final int h, final int d, final float[] voxels )
 	{
 		throw new UnsupportedOperationException();
 	}
 
-	@Override public void setVoxels( int x0, int y0, int z0, int w, int h, int d, float[] voxels, int channel )
+	@Override
+	public void setVoxels( final int x0, final int y0, final int z0, final int w, final int h, final int d, final float[] voxels, final int channel )
 	{
 		throw new UnsupportedOperationException();
 	}
 
-	@Override public void drawSphere( double radius, int xc, int yc, int zc )
+	@Override
+	public void drawSphere( final double radius, final int xc, final int yc, final int zc )
 	{
 		super.drawSphere( radius, xc, yc, zc );
 	}
 
-	@Override public ImageStack duplicate()
+	@Override
+	public ImageStack duplicate()
 	{
 		throw new UnsupportedOperationException();
 	}
 
-	@Override public ImageStack crop( int x, int y, int z, int width, int height, int depth )
+	@Override
+	public ImageStack crop( final int x, final int y, final int z, final int width, final int height, final int depth )
 	{
 		throw new UnsupportedOperationException();
 	}
 
-	@Override public ImageStack convertToFloat()
+	@Override
+	public ImageStack convertToFloat()
 	{
 		throw new UnsupportedOperationException();
 	}

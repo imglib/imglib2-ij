@@ -11,13 +11,13 @@
  * %%
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -33,9 +33,6 @@
  */
 
 package net.imglib2.img.display.imagej;
-
-import ij.ImagePlus;
-import ij.VirtualStack;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -63,6 +60,9 @@ import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.Util;
 
+import ij.ImagePlus;
+import ij.VirtualStack;
+
 /**
  * Provides static convenience methods to facilitate interacting with ImageJ
  * 1.x.
@@ -80,7 +80,7 @@ import net.imglib2.util.Util;
  * to ImageJ 1.x, it can be wrapped into an {@link ImagePlus} via
  * {@code ImageJFunctions.wrap(img, title)}.
  * </p>
- * 
+ *
  * @author Tobis Pietzsch
  * @author Stephan Preibisch
  * @author Stephan Saalfeld
@@ -154,9 +154,10 @@ public class ImageJFunctions
 	{
 		return show( img, "Image " + ai.getAndIncrement(), service );
 	}
-	public static < T extends NumericType< T > > ImagePlus show( final RandomAccessibleInterval< T > img)
+
+	public static < T extends NumericType< T > > ImagePlus show( final RandomAccessibleInterval< T > img )
 	{
-		return show( img, (ExecutorService) null );
+		return show( img, ( ExecutorService ) null );
 	}
 
 	/**
@@ -168,6 +169,7 @@ public class ImageJFunctions
 	{
 		return show( img, converter, "Complex image " + ai.getAndIncrement(), service );
 	}
+
 	public static < T extends ComplexType< T > > ImagePlus show( final RandomAccessibleInterval< T > img, final Converter< T, FloatType > converter )
 	{
 		return show( img, converter, "Complex image " + ai.getAndIncrement(), null );
@@ -181,20 +183,19 @@ public class ImageJFunctions
 			final RandomAccessibleInterval< T > img,
 			final Converter< T, FloatType > converter,
 			final String title,
-			final ExecutorService service
-			)
+			final ExecutorService service )
 	{
-		final ImageJVirtualStackFloat< T > stack = new ImageJVirtualStackFloat< >( img, converter, service );
+		final ImageJVirtualStackFloat< T > stack = new ImageJVirtualStackFloat<>( img, converter, service );
 		final ImagePlus imp = new ImagePlus( title, stack );
 		imp.show();
 
 		return imp;
 	}
+
 	public static < T extends ComplexType< T > > ImagePlus show(
 			final RandomAccessibleInterval< T > img,
 			final Converter< T, FloatType > converter,
-			final String title
-			)
+			final String title )
 	{
 		return show( img, converter, title, null );
 	}
@@ -243,15 +244,16 @@ public class ImageJFunctions
 		{
 
 			final ImgPlus< T > imgplus = ( ImgPlus< T > ) img;
-			CalibrationUtils.copyCalibrationToImagePlus(imgplus, target);
+			CalibrationUtils.copyCalibrationToImagePlus( imgplus, target );
 			target.setTitle( imgplus.getName() );
 		}
 
 		return target;
 	}
+
 	public static < T extends NumericType< T > > ImagePlus wrap( final RandomAccessibleInterval< T > img, final String title )
 	{
-		return wrap(img, title, null);
+		return wrap( img, title, null );
 	}
 
 	public static < T extends NumericType< T > > ImagePlus show( final RandomAccessibleInterval< T > img, final String title,
@@ -266,7 +268,8 @@ public class ImageJFunctions
 
 		return imp;
 	}
-	public static < T extends NumericType< T > > ImagePlus show( final RandomAccessibleInterval< T > img, final String title)
+
+	public static < T extends NumericType< T > > ImagePlus show( final RandomAccessibleInterval< T > img, final String title )
 	{
 		return show( img, title, null );
 	}
@@ -278,15 +281,15 @@ public class ImageJFunctions
 	public static < T extends RealType< T > > ImagePlus wrapFloat(
 			final RandomAccessibleInterval< T > img,
 			final String title,
-			final ExecutorService service)
+			final ExecutorService service )
 	{
-		final ImageJVirtualStackFloat< T > stack = new ImageJVirtualStackFloat< >( img, new RealFloatConverter< T >(), service );
+		final ImageJVirtualStackFloat< T > stack = new ImageJVirtualStackFloat<>( img, new RealFloatConverter< T >(), service );
 		return makeImagePlus( img, stack, title );
 	}
+
 	public static < T extends RealType< T > > ImagePlus wrapFloat(
 			final RandomAccessibleInterval< T > img,
-			final String title
-			)
+			final String title )
 	{
 		return wrapFloat( img, title, null );
 	}
@@ -325,16 +328,16 @@ public class ImageJFunctions
 			final RandomAccessibleInterval< T > img,
 			final Converter< T, FloatType > converter,
 			final String title,
-			final ExecutorService service)
+			final ExecutorService service )
 	{
-		final ImageJVirtualStackFloat< T > stack = new ImageJVirtualStackFloat< >( img, converter, service );
+		final ImageJVirtualStackFloat< T > stack = new ImageJVirtualStackFloat<>( img, converter, service );
 		return makeImagePlus( img, stack, title );
 	}
+
 	public static < T > ImagePlus wrapFloat(
 			final RandomAccessibleInterval< T > img,
 			final Converter< T, FloatType > converter,
-			final String title
-			)
+			final String title )
 	{
 		return wrapFloat( img, converter, title, null );
 	}
@@ -356,11 +359,11 @@ public class ImageJFunctions
 
 		return imp;
 	}
+
 	public static < T > ImagePlus showFloat(
 			final RandomAccessibleInterval< T > img,
 			final Converter< T, FloatType > converter,
-			final String title
-			)
+			final String title )
 	{
 		return showFloat( img, converter, title, null );
 	}
@@ -374,7 +377,8 @@ public class ImageJFunctions
 	{
 		return showFloat( img, new RealFloatConverter< T >(), title, service );
 	}
-	public static < T extends RealType< T > > ImagePlus showFloat( final RandomAccessibleInterval< T > img, final String title)
+
+	public static < T extends RealType< T > > ImagePlus showFloat( final RandomAccessibleInterval< T > img, final String title )
 	{
 		return showFloat( img, title, null );
 	}
@@ -388,9 +392,10 @@ public class ImageJFunctions
 	{
 		return showFloat( img, "Image " + ai.getAndIncrement(), service );
 	}
-	public static < T extends RealType< T > > ImagePlus showFloat( final RandomAccessibleInterval< T > img)
+
+	public static < T extends RealType< T > > ImagePlus showFloat( final RandomAccessibleInterval< T > img )
 	{
-		return showFloat( img, (ExecutorService) null );
+		return showFloat( img, ( ExecutorService ) null );
 	}
 
 	/**
@@ -403,6 +408,7 @@ public class ImageJFunctions
 	{
 		return wrapRGB( img, new TypeIdentity< ARGBType >(), title, service );
 	}
+
 	public static ImagePlus wrapRGB( final RandomAccessibleInterval< ARGBType > img, final String title )
 	{
 		return wrapRGB( img, title, null );
@@ -413,11 +419,12 @@ public class ImageJFunctions
 	 * {@link RandomAccessibleInterval} a using a custom {@link Converter}.
 	 */
 	public static < T > ImagePlus wrapRGB( final RandomAccessibleInterval< T > img, final Converter< T, ARGBType > converter, final String title,
-			final ExecutorService service)
+			final ExecutorService service )
 	{
-		final ImageJVirtualStackARGB< T > stack = new ImageJVirtualStackARGB< >( img, converter, service );
+		final ImageJVirtualStackARGB< T > stack = new ImageJVirtualStackARGB<>( img, converter, service );
 		return makeImagePlus( img, stack, title );
 	}
+
 	public static < T > ImagePlus wrapRGB( final RandomAccessibleInterval< T > img, final Converter< T, ARGBType > converter, final String title )
 	{
 		return wrapRGB( img, converter, title, null );
@@ -437,6 +444,7 @@ public class ImageJFunctions
 
 		return imp;
 	}
+
 	public static < T > ImagePlus showRGB( final RandomAccessibleInterval< T > img, final Converter< T, ARGBType > converter, final String title )
 	{
 		return showRGB( img, converter, title, null );
@@ -449,15 +457,14 @@ public class ImageJFunctions
 	public static < T extends RealType< T > > ImagePlus wrapUnsignedByte(
 			final RandomAccessibleInterval< T > img,
 			final String title,
-			final ExecutorService service
-			)
+			final ExecutorService service )
 	{
 		return wrapUnsignedByte( img, new RealUnsignedByteConverter< T >( 0, 255 ), title, service );
 	}
+
 	public static < T extends RealType< T > > ImagePlus wrapUnsignedByte(
 			final RandomAccessibleInterval< T > img,
-			final String title
-			)
+			final String title )
 	{
 		return wrapUnsignedByte( img, title, null );
 	}
@@ -470,15 +477,14 @@ public class ImageJFunctions
 	public static < T extends RealType< T > > ImagePlus wrapBit(
 			final RandomAccessibleInterval< T > img,
 			final String title,
-			final ExecutorService service
-			)
+			final ExecutorService service )
 	{
 		return wrapUnsignedByte( img, new RealUnsignedByteConverter< T >( 0, 1 ), title, service );
 	}
+
 	public static < T extends RealType< T > > ImagePlus wrapBit(
 			final RandomAccessibleInterval< T > img,
-			final String title
-			)
+			final String title )
 	{
 		return wrapBit( img, title, null );
 	}
@@ -491,17 +497,16 @@ public class ImageJFunctions
 			final RandomAccessibleInterval< T > img,
 			final Converter< T, UnsignedByteType > converter,
 			final String title,
-			final ExecutorService service
-			)
+			final ExecutorService service )
 	{
-		final ImageJVirtualStackUnsignedByte< T > stack = new ImageJVirtualStackUnsignedByte< >( img, converter, service );
+		final ImageJVirtualStackUnsignedByte< T > stack = new ImageJVirtualStackUnsignedByte<>( img, converter, service );
 		return makeImagePlus( img, stack, title );
 	}
+
 	public static < T > ImagePlus wrapUnsignedByte(
 			final RandomAccessibleInterval< T > img,
 			final Converter< T, UnsignedByteType > converter,
-			final String title
-			)
+			final String title )
 	{
 		return wrapUnsignedByte( img, converter, title, null );
 	}
@@ -514,8 +519,7 @@ public class ImageJFunctions
 			final RandomAccessibleInterval< T > img,
 			final Converter< T, UnsignedByteType > converter,
 			final String title,
-			final ExecutorService service
-			)
+			final ExecutorService service )
 	{
 		final ImagePlus imp = wrapUnsignedByte( img, converter, title, service );
 		imp.show();
@@ -524,11 +528,11 @@ public class ImageJFunctions
 
 		return imp;
 	}
+
 	public static < T > ImagePlus showUnsignedByte(
 			final RandomAccessibleInterval< T > img,
 			final Converter< T, UnsignedByteType > converter,
-			final String title
-			)
+			final String title )
 	{
 		return showUnsignedByte( img, converter, title, null );
 	}
@@ -541,15 +545,14 @@ public class ImageJFunctions
 	public static < T extends RealType< T > > ImagePlus showUnsignedByte(
 			final RandomAccessibleInterval< T > img,
 			final String title,
-			final ExecutorService service
-			)
+			final ExecutorService service )
 	{
 		return showUnsignedByte( img, new RealUnsignedByteConverter< T >( 0, 255 ), title, service );
 	}
+
 	public static < T extends RealType< T > > ImagePlus showUnsignedByte(
 			final RandomAccessibleInterval< T > img,
-			final String title
-			)
+			final String title )
 	{
 		return showUnsignedByte( img, title, null );
 	}
@@ -564,9 +567,10 @@ public class ImageJFunctions
 	{
 		return showUnsignedByte( img, "Image " + ai.getAndIncrement(), service );
 	}
+
 	public static < T extends RealType< T > > ImagePlus showUnsignedByte( final RandomAccessibleInterval< T > img )
 	{
-		return showUnsignedByte( img, (ExecutorService) null );
+		return showUnsignedByte( img, ( ExecutorService ) null );
 	}
 
 	/**
@@ -577,15 +581,14 @@ public class ImageJFunctions
 	public static < T extends RealType< T > > ImagePlus wrapUnsignedShort(
 			final RandomAccessibleInterval< T > img,
 			final String title,
-			final ExecutorService service
-			)
+			final ExecutorService service )
 	{
 		return wrapUnsignedShort( img, new RealUnsignedShortConverter< T >( 0, 65535 ), title, service );
 	}
+
 	public static < T extends RealType< T > > ImagePlus wrapUnsignedShort(
 			final RandomAccessibleInterval< T > img,
-			final String title
-			)
+			final String title )
 	{
 		return wrapUnsignedShort( img, title, null );
 	}
@@ -598,17 +601,16 @@ public class ImageJFunctions
 			final RandomAccessibleInterval< T > img,
 			final Converter< T, UnsignedShortType > converter,
 			final String title,
-			final ExecutorService service
-			)
+			final ExecutorService service )
 	{
-		final ImageJVirtualStackUnsignedShort< T > stack = new ImageJVirtualStackUnsignedShort< >( img, converter, service );
+		final ImageJVirtualStackUnsignedShort< T > stack = new ImageJVirtualStackUnsignedShort<>( img, converter, service );
 		return makeImagePlus( img, stack, title );
 	}
+
 	public static < T > ImagePlus wrapUnsignedShort(
 			final RandomAccessibleInterval< T > img,
 			final Converter< T, UnsignedShortType > converter,
-			final String title
-			)
+			final String title )
 	{
 		return wrapUnsignedShort( img, converter, title, null );
 	}
@@ -621,8 +623,7 @@ public class ImageJFunctions
 			final RandomAccessibleInterval< T > img,
 			final Converter< T, UnsignedShortType > converter,
 			final String title,
-			final ExecutorService service
-			)
+			final ExecutorService service )
 	{
 		final ImagePlus imp = wrapUnsignedShort( img, converter, title, service );
 		imp.show();
@@ -631,11 +632,11 @@ public class ImageJFunctions
 
 		return imp;
 	}
+
 	public static < T > ImagePlus showUnsignedShort(
 			final RandomAccessibleInterval< T > img,
 			final Converter< T, UnsignedShortType > converter,
-			final String title
-			)
+			final String title )
 	{
 		return showUnsignedShort( img, converter, title, null );
 	}
@@ -648,15 +649,14 @@ public class ImageJFunctions
 	public static < T extends RealType< T > > ImagePlus showUnsignedShort(
 			final RandomAccessibleInterval< T > img,
 			final String title,
-			final ExecutorService service
-			)
+			final ExecutorService service )
 	{
 		return showUnsignedShort( img, new RealUnsignedShortConverter< T >( 0, 65535 ), title, service );
 	}
+
 	public static < T extends RealType< T > > ImagePlus showUnsignedShort(
 			final RandomAccessibleInterval< T > img,
-			final String title
-			)
+			final String title )
 	{
 		return showUnsignedShort( img, title, null );
 	}
@@ -668,16 +668,15 @@ public class ImageJFunctions
 	 */
 	public static < T extends RealType< T > > ImagePlus showUnsignedShort(
 			final RandomAccessibleInterval< T > img,
-			final ExecutorService service
-			)
+			final ExecutorService service )
 	{
 		return showUnsignedShort( img, "Image " + ai.getAndIncrement(), service );
 	}
+
 	public static < T extends RealType< T > > ImagePlus showUnsignedShort(
-			final RandomAccessibleInterval< T > img
-			)
+			final RandomAccessibleInterval< T > img )
 	{
-		return showUnsignedShort( img, (ExecutorService) null );
+		return showUnsignedShort( img, ( ExecutorService ) null );
 	}
 
 	/*

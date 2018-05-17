@@ -11,13 +11,13 @@
  * %%
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -35,9 +35,8 @@
 package net.imglib2.img.imageplus;
 
 import static org.junit.Assert.assertTrue;
+
 import net.imglib2.img.array.ArrayImgFactory;
-import net.imglib2.img.imageplus.ImagePlusImg;
-import net.imglib2.img.imageplus.ImagePlusImgFactory;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.ImgTestHelper;
 import net.imglib2.util.Util;
@@ -53,7 +52,8 @@ import org.junit.Test;
  */
 public class ImagePlusImgTest
 {
-	@Test public void testImagePlusImg()
+	@Test
+	public void testImagePlusImg()
 	{
 		final long[][] dim = ImgTestHelper.dims();
 		for ( int i = 0; i < dim.length; ++i )
@@ -61,11 +61,11 @@ public class ImagePlusImgTest
 			if ( dim[ i ].length < 6 )
 			{
 				assertTrue( "ArrayImg vs ImagePlusImg failed for dim = " + Util.printCoordinates( dim[ i ] ),
-				            ImgTestHelper.testImg( dim[ i ], new ArrayImgFactory<>( new FloatType() ), new ImagePlusImgFactory<>( new FloatType() ) ) );
+						ImgTestHelper.testImg( dim[ i ], new ArrayImgFactory<>( new FloatType() ), new ImagePlusImgFactory<>( new FloatType() ) ) );
 				assertTrue( "ImagePlusImg vs ArrayImg failed for dim = " + Util.printCoordinates( dim[ i ] ),
-				            ImgTestHelper.testImg( dim[ i ], new ImagePlusImgFactory<>( new FloatType() ), new ArrayImgFactory<>( new FloatType() ) ) );
+						ImgTestHelper.testImg( dim[ i ], new ImagePlusImgFactory<>( new FloatType() ), new ArrayImgFactory<>( new FloatType() ) ) );
 				assertTrue( "ImagePlusImg vs ImagePlusImg failed for dim = " + Util.printCoordinates( dim[ i ] ),
-				            ImgTestHelper.testImg( dim[ i ], new ImagePlusImgFactory<>( new FloatType() ), new ImagePlusImgFactory<>( new FloatType() ) ) );
+						ImgTestHelper.testImg( dim[ i ], new ImagePlusImgFactory<>( new FloatType() ), new ImagePlusImgFactory<>( new FloatType() ) ) );
 			}
 		}
 	}

@@ -34,11 +34,11 @@
 
 package net.imglib2.img.display.imagej;
 
-import ij.ImagePlus;
-import ij.process.ByteProcessor;
-import ij.process.FloatProcessor;
-import ij.process.ImageProcessor;
-import ij.process.ShortProcessor;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+
+import java.util.concurrent.atomic.AtomicInteger;
+
 import net.imagej.ImgPlus;
 import net.imagej.axis.Axes;
 import net.imagej.axis.AxisType;
@@ -67,205 +67,238 @@ import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.ConstantUtils;
 import net.imglib2.view.Views;
+
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
-import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import ij.ImagePlus;
+import ij.process.ByteProcessor;
+import ij.process.FloatProcessor;
+import ij.process.ImageProcessor;
+import ij.process.ShortProcessor;
 
 public class ImgToVirtualStackTest
 {
 	@Test
-	public void testAxisOrder() {
-		Img< UnsignedByteType> img = ArrayImgs.unsignedBytes( 1, 1, 2, 3, 4 );
+	public void testAxisOrder()
+	{
+		final Img< UnsignedByteType > img = ArrayImgs.unsignedBytes( 1, 1, 2, 3, 4 );
 		fill( img );
-		ImgPlus< UnsignedByteType > imgPlus = new ImgPlus<>( img, "title", new AxisType[] { Axes.X, Axes.Y, Axes.TIME, Axes.CHANNEL, Axes.Z } );
-		ImagePlus imagePlus = ImgToVirtualStack.wrap( imgPlus, false );
+		final ImgPlus< UnsignedByteType > imgPlus = new ImgPlus<>( img, "title", new AxisType[] { Axes.X, Axes.Y, Axes.TIME, Axes.CHANNEL, Axes.Z } );
+		final ImagePlus imagePlus = ImgToVirtualStack.wrap( imgPlus, false );
 		assertEquals( 2, imagePlus.getStack().getProcessor( imagePlus.getStackIndex( 1, 1, 2 ) ).get( 0, 0 ) );
 		assertEquals( 7, imagePlus.getStack().getProcessor( imagePlus.getStackIndex( 1, 2, 1 ) ).get( 0, 0 ) );
 		assertEquals( 3, imagePlus.getStack().getProcessor( imagePlus.getStackIndex( 2, 1, 1 ) ).get( 0, 0 ) );
 	}
 
 	@Test
-	public void test1DStack() {
-		Img< UnsignedByteType> img = ArrayImgs.unsignedBytes( 2, 2 );
+	public void test1DStack()
+	{
+		final Img< UnsignedByteType > img = ArrayImgs.unsignedBytes( 2, 2 );
 		fill( img );
-		ImgPlus< UnsignedByteType > imgPlus = new ImgPlus<>( img, "title", new AxisType[] { Axes.TIME, Axes.X } );
-		ImagePlus imagePlus = ImgToVirtualStack.wrap( imgPlus, false );
-		assertArrayEquals( new byte[]{ 1, 3 }, (byte[]) imagePlus.getStack().getPixels( imagePlus.getStackIndex( 1, 1, 1 ) ) );
-		assertArrayEquals( new byte[]{ 2, 4 }, (byte[]) imagePlus.getStack().getPixels( imagePlus.getStackIndex( 1, 1, 2 ) ) );
+		final ImgPlus< UnsignedByteType > imgPlus = new ImgPlus<>( img, "title", new AxisType[] { Axes.TIME, Axes.X } );
+		final ImagePlus imagePlus = ImgToVirtualStack.wrap( imgPlus, false );
+		assertArrayEquals( new byte[] { 1, 3 }, ( byte[] ) imagePlus.getStack().getPixels( imagePlus.getStackIndex( 1, 1, 1 ) ) );
+		assertArrayEquals( new byte[] { 2, 4 }, ( byte[] ) imagePlus.getStack().getPixels( imagePlus.getStackIndex( 1, 1, 2 ) ) );
 	}
 
 	@Test
-	public void testNoXY() {
-		Img< UnsignedByteType> img = ArrayImgs.unsignedBytes( 2, 2 );
+	public void testNoXY()
+	{
+		final Img< UnsignedByteType > img = ArrayImgs.unsignedBytes( 2, 2 );
 		fill( img );
-		ImgPlus< UnsignedByteType > imgPlus = new ImgPlus<>( img, "title", new AxisType[] { Axes.TIME, Axes.CHANNEL } );
-		ImagePlus imagePlus = ImgToVirtualStack.wrap( imgPlus, false );
-		assertArrayEquals( new byte[]{ 2 }, (byte[]) imagePlus.getStack().getPixels( imagePlus.getStackIndex( 1, 1, 2 ) ) );
-		assertArrayEquals( new byte[]{ 3 }, (byte[]) imagePlus.getStack().getPixels( imagePlus.getStackIndex( 2, 1, 1 ) ) );
+		final ImgPlus< UnsignedByteType > imgPlus = new ImgPlus<>( img, "title", new AxisType[] { Axes.TIME, Axes.CHANNEL } );
+		final ImagePlus imagePlus = ImgToVirtualStack.wrap( imgPlus, false );
+		assertArrayEquals( new byte[] { 2 }, ( byte[] ) imagePlus.getStack().getPixels( imagePlus.getStackIndex( 1, 1, 2 ) ) );
+		assertArrayEquals( new byte[] { 3 }, ( byte[] ) imagePlus.getStack().getPixels( imagePlus.getStackIndex( 2, 1, 1 ) ) );
 	}
 
-	@Ignore("not supporting more than five dimensions yet")
+	@Ignore( "not supporting more than five dimensions yet" )
 	@Test
-	public void test6d() {
-		Img< UnsignedByteType> img = ArrayImgs.unsignedBytes( 2, 2, 2, 2, 2, 2 );
+	public void test6d()
+	{
+		final Img< UnsignedByteType > img = ArrayImgs.unsignedBytes( 2, 2, 2, 2, 2, 2 );
 		fill( img );
-		ImgPlus< UnsignedByteType > imgPlus = new ImgPlus<>( img, "title", new AxisType[] { Axes.X, Axes.Y, Axes.Z, Axes.CHANNEL, Axes.TIME, Axes.CHANNEL } );
-		ImagePlus imagePlus = ImgToVirtualStack.wrap( imgPlus, true );
-		assertArrayEquals( new byte[]{ 2 }, (byte[]) imagePlus.getStack().getPixels( imagePlus.getStackIndex( 1, 1, 2 ) ) );
-		assertArrayEquals( new byte[]{ 3 }, (byte[]) imagePlus.getStack().getPixels( imagePlus.getStackIndex( 2, 1, 1 ) ) );
+		final ImgPlus< UnsignedByteType > imgPlus = new ImgPlus<>( img, "title", new AxisType[] { Axes.X, Axes.Y, Axes.Z, Axes.CHANNEL, Axes.TIME, Axes.CHANNEL } );
+		final ImagePlus imagePlus = ImgToVirtualStack.wrap( imgPlus, true );
+		assertArrayEquals( new byte[] { 2 }, ( byte[] ) imagePlus.getStack().getPixels( imagePlus.getStackIndex( 1, 1, 2 ) ) );
+		assertArrayEquals( new byte[] { 3 }, ( byte[] ) imagePlus.getStack().getPixels( imagePlus.getStackIndex( 2, 1, 1 ) ) );
 	}
 
 	@Test
-	public void testColoredAxisOrder() {
-		Img< UnsignedByteType> img = ArrayImgs.unsignedBytes( 1, 1, 2, 3, 4 );
+	public void testColoredAxisOrder()
+	{
+		final Img< UnsignedByteType > img = ArrayImgs.unsignedBytes( 1, 1, 2, 3, 4 );
 		fill( img );
-		ImgPlus< UnsignedByteType > imgPlus = new ImgPlus<>( img, "title", new AxisType[] { Axes.X, Axes.Y, Axes.TIME, Axes.CHANNEL, Axes.Z } );
-		ImagePlus imagePlus = ImgToVirtualStack.wrap( imgPlus, true );
+		final ImgPlus< UnsignedByteType > imgPlus = new ImgPlus<>( img, "title", new AxisType[] { Axes.X, Axes.Y, Axes.TIME, Axes.CHANNEL, Axes.Z } );
+		final ImagePlus imagePlus = ImgToVirtualStack.wrap( imgPlus, true );
 		assertEquals( 0xff020406, imagePlus.getStack().getProcessor( imagePlus.getStackIndex( 1, 1, 2 ) ).get( 0, 0 ) );
 		assertEquals( 0xff07090b, imagePlus.getStack().getProcessor( imagePlus.getStackIndex( 1, 2, 1 ) ).get( 0, 0 ) );
 	}
 
 	@Test
-	public void testBitType() {
-		testTypeConversion(ByteProcessor.class, 1, new BitType(true));
-	}
-
-	@Test
-	public void testBoolType() {
-		testTypeConversion(ByteProcessor.class, 1, new BoolType(true));
-	}
-
-	@Test
-	public void testUnsigned2BitType() {
-		testTypeConversion(ByteProcessor.class, 3, new Unsigned2BitType(3));
-	}
-
-	@Test
-	public void testUnsigned4BitTypeType() {
-		testTypeConversion(ByteProcessor.class, 15, new Unsigned4BitType(15));
-	}
-
-	@Test
-	public void testUnsignedByteType() {
-		testTypeConversion(ByteProcessor.class, 42f, new UnsignedByteType(42));
-	}
-
-	@Test
-	public void testUnsigned12BitType() {
-		testTypeConversion(ShortProcessor.class, 420, new Unsigned12BitType(420));
-	}
-
-	@Test
-	public void testUnsignedShortType() {
-		testTypeConversion(ShortProcessor.class, 42f, new UnsignedShortType(42));
-	}
-
-	@Test
-	public void testUnsignedIntType() {
-		testTypeConversion(FloatProcessor.class, 42, new UnsignedIntType(42));
-	}
-
-	@Test
-	public void testUnsignedLongType() {
-		testTypeConversion(FloatProcessor.class, 42, new UnsignedLongType(42));
-	}
-
-	@Test
-	public void testUnsigned128BitType() {
-		testTypeConversion(FloatProcessor.class, 1000000, new Unsigned128BitType(1000000, 0));
-	}
-
-	@Test
-	public void testByteType() {
-		testTypeConversion(FloatProcessor.class, -42, new ByteType((byte) -42));
-	}
-
-	@Test
-	public void testShortType() {
-		testTypeConversion(FloatProcessor.class, -42, new ShortType((short) -42));
-	}
-
-	@Test
-	public void testIntType() {
-		testTypeConversion(FloatProcessor.class, -42, new IntType(-42));
-	}
-
-	@Test
-	public void testLongType() {
-		testTypeConversion(FloatProcessor.class, -42, new LongType(-42));
-	}
-
-	@Test
-	public void testFloatType() {
-		testTypeConversion(FloatProcessor.class, -42f, new FloatType(-42));
-	}
-
-	@Test
-	public void testDoubleType() {
-		testTypeConversion(FloatProcessor.class, -42f, new DoubleType(-42));
-	}
-
-	private <T extends RealType<T>> void testTypeConversion(Class<? extends ImageProcessor> processorClass, float expected, T input) {
-		RandomAccessibleInterval<T> rai = ConstantUtils.constantRandomAccessibleInterval(input, 2, new FinalInterval(1, 1));
-		Img<T> image = ImgView.wrap(rai, null);
-		ImgPlus<T> imgPlus = new ImgPlus<T>(image, "title", new AxisType[]{Axes.X, Axes.Y});
-		// process
-		ImagePlus imagePlus = ImgToVirtualStack.wrap(imgPlus, false);
-		// test
-		ImageProcessor processor = imagePlus.getProcessor();
-		Assert.assertTrue(processorClass.isInstance(processor));
-		Assert.assertEquals(expected, processor.getPixelValue(0, 0), 0f);
-	}
-
-	private void fill( RandomAccessibleInterval< ? extends IntegerType > img )
+	public void testBitType()
 	{
-		AtomicInteger i = new AtomicInteger();
+		testTypeConversion( ByteProcessor.class, 1, new BitType( true ) );
+	}
+
+	@Test
+	public void testBoolType()
+	{
+		testTypeConversion( ByteProcessor.class, 1, new BoolType( true ) );
+	}
+
+	@Test
+	public void testUnsigned2BitType()
+	{
+		testTypeConversion( ByteProcessor.class, 3, new Unsigned2BitType( 3 ) );
+	}
+
+	@Test
+	public void testUnsigned4BitTypeType()
+	{
+		testTypeConversion( ByteProcessor.class, 15, new Unsigned4BitType( 15 ) );
+	}
+
+	@Test
+	public void testUnsignedByteType()
+	{
+		testTypeConversion( ByteProcessor.class, 42f, new UnsignedByteType( 42 ) );
+	}
+
+	@Test
+	public void testUnsigned12BitType()
+	{
+		testTypeConversion( ShortProcessor.class, 420, new Unsigned12BitType( 420 ) );
+	}
+
+	@Test
+	public void testUnsignedShortType()
+	{
+		testTypeConversion( ShortProcessor.class, 42f, new UnsignedShortType( 42 ) );
+	}
+
+	@Test
+	public void testUnsignedIntType()
+	{
+		testTypeConversion( FloatProcessor.class, 42, new UnsignedIntType( 42 ) );
+	}
+
+	@Test
+	public void testUnsignedLongType()
+	{
+		testTypeConversion( FloatProcessor.class, 42, new UnsignedLongType( 42 ) );
+	}
+
+	@Test
+	public void testUnsigned128BitType()
+	{
+		testTypeConversion( FloatProcessor.class, 1000000, new Unsigned128BitType( 1000000, 0 ) );
+	}
+
+	@Test
+	public void testByteType()
+	{
+		testTypeConversion( FloatProcessor.class, -42, new ByteType( ( byte ) -42 ) );
+	}
+
+	@Test
+	public void testShortType()
+	{
+		testTypeConversion( FloatProcessor.class, -42, new ShortType( ( short ) -42 ) );
+	}
+
+	@Test
+	public void testIntType()
+	{
+		testTypeConversion( FloatProcessor.class, -42, new IntType( -42 ) );
+	}
+
+	@Test
+	public void testLongType()
+	{
+		testTypeConversion( FloatProcessor.class, -42, new LongType( -42 ) );
+	}
+
+	@Test
+	public void testFloatType()
+	{
+		testTypeConversion( FloatProcessor.class, -42f, new FloatType( -42 ) );
+	}
+
+	@Test
+	public void testDoubleType()
+	{
+		testTypeConversion( FloatProcessor.class, -42f, new DoubleType( -42 ) );
+	}
+
+	private < T extends RealType< T > > void testTypeConversion( final Class< ? extends ImageProcessor > processorClass, final float expected, final T input )
+	{
+		final RandomAccessibleInterval< T > rai = ConstantUtils.constantRandomAccessibleInterval( input, 2, new FinalInterval( 1, 1 ) );
+		final Img< T > image = ImgView.wrap( rai, null );
+		final ImgPlus< T > imgPlus = new ImgPlus< T >( image, "title", new AxisType[] { Axes.X, Axes.Y } );
+		// process
+		final ImagePlus imagePlus = ImgToVirtualStack.wrap( imgPlus, false );
+		// test
+		final ImageProcessor processor = imagePlus.getProcessor();
+		Assert.assertTrue( processorClass.isInstance( processor ) );
+		Assert.assertEquals( expected, processor.getPixelValue( 0, 0 ), 0f );
+	}
+
+	private void fill( final RandomAccessibleInterval< ? extends IntegerType > img )
+	{
+		final AtomicInteger i = new AtomicInteger();
 		Views.flatIterable( img ).forEach( pixel -> pixel.setInteger( i.incrementAndGet() ) );
 	}
 
 	@Test
-	public void testUnknownAxes() {
-		byte[] array = {1, 2, 3, 4, 5, 6};
-		Img<UnsignedByteType> img = ArrayImgs.unsignedBytes(array, 1, 1, 2, 3);
-		AxisType[] axes = { Axes.unknown(), Axes.unknown(), Axes.TIME, Axes.unknown() };
-		ImagePlus result = ImgToVirtualStack.wrap(new ImgPlus<>(img, "title", axes), false);
-		assertEquals(3, result.getNChannels());
-		assertEquals(2, result.getNFrames());
+	public void testUnknownAxes()
+	{
+		final byte[] array = { 1, 2, 3, 4, 5, 6 };
+		final Img< UnsignedByteType > img = ArrayImgs.unsignedBytes( array, 1, 1, 2, 3 );
+		final AxisType[] axes = { Axes.unknown(), Axes.unknown(), Axes.TIME, Axes.unknown() };
+		final ImagePlus result = ImgToVirtualStack.wrap( new ImgPlus<>( img, "title", axes ), false );
+		assertEquals( 3, result.getNChannels() );
+		assertEquals( 2, result.getNFrames() );
 	}
 
 	@Test
-	public void testPersistence() {
+	public void testPersistence()
+	{
 		// setup
-		Img<FloatType> img = ArrayImgs.floats(1, 1);
-		ImgPlus<FloatType> imgPlus = new ImgPlus<FloatType>(img, "title", new AxisType[]{ Axes.X, Axes.Y });
-		ImagePlus imagePlus = ImgToVirtualStack.wrap(imgPlus, false);
-		float expected = 42;
+		final Img< FloatType > img = ArrayImgs.floats( 1, 1 );
+		final ImgPlus< FloatType > imgPlus = new ImgPlus< FloatType >( img, "title", new AxisType[] { Axes.X, Axes.Y } );
+		final ImagePlus imagePlus = ImgToVirtualStack.wrap( imgPlus, false );
+		final float expected = 42;
 		// process
-		ImageProcessor processor = imagePlus.getStack().getProcessor(1);
-		processor.setf(0, 0, expected);
-		imagePlus.getStack().setPixels(processor.getPixels(), 1); // NB: required to signal data changed
+		final ImageProcessor processor = imagePlus.getStack().getProcessor( 1 );
+		processor.setf( 0, 0, expected );
+		imagePlus.getStack().setPixels( processor.getPixels(), 1 ); // NB:
+																	// required
+																	// to signal
+																	// data
+																	// changed
 		// test
-		assertEquals(expected, img.cursor().next().get(), 0.0f);
+		assertEquals( expected, img.cursor().next().get(), 0.0f );
 	}
 
 	@Test
-	public void testPersistenceBits() {
+	public void testPersistenceBits()
+	{
 		// setup
-		Img<BitType> img = ArrayImgs.bits(1, 1);
-		ImgPlus<BitType> imgPlus = new ImgPlus<BitType>(img, "title", new AxisType[]{ Axes.X, Axes.Y });
-		ImagePlus imagePlus = ImgToVirtualStack.wrapAndScaleBitType(imgPlus);
+		final Img< BitType > img = ArrayImgs.bits( 1, 1 );
+		final ImgPlus< BitType > imgPlus = new ImgPlus< BitType >( img, "title", new AxisType[] { Axes.X, Axes.Y } );
+		final ImagePlus imagePlus = ImgToVirtualStack.wrapAndScaleBitType( imgPlus );
 		// process
-		ImageProcessor processor = imagePlus.getStack().getProcessor(1);
-		processor.setf(0, 0, 255);
-		imagePlus.getStack().setPixels(processor.getPixels(), 1); // NB: required to signal data changed
+		final ImageProcessor processor = imagePlus.getStack().getProcessor( 1 );
+		processor.setf( 0, 0, 255 );
+		imagePlus.getStack().setPixels( processor.getPixels(), 1 ); // NB:
+																	// required
+																	// to signal
+																	// data
+																	// changed
 		// test
-		assertEquals(true, img.cursor().next().get());
+		assertEquals( true, img.cursor().next().get() );
 	}
 }

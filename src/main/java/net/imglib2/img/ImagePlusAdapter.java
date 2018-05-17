@@ -11,13 +11,13 @@
  * %%
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -34,12 +34,12 @@
 
 package net.imglib2.img;
 
-import ij.ImagePlus;
 import net.imagej.ImgPlus;
 import net.imagej.axis.Axes;
 import net.imglib2.Cursor;
 import net.imglib2.converter.Converter;
 import net.imglib2.img.display.imagej.CalibrationUtils;
+import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.img.imageplus.ByteImagePlus;
 import net.imglib2.img.imageplus.FloatImagePlus;
 import net.imglib2.img.imageplus.ImagePlusImg;
@@ -55,13 +55,14 @@ import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.type.numeric.real.FloatType;
 
+import ij.ImagePlus;
+
 /**
  * Provides convenience functions to wrap ImageJ 1.x data structures as ImgLib2
- * ones, and vice versa.
- * <p>
- * @see net.imglib2.img.display.imagej.ImageJFunctions
- * </p>
- * 
+ * ones.
+ *
+ * @see ImageJFunctions
+ *
  * @author Stephan Preibisch
  * @author Stephan Saalfeld
  */
@@ -87,87 +88,72 @@ public class ImagePlusAdapter
 
 	public static < T extends NumericType< T > & NativeType< T > > ImgPlus< T > wrapImgPlus( final ImagePlus imp )
 	{
-		Img< T > img = wrap( imp );
-		return new ImgPlus< >( img, imp.getTitle(), CalibrationUtils.getNonTrivialAxes(imp) );
+		final Img< T > img = wrap( imp );
+		return new ImgPlus<>( img, imp.getTitle(), CalibrationUtils.getNonTrivialAxes( imp ) );
 	}
 
 	protected static ImagePlusImg< ?, ? > wrapLocal( final ImagePlus imp )
 	{
-		switch( imp.getType() )
-		{		
-		case ImagePlus.GRAY8 : 
+		switch ( imp.getType() )
 		{
+		case ImagePlus.GRAY8:
 			return wrapByte( imp );
-		}
-		case ImagePlus.GRAY16 : 
-		{
+		case ImagePlus.GRAY16:
 			return wrapShort( imp );
-		}
-		case ImagePlus.GRAY32 : 
-		{
+		case ImagePlus.GRAY32:
 			return wrapFloat( imp );
-		}
-		case ImagePlus.COLOR_RGB : 
-		{
+		case ImagePlus.COLOR_RGB:
 			return wrapRGBA( imp );
-		}
-		default :
-		{
-			throw new RuntimeException("Only 8, 16, 32-bit and RGB supported!");
-		}
+		default:
+			throw new RuntimeException( "Only 8, 16, 32-bit and RGB supported!" );
 		}
 	}
 
 	protected static ImagePlusImg< ?, ? > wrapLocalReal( final ImagePlus imp )
 	{
-		switch( imp.getType() )
-		{		
-		case ImagePlus.GRAY8 : 
+		switch ( imp.getType() )
 		{
+		case ImagePlus.GRAY8:
 			return wrapByte( imp );
-		}
-		case ImagePlus.GRAY16 : 
-		{
+		case ImagePlus.GRAY16:
 			return wrapShort( imp );
-		}
-		case ImagePlus.GRAY32 : 
-		{
+		case ImagePlus.GRAY32:
 			return wrapFloat( imp );
-		}
-		default :
-		{
-			throw new RuntimeException("Only 8, 16 and 32-bit supported!");
-		}
+		default:
+			throw new RuntimeException( "Only 8, 16 and 32-bit supported!" );
 		}
 	}
 
-	protected static < T extends NumericType< T > & NativeType< T > > void setAxesFromImagePlus( final ImgPlus<T> image, final ImagePlus imp ) 
+	protected static < T extends NumericType< T > & NativeType< T > > void setAxesFromImagePlus( final ImgPlus< T > image, final ImagePlus imp )
 	{
 
 		int currentDim = 2;
 
-		if (imp.getNChannels() > 1) {
-			image.axis(currentDim).setType(Axes.CHANNEL);
+		if ( imp.getNChannels() > 1 )
+		{
+			image.axis( currentDim ).setType( Axes.CHANNEL );
 			currentDim++;
 		}
 
-		if (imp.getNSlices() > 1) {
-			image.axis(currentDim).setType(Axes.Z);
+		if ( imp.getNSlices() > 1 )
+		{
+			image.axis( currentDim ).setType( Axes.Z );
 			currentDim++;
 		}
 
-		if (imp.getNFrames() > 1) {
-			image.axis(currentDim).setType(Axes.TIME);
+		if ( imp.getNFrames() > 1 )
+		{
+			image.axis( currentDim ).setType( Axes.TIME );
 		}
 
 	}
 
-	public static ByteImagePlus<UnsignedByteType> wrapByte( final ImagePlus imp )
+	public static ByteImagePlus< UnsignedByteType > wrapByte( final ImagePlus imp )
 	{
-		if ( imp.getType() != ImagePlus.GRAY8)
+		if ( imp.getType() != ImagePlus.GRAY8 )
 			return null;
 
-		final ByteImagePlus< UnsignedByteType > container = new ByteImagePlus< >( imp );
+		final ByteImagePlus< UnsignedByteType > container = new ByteImagePlus<>( imp );
 
 		// create a Type that is linked to the container
 		final UnsignedByteType linkedType = new UnsignedByteType( container );
@@ -178,12 +164,12 @@ public class ImagePlusAdapter
 		return container;
 	}
 
-	public static ShortImagePlus<UnsignedShortType> wrapShort( final ImagePlus imp )
+	public static ShortImagePlus< UnsignedShortType > wrapShort( final ImagePlus imp )
 	{
-		if ( imp.getType() != ImagePlus.GRAY16)
+		if ( imp.getType() != ImagePlus.GRAY16 )
 			return null;
 
-		final ShortImagePlus< UnsignedShortType > container = new ShortImagePlus< >( imp );
+		final ShortImagePlus< UnsignedShortType > container = new ShortImagePlus<>( imp );
 
 		// create a Type that is linked to the container
 		final UnsignedShortType linkedType = new UnsignedShortType( container );
@@ -191,15 +177,15 @@ public class ImagePlusAdapter
 		// pass it to the DirectAccessContainer
 		container.setLinkedType( linkedType );
 
-		return container;						
+		return container;
 	}
 
-	public static IntImagePlus<ARGBType> wrapRGBA( final ImagePlus imp )
+	public static IntImagePlus< ARGBType > wrapRGBA( final ImagePlus imp )
 	{
-		if ( imp.getType() != ImagePlus.COLOR_RGB)
+		if ( imp.getType() != ImagePlus.COLOR_RGB )
 			return null;
 
-		final IntImagePlus< ARGBType > container = new IntImagePlus< >( imp );
+		final IntImagePlus< ARGBType > container = new IntImagePlus<>( imp );
 
 		// create a Type that is linked to the container
 		final ARGBType linkedType = new ARGBType( container );
@@ -207,15 +193,15 @@ public class ImagePlusAdapter
 		// pass it to the DirectAccessContainer
 		container.setLinkedType( linkedType );
 
-		return container;				
-	}	
+		return container;
+	}
 
-	public static FloatImagePlus<FloatType> wrapFloat( final ImagePlus imp )
+	public static FloatImagePlus< FloatType > wrapFloat( final ImagePlus imp )
 	{
-		if ( imp.getType() != ImagePlus.GRAY32)
+		if ( imp.getType() != ImagePlus.GRAY32 )
 			return null;
 
-		final FloatImagePlus<FloatType> container = new FloatImagePlus<>( imp );
+		final FloatImagePlus< FloatType > container = new FloatImagePlus<>( imp );
 
 		// create a Type that is linked to the container
 		final FloatType linkedType = new FloatType( container );
@@ -223,34 +209,24 @@ public class ImagePlusAdapter
 		// pass it to the DirectAccessContainer
 		container.setLinkedType( linkedType );
 
-		return container;				
-	}	
+		return container;
+	}
 
 	public static Img< FloatType > convertFloat( final ImagePlus imp )
 	{
 
-		switch( imp.getType() )
-		{		
-		case ImagePlus.GRAY8 : 
+		switch ( imp.getType() )
 		{
-			return convertToFloat( wrapByte( imp ), new NumberToFloatConverter<UnsignedByteType>() );
-		}
-		case ImagePlus.GRAY16 : 
-		{
-			return convertToFloat( wrapShort( imp ), new NumberToFloatConverter<UnsignedShortType>() );
-		}
-		case ImagePlus.GRAY32 : 
-		{
+		case ImagePlus.GRAY8:
+			return convertToFloat( wrapByte( imp ), new NumberToFloatConverter< UnsignedByteType >() );
+		case ImagePlus.GRAY16:
+			return convertToFloat( wrapShort( imp ), new NumberToFloatConverter< UnsignedShortType >() );
+		case ImagePlus.GRAY32:
 			return wrapFloat( imp );
-		}
-		case ImagePlus.COLOR_RGB : 
-		{
+		case ImagePlus.COLOR_RGB:
 			return convertToFloat( wrapRGBA( imp ), new ARGBtoFloatConverter() );
-		}
-		default :
-		{
-			throw new RuntimeException("Only 8, 16, 32-bit and RGB supported!");
-		}
+		default:
+			throw new RuntimeException( "Only 8, 16, 32-bit and RGB supported!" );
 		}
 	}
 
@@ -258,23 +234,25 @@ public class ImagePlusAdapter
 	{
 		/** Luminance times alpha. */
 		@Override
-		public void convert(final ARGBType input, final FloatType output) {
+		public void convert( final ARGBType input, final FloatType output )
+		{
 			final int v = input.get();
-			output.setReal( ((v >> 24) & 0xff) * (((v >> 16) & 0xff) * 0.299 + ((v >> 8) & 0xff) * 0.587 + (v & 0xff) * 0.144));
+			output.setReal( ( ( v >> 24 ) & 0xff ) * ( ( ( v >> 16 ) & 0xff ) * 0.299 + ( ( v >> 8 ) & 0xff ) * 0.587 + ( v & 0xff ) * 0.144 ) );
 		}
 	}
 
 	static private class NumberToFloatConverter< T extends ComplexType< T > > implements Converter< T, FloatType >
 	{
 		@Override
-		public void convert(final T input, final FloatType output) {
+		public void convert( final T input, final FloatType output )
+		{
 			output.setReal( input.getRealFloat() );
-		}		
+		}
 	}
 
 	protected static < T extends Type< T > > Img< FloatType > convertToFloat(
 			final Img< T > input, final Converter< T, FloatType > c )
-			{
+	{
 		final ImagePlusImg< FloatType, ? > output = new ImagePlusImgFactory<>( new FloatType() ).create( input );
 
 		final Cursor< T > in = input.cursor();
@@ -285,9 +263,9 @@ public class ImagePlusAdapter
 			in.fwd();
 			out.fwd();
 
-			c.convert(in.get(), out.get());
+			c.convert( in.get(), out.get() );
 		}
 
 		return output;
-			}
+	}
 }

@@ -11,13 +11,13 @@
  * %%
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -42,7 +42,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import ij.VirtualStack;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converter;
 import net.imglib2.type.numeric.RealType;
@@ -54,26 +53,27 @@ import net.imglib2.view.Views;
  * TODO
  *
  */
-public class ImageJVirtualStackFloat<S> extends ImageJVirtualStack< S, FloatType >
+public class ImageJVirtualStackFloat< S > extends ImageJVirtualStack< S, FloatType >
 {
-	public static < T extends RealType<?> > ImageJVirtualStackFloat<T> wrap( RandomAccessibleInterval<T> source ) {
+	public static < T extends RealType< ? > > ImageJVirtualStackFloat< T > wrap( final RandomAccessibleInterval< T > source )
+	{
 		return new ImageJVirtualStackFloat<>( source, new FloatConverter() );
 	}
 
-	public ImageJVirtualStackFloat(final RandomAccessibleInterval< S > source,
-			final Converter< ? super S, FloatType > converter)
+	public ImageJVirtualStackFloat( final RandomAccessibleInterval< S > source,
+			final Converter< ? super S, FloatType > converter )
 	{
 		this( source, converter, null );
 	}
 
-	public ImageJVirtualStackFloat(final RandomAccessibleInterval< S > source,
-			final Converter< ? super S, FloatType > converter, ExecutorService service)
+	public ImageJVirtualStackFloat( final RandomAccessibleInterval< S > source,
+			final Converter< ? super S, FloatType > converter, final ExecutorService service )
 	{
 		super( source, converter, new FloatType(), 32, service );
 		setMinAndMax( 0, 1 );
 	}
 
-	public void setMinMax(final RandomAccessibleInterval< S > source, final Converter< S, FloatType > converter)
+	public void setMinMax( final RandomAccessibleInterval< S > source, final Converter< S, FloatType > converter )
 	{
 		if ( service != null )
 		{
@@ -108,7 +108,7 @@ public class ImageJVirtualStackFloat<S> extends ImageJVirtualStack< S, FloatType
 		}
 	}
 
-	private void setMinMaxMT(final RandomAccessibleInterval< S > source, final Converter< S, FloatType > converter)
+	private void setMinMaxMT( final RandomAccessibleInterval< S > source, final Converter< S, FloatType > converter )
 	{
 		final long nTasks = Runtime.getRuntime().availableProcessors();
 		long size = 1;
@@ -120,8 +120,8 @@ public class ImageJVirtualStackFloat<S> extends ImageJVirtualStack< S, FloatType
 		final List< Callable< Void > > tasks = new ArrayList<>();
 		final AtomicInteger ai = new AtomicInteger();
 
-		final ArrayList< Float > mins = new ArrayList<>( (int) nTasks );
-		final ArrayList< Float > maxs = new ArrayList<>( (int) nTasks );
+		final ArrayList< Float > mins = new ArrayList<>( ( int ) nTasks );
+		final ArrayList< Float > maxs = new ArrayList<>( ( int ) nTasks );
 
 		for ( int t = 0; t < nTasks; ++t )
 		{
@@ -170,8 +170,8 @@ public class ImageJVirtualStackFloat<S> extends ImageJVirtualStack< S, FloatType
 
 		try
 		{
-			List< Future< Void > > futures = service.invokeAll( tasks );
-			for ( Future< Void > f : futures )
+			final List< Future< Void > > futures = service.invokeAll( tasks );
+			for ( final Future< Void > f : futures )
 				f.get();
 		}
 		catch ( InterruptedException | ExecutionException e )
@@ -196,15 +196,18 @@ public class ImageJVirtualStackFloat<S> extends ImageJVirtualStack< S, FloatType
 	}
 
 	private static class FloatConverter implements
-			Converter<RealType<?>, FloatType >
+			Converter< RealType< ? >, FloatType >
 	{
 
 		@Override
-		public void convert(final RealType<?> input, final FloatType output) {
+		public void convert( final RealType< ? > input, final FloatType output )
+		{
 			double val = input.getRealDouble();
-			if (val < -Float.MAX_VALUE) val = -Float.MAX_VALUE;
-			else if (val > Float.MAX_VALUE) val = Float.MAX_VALUE;
-			output.setReal(val);
+			if ( val < -Float.MAX_VALUE )
+				val = -Float.MAX_VALUE;
+			else if ( val > Float.MAX_VALUE )
+				val = Float.MAX_VALUE;
+			output.setReal( val );
 		}
 
 	}
