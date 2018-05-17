@@ -11,13 +11,13 @@
  * %%
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -32,33 +32,56 @@
  * #L%
  */
 
-package net.imglib2.img.display.imagej;
+package net.imglib2.test;
 
-import java.util.concurrent.ExecutorService;
-
-import ij.ImagePlus;
-import net.imagej.ImgPlus;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.converter.Converter;
+import net.imglib2.img.Img;
+import net.imglib2.img.array.ArrayImgFactory;
+import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.ARGBType;
+import net.imglib2.type.numeric.integer.IntType;
+import net.imglib2.type.numeric.integer.UnsignedByteType;
+import net.imglib2.type.numeric.integer.UnsignedShortType;
+import net.imglib2.type.numeric.real.DoubleType;
+import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.util.Util;
+import net.imglib2.view.Views;
 
-/**
- * TODO
- *
- */
-public class ImageJVirtualStackARGB< S > extends ImageJVirtualStack< S, ARGBType >
+import java.util.Random;
+import java.util.function.Consumer;
+
+public class RandomImgs
 {
-	public static ImageJVirtualStackARGB< ARGBType > wrap( RandomAccessibleInterval< ARGBType > source ) {
-		return new ImageJVirtualStackARGB<>( source, ( input, output ) -> output.set( input ) );
+	// TODO generalize & move to imglib2
+	public static < T extends NativeType< T > > Img< T > randomImage( T type, long... dims )
+	{
+		Img< T > expected = new ArrayImgFactory< T >().create( dims, type );
+		return setRandomValues( expected );
 	}
 
-	public ImageJVirtualStackARGB( RandomAccessibleInterval< S > source, Converter< ? super S, ARGBType > converter)
+	private static < I extends RandomAccessibleInterval< T >, T extends NativeType< T > >
+	I setRandomValues( I image )
 	{
-		this(source, converter, null);
+		T type = Util.getTypeFromInterval( image );
+		Views.iterable( image ).forEach( randomSetter( type ) );
+		return image;
 	}
-	public ImageJVirtualStackARGB( RandomAccessibleInterval< S > source, Converter< ? super S, ARGBType > converter, ExecutorService service )
+
+	private static < T extends NativeType< T > > Consumer< T > randomSetter( T type )
 	{
-		super( source, converter, new ARGBType(), 24, service);
-		setMinAndMax( 0, 255 );
+		Random random = new Random();
+		if ( type instanceof UnsignedByteType )
+			return b -> ( ( UnsignedByteType ) b ).setInteger( random.nextInt( ( 2 << 8 ) - 1 ) );
+		if ( type instanceof UnsignedShortType )
+			return b -> ( ( UnsignedShortType ) b ).setInteger( random.nextInt( ( 2 << 16 ) - 1 ) );
+		if ( type instanceof IntType )
+			return b -> ( ( IntType ) b ).setInteger( random.nextInt() );
+		if ( type instanceof ARGBType )
+			return b -> ( ( ARGBType ) b ).set( random.nextInt() );
+		if ( type instanceof FloatType )
+			return b -> ( ( FloatType ) b ).setReal( random.nextFloat() );
+		if ( type instanceof DoubleType )
+			return b -> ( ( DoubleType ) b ).setReal( random.nextDouble() );
+		throw new UnsupportedOperationException();
 	}
 }

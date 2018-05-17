@@ -42,9 +42,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import ij.ImagePlus;
+import ij.VirtualStack;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converter;
+import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.view.RandomAccessibleIntervalCursor;
 import net.imglib2.view.Views;
@@ -55,17 +56,21 @@ import net.imglib2.view.Views;
  */
 public class ImageJVirtualStackFloat<S> extends ImageJVirtualStack< S, FloatType >
 {
+	public static < T extends RealType<?> > ImageJVirtualStackFloat<T> wrap( RandomAccessibleInterval<T> source ) {
+		return new ImageJVirtualStackFloat<>( source, new FloatConverter() );
+	}
+
 	public ImageJVirtualStackFloat(final RandomAccessibleInterval< S > source,
-			final Converter< S, FloatType > converter)
+			final Converter< ? super S, FloatType > converter)
 	{
 		this( source, converter, null );
 	}
 
 	public ImageJVirtualStackFloat(final RandomAccessibleInterval< S > source,
-			final Converter< S, FloatType > converter, ExecutorService service)
+			final Converter< ? super S, FloatType > converter, ExecutorService service)
 	{
-		super( source, converter, new FloatType(), ImagePlus.GRAY32, service );
-		imageProcessor.setMinAndMax( 0, 1 );
+		super( source, converter, new FloatType(), 32, service );
+		setMinAndMax( 0, 1 );
 	}
 
 	public void setMinMax(final RandomAccessibleInterval< S > source, final Converter< S, FloatType > converter)
@@ -99,9 +104,7 @@ public class ImageJVirtualStackFloat<S> extends ImageJVirtualStack< S, FloatType
 					max = value;
 			}
 
-			System.out.println( "fmax = " + max );
-			System.out.println( "fmin = " + min );
-			imageProcessor.setMinAndMax( min, max );
+			setMinAndMax( min, max );
 		}
 	}
 
@@ -188,9 +191,21 @@ public class ImageJVirtualStackFloat<S> extends ImageJVirtualStack< S, FloatType
 				max = maxs.get( t );
 		}
 
-		System.out.println( "fmax = " + max );
-		System.out.println( "fmin = " + min );
-		imageProcessor.setMinAndMax( min, max );
+		setMinAndMax( min, max );
+
+	}
+
+	private static class FloatConverter implements
+			Converter<RealType<?>, FloatType >
+	{
+
+		@Override
+		public void convert(final RealType<?> input, final FloatType output) {
+			double val = input.getRealDouble();
+			if (val < -Float.MAX_VALUE) val = -Float.MAX_VALUE;
+			else if (val > Float.MAX_VALUE) val = Float.MAX_VALUE;
+			output.setReal(val);
+		}
 
 	}
 }

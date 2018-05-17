@@ -11,13 +11,13 @@
  * %%
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -32,62 +32,61 @@
  * #L%
  */
 
-package net.imglib2.img.display.imagej;
+package net.imglib2.test;
 
-import java.util.concurrent.ExecutorService;
-
-import ij.ImagePlus;
-import ij.VirtualStack;
+import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.converter.Converter;
-import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.RealType;
-import net.imglib2.type.numeric.integer.UnsignedByteType;
+import net.imglib2.type.operators.ValueEquals;
+import net.imglib2.util.Intervals;
+import net.imglib2.view.Views;
+import org.junit.Assert;
 
-/**
- * TODO
- *
- */
-public class ImageJVirtualStackUnsignedByte< S > extends ImageJVirtualStack< S, UnsignedByteType >
+import java.util.Arrays;
+import java.util.function.BiConsumer;
+import java.util.function.BiPredicate;
+
+import static org.junit.Assert.fail;
+
+public class AssertImgs
 {
-	public static <T extends RealType<?>> ImageJVirtualStackUnsignedByte<T> wrap( RandomAccessibleInterval<T> source ) {
-		return new ImageJVirtualStackUnsignedByte<>( source, new ByteConverter() );
-	}
-
-	public static ImageJVirtualStackUnsignedByte<BitType> wrapAndScaleBitType( RandomAccessibleInterval<BitType> source ) {
-		return new ImageJVirtualStackUnsignedByte<>( source, new BitToByteConverter() );
-	}
-
-	public ImageJVirtualStackUnsignedByte( RandomAccessibleInterval< S > source, Converter< ? super S, UnsignedByteType > converter)
+	// TODO generalize & move to imglib2
+	public static < T > void assertImageEquals(
+			RandomAccessibleInterval< ? extends ValueEquals< T > > expected,
+			RandomAccessibleInterval< T > actual )
 	{
-		this( source, converter, null );
+		pairedForEach( expected, actual, ValueEquals::valueEquals );
 	}
-	public ImageJVirtualStackUnsignedByte( RandomAccessibleInterval< S > source, Converter< ? super S, UnsignedByteType > converter, ExecutorService service )
+
+	public static void assertRealTypeImageEquals(
+			RandomAccessibleInterval< ? extends RealType< ? > > expected,
+			RandomAccessibleInterval< ? extends RealType< ? > > actual )
 	{
-		super( source, converter, new UnsignedByteType(), 8 , service);
-		setMinAndMax( 0, 255 );
+		assertImageEquals( expected, actual, ( e, a ) -> e.getRealDouble() == a.getRealDouble() );
 	}
 
-	private static class ByteConverter implements
-			Converter<RealType<?>, UnsignedByteType>
+	public static < T, U > void assertImageEquals(
+			RandomAccessibleInterval< T > expected, RandomAccessibleInterval< U > actual, BiPredicate< ? super T, ? super U > equals )
 	{
-
-		@Override
-		public void convert(final RealType<?> input, final UnsignedByteType output) {
-			double val = input.getRealDouble();
-			if (val < 0) val = 0;
-			else if (val > 255) val = 255;
-			output.setReal(val);
-		}
+		pairedForEach( expected, actual, ( e, a ) -> Assert.assertTrue( equals.test( e, a ) ) );
 	}
 
-	private static class BitToByteConverter implements
-			Converter<BitType, UnsignedByteType>
+	private static void assertIntervalEquals( Interval expected, Interval actual )
 	{
-
-		@Override
-		public void convert(final BitType input, final UnsignedByteType output) {
-			output.set(input.get() ? 255 : 0);
-		}
+		if ( !Intervals.equals( expected, actual ) )
+			fail( "intervals differ, expected=" + toString( expected ) + " actual=" + toString( actual ) );
 	}
+
+	private static String toString( Interval actual )
+	{
+		return "{min=" + Arrays.toString( Intervals.minAsLongArray( actual ) )
+				+ ",size=" + Arrays.toString( Intervals.dimensionsAsLongArray( actual ) ) + "}";
+	}
+
+	private static < A, B > void pairedForEach( RandomAccessibleInterval< A > expected, RandomAccessibleInterval< B > actual, BiConsumer< A, B > pairConsumer )
+	{
+		assertIntervalEquals( expected, actual );
+		Views.interval( Views.pair( expected, actual ), expected ).forEach( p -> pairConsumer.accept( p.getA(), p.getB() ) );
+	}
+
 }

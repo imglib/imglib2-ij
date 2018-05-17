@@ -36,10 +36,10 @@ package net.imglib2.img.display.imagej;
 
 import java.util.concurrent.ExecutorService;
 
-import ij.ImagePlus;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converter;
 import net.imglib2.type.logic.BitType;
+import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.Unsigned12BitType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.util.Util;
@@ -50,14 +50,18 @@ import net.imglib2.util.Util;
  */
 public class ImageJVirtualStackUnsignedShort< S > extends ImageJVirtualStack< S, UnsignedShortType >
 {
-	public ImageJVirtualStackUnsignedShort( RandomAccessibleInterval< S > source, Converter< S, UnsignedShortType > converter)
+	public static < T extends RealType<?> > ImageJVirtualStackUnsignedShort< T > wrap( RandomAccessibleInterval< T > source ) {
+		return new ImageJVirtualStackUnsignedShort<>( source, new ShortConverter() );
+	}
+
+	public ImageJVirtualStackUnsignedShort( RandomAccessibleInterval< S > source, Converter< ? super S, UnsignedShortType > converter)
 	{
 		this( source, converter, null );
 	}
 
-	public ImageJVirtualStackUnsignedShort( RandomAccessibleInterval< S > source, Converter< S, UnsignedShortType > converter, ExecutorService service )
+	public ImageJVirtualStackUnsignedShort( RandomAccessibleInterval< S > source, Converter< ? super S, UnsignedShortType > converter, ExecutorService service )
 	{
-		super( source, converter, new UnsignedShortType(), ImagePlus.GRAY16, service );
+		super( source, converter, new UnsignedShortType(), 16, service );
 
 		int maxDisplay = (1 << 16) - 1;
 		
@@ -68,6 +72,20 @@ public class ImageJVirtualStackUnsignedShort< S > extends ImageJVirtualStack< S,
 		else if ( Unsigned12BitType.class.isInstance( s ) )
 			maxDisplay = 4095;
 		
-		imageProcessor.setMinAndMax( 0, maxDisplay );
+		setMinAndMax( 0, maxDisplay );
+	}
+
+	private static class ShortConverter implements
+			Converter<RealType<?>, UnsignedShortType >
+	{
+
+		@Override
+		public void convert(final RealType<?> input, final UnsignedShortType output) {
+			double val = input.getRealDouble();
+			if (val < 0) val = 0;
+			else if (val > 65535) val = 65535;
+			output.setReal(val);
+		}
+
 	}
 }

@@ -1,8 +1,8 @@
-/*
+/*-
  * #%L
  * ImgLib2: a general-purpose, multidimensional image processing library.
  * %%
- * Copyright (C) 2009 - 2016 Tobias Pietzsch, Stephan Preibisch, Stephan Saalfeld,
+ * Copyright (C) 2009 - 2018 Tobias Pietzsch, Stephan Preibisch, Stephan Saalfeld,
  * John Bogovic, Albert Cardona, Barry DeZonia, Christian Dietz, Jan Funke,
  * Aivar Grislis, Jonathan Hale, Grant Harris, Stefan Helfrich, Mark Hiner,
  * Martin Horn, Steffen Jaensch, Lee Kamentsky, Larry Lindsey, Melissa Linkert,
@@ -31,63 +31,66 @@
  * POSSIBILITY OF SUCH DAMAGE.
  * #L%
  */
-
-package net.imglib2.img.display.imagej;
-
-import java.util.concurrent.ExecutorService;
+package net.imglib2.img;
 
 import ij.ImagePlus;
 import ij.VirtualStack;
+import ij.process.ByteProcessor;
+import ij.process.ImageProcessor;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.converter.Converter;
-import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.RealType;
-import net.imglib2.type.numeric.integer.UnsignedByteType;
+import net.imglib2.view.Views;
+import org.junit.Test;
 
-/**
- * TODO
- *
- */
-public class ImageJVirtualStackUnsignedByte< S > extends ImageJVirtualStack< S, UnsignedByteType >
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static junit.framework.TestCase.assertTrue;
+
+public class ImagePlusToImgLib2PerformanceTest
 {
-	public static <T extends RealType<?>> ImageJVirtualStackUnsignedByte<T> wrap( RandomAccessibleInterval<T> source ) {
-		return new ImageJVirtualStackUnsignedByte<>( source, new ByteConverter() );
+
+	@Test
+	public void testIterateVirtualStack() {
+		AtomicInteger counter = new AtomicInteger();
+		ImagePlus image = countingImagePlus(counter);
+		Img<? extends RealType<?>> img = VirtualStackAdapter.wrapByte(image);
+		runFlatIteration(img);
+		assertTrue(counter.get() < 120); // don't call getProcessor too often
 	}
 
-	public static ImageJVirtualStackUnsignedByte<BitType> wrapAndScaleBitType( RandomAccessibleInterval<BitType> source ) {
-		return new ImageJVirtualStackUnsignedByte<>( source, new BitToByteConverter() );
+	@Test
+	public void testIteratePermutedVirtualStack() {
+		AtomicInteger counter = new AtomicInteger();
+		ImagePlus image = countingImagePlus(counter);
+		Img<? extends RealType<?>> img = VirtualStackAdapter.wrapByte(image);
+		runFlatIteration(Views.permute(img, 0, 2));
+		assertTrue(counter.get() < 120); // don't call getProcessor too often
 	}
 
-	public ImageJVirtualStackUnsignedByte( RandomAccessibleInterval< S > source, Converter< ? super S, UnsignedByteType > converter)
-	{
-		this( source, converter, null );
-	}
-	public ImageJVirtualStackUnsignedByte( RandomAccessibleInterval< S > source, Converter< ? super S, UnsignedByteType > converter, ExecutorService service )
-	{
-		super( source, converter, new UnsignedByteType(), 8 , service);
-		setMinAndMax( 0, 255 );
-	}
-
-	private static class ByteConverter implements
-			Converter<RealType<?>, UnsignedByteType>
-	{
-
-		@Override
-		public void convert(final RealType<?> input, final UnsignedByteType output) {
-			double val = input.getRealDouble();
-			if (val < 0) val = 0;
-			else if (val > 255) val = 255;
-			output.setReal(val);
-		}
+	@Test
+	public void testIterateImagePlusAdapter() {
+		AtomicInteger counter = new AtomicInteger();
+		ImagePlus image = countingImagePlus(counter);
+		Img<? extends RealType<?>> img = ImagePlusAdapter.wrapByte(image);
+		runFlatIteration(Views.permute(img, 0, 2));
+		assertTrue(counter.get() < 120); // don't call getProcessor too often
 	}
 
-	private static class BitToByteConverter implements
-			Converter<BitType, UnsignedByteType>
-	{
-
-		@Override
-		public void convert(final BitType input, final UnsignedByteType output) {
-			output.set(input.get() ? 255 : 0);
-		}
+	private ImagePlus countingImagePlus(AtomicInteger counter) {
+		// NB: create an ImagePlus that counts how many ImageProcessors are accessed
+		VirtualStack stack = new VirtualStack(100, 100, 100) {
+			@Override public ImageProcessor getProcessor( int n )
+			{
+				counter.incrementAndGet();
+				return new ByteProcessor( getWidth(), getHeight() );
+			}
+		};
+		return new ImagePlus("title", stack);
 	}
+
+	private void runFlatIteration(RandomAccessibleInterval<? extends RealType<?>> imgPlus) {
+		for(RealType pixel : Views.flatIterable(imgPlus))
+			;
+	}
+
 }
