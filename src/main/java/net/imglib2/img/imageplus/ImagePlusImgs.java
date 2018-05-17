@@ -86,7 +86,7 @@ final public class ImagePlusImgs
 	@SuppressWarnings( "unchecked" )
 	final static public ByteImagePlus< UnsignedByteType > unsignedBytes( final long... dim )
 	{
-		return ( ByteImagePlus< UnsignedByteType > ) new ImagePlusImgFactory< UnsignedByteType >().create( dim, new UnsignedByteType() );
+		return ( ByteImagePlus< UnsignedByteType > ) new ImagePlusImgFactory<>( new UnsignedByteType() ).create( dim );
 	}
 
 	/**
@@ -99,7 +99,7 @@ final public class ImagePlusImgs
 	@SuppressWarnings( "unchecked" )
 	final static public ByteImagePlus< ByteType > bytes( final long... dim )
 	{
-		return ( ByteImagePlus< ByteType > ) new ImagePlusImgFactory< ByteType >().create( dim, new ByteType() );
+		return ( ByteImagePlus< ByteType > ) new ImagePlusImgFactory<>( new ByteType() ).create( dim );
 	}
 
 	/**
@@ -113,7 +113,7 @@ final public class ImagePlusImgs
 	@SuppressWarnings( "unchecked" )
 	final static public ShortImagePlus< UnsignedShortType > unsignedShorts( final long... dim )
 	{
-		return ( ShortImagePlus< UnsignedShortType > ) new ImagePlusImgFactory< UnsignedShortType >().create( dim, new UnsignedShortType() );
+		return ( ShortImagePlus< UnsignedShortType > ) new ImagePlusImgFactory<>( new UnsignedShortType() ).create( dim );
 	}
 
 	/**
@@ -126,7 +126,7 @@ final public class ImagePlusImgs
 	@SuppressWarnings( "unchecked" )
 	final static public ShortImagePlus< ShortType > shorts( final long... dim )
 	{
-		return ( ShortImagePlus< ShortType > ) new ImagePlusImgFactory< ShortType >().create( dim, new ShortType() );
+		return ( ShortImagePlus< ShortType > ) new ImagePlusImgFactory<>( new ShortType() ).create( dim );
 	}
 
 	/**
@@ -141,7 +141,7 @@ final public class ImagePlusImgs
 	@SuppressWarnings( "unchecked" )
 	final static public IntImagePlus< UnsignedIntType > unsignedInts( final long... dim )
 	{
-		return ( IntImagePlus< UnsignedIntType > ) new ImagePlusImgFactory< UnsignedIntType >().create( dim, new UnsignedIntType() );
+		return ( IntImagePlus< UnsignedIntType > ) new ImagePlusImgFactory<>( new UnsignedIntType() ).create( dim );
 	}
 
 	/**
@@ -156,7 +156,7 @@ final public class ImagePlusImgs
 	@SuppressWarnings( "unchecked" )
 	final static public IntImagePlus< IntType > ints( final long... dim )
 	{
-		return ( IntImagePlus< IntType > ) new ImagePlusImgFactory< IntType >().create( dim, new IntType() );
+		return ( IntImagePlus< IntType > ) new ImagePlusImgFactory<>( new IntType() ).create( dim );
 	}
 
 	/**
@@ -169,7 +169,7 @@ final public class ImagePlusImgs
 	@SuppressWarnings( "unchecked" )
 	final static public FloatImagePlus< FloatType > floats( final long... dim )
 	{
-		return ( FloatImagePlus< FloatType > ) new ImagePlusImgFactory< FloatType >().create( dim, new FloatType() );
+		return ( FloatImagePlus< FloatType > ) new ImagePlusImgFactory<>( new FloatType() ).create( dim );
 	}
 
 	/**
@@ -182,7 +182,7 @@ final public class ImagePlusImgs
 	@SuppressWarnings( "unchecked" )
 	final static public IntImagePlus< ARGBType > argbs( final long... dim )
 	{
-		return ( IntImagePlus< ARGBType > ) new ImagePlusImgFactory< ARGBType >().create( dim, new ARGBType() );
+		return ( IntImagePlus< ARGBType > ) new ImagePlusImgFactory<>( new ARGBType() ).create( dim );
 	}
 
 	/**
@@ -198,7 +198,7 @@ final public class ImagePlusImgs
 	@SuppressWarnings( "unchecked" )
 	final static public FloatImagePlus< ComplexFloatType > complexFloats( final long... dim )
 	{
-		return ( FloatImagePlus< ComplexFloatType > ) new ImagePlusImgFactory< ComplexFloatType >().create( dim, new ComplexFloatType() );
+		return ( FloatImagePlus< ComplexFloatType > ) new ImagePlusImgFactory<>( new ComplexFloatType() ).create( dim );
 	}
 
 	/**

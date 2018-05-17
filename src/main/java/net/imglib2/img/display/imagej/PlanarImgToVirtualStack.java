@@ -114,7 +114,7 @@ public class PlanarImgToVirtualStack extends AbstractVirtualStack
 		return imagePlus;
 	}
 
-	private static int dimension( final ImgPlus imgPlus, final AxisType axisType )
+	private static int dimension( final ImgPlus< ? > imgPlus, final AxisType axisType )
 	{
 		final int index = imgPlus.dimensionIndex( axisType );
 		return index < 0 ? 1 : ( int ) imgPlus.dimension( index );

@@ -73,7 +73,7 @@ public class ArrayImgToVirtualStackTest
 	{
 		final ImgPlus< UnsignedByteType > supported = new ImgPlus<>( ArrayImgs.unsignedBytes( 2, 2 ), "image", new AxisType[] { Axes.X, Axes.Y } );
 		final ImgPlus< UnsignedByteType > unsupported1 = new ImgPlus<>( ArrayImgs.unsignedBytes( 2, 2, 3 ), "image", new AxisType[] { Axes.X, Axes.Y, Axes.Z } );
-		final CellImg< UnsignedByteType, ? > cellImg = new CellImgFactory< UnsignedByteType >().create( new long[] { 2, 2 }, new UnsignedByteType() );
+		final CellImg< UnsignedByteType, ? > cellImg = new CellImgFactory<>( new UnsignedByteType() ).create( 2, 2 );
 		final ImgPlus< UnsignedByteType > unsupported2 = new ImgPlus<>( cellImg, "image", new AxisType[] { Axes.X, Axes.Y } );
 		assertTrue( ArrayImgToVirtualStack.isSupported( supported ) );
 		assertFalse( ArrayImgToVirtualStack.isSupported( unsupported1 ) );
@@ -86,7 +86,7 @@ public class ArrayImgToVirtualStackTest
 		// setup
 		final float expected = 42.0f;
 		final Img< FloatType > img = ArrayImgs.floats( 1, 1 );
-		final ImgPlus< FloatType > imgPlus = new ImgPlus< FloatType >( img, "title", new AxisType[] { Axes.X, Axes.Y } );
+		final ImgPlus< FloatType > imgPlus = new ImgPlus<>( img, "title", new AxisType[] { Axes.X, Axes.Y } );
 		final ImagePlus imagePlus = ArrayImgToVirtualStack.wrap( imgPlus );
 		// process
 		imagePlus.getProcessor().setf( 0, 0, expected );

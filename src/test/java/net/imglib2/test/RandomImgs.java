@@ -55,7 +55,7 @@ public class RandomImgs
 	// TODO generalize & move to imglib2
 	public static < T extends NativeType< T > > Img< T > randomImage( final T type, final long... dims )
 	{
-		final Img< T > expected = new ArrayImgFactory< T >().create( dims, type );
+		final Img< T > expected = new ArrayImgFactory<>( type ).create( dims );
 		return setRandomValues( expected );
 	}
 

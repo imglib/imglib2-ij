@@ -268,7 +268,7 @@ public class ImgToVirtualStackTest
 	{
 		// setup
 		final Img< FloatType > img = ArrayImgs.floats( 1, 1 );
-		final ImgPlus< FloatType > imgPlus = new ImgPlus< FloatType >( img, "title", new AxisType[] { Axes.X, Axes.Y } );
+		final ImgPlus< FloatType > imgPlus = new ImgPlus<>( img, "title", new AxisType[] { Axes.X, Axes.Y } );
 		final ImagePlus imagePlus = ImgToVirtualStack.wrap( imgPlus, false );
 		final float expected = 42;
 		// process
@@ -288,7 +288,7 @@ public class ImgToVirtualStackTest
 	{
 		// setup
 		final Img< BitType > img = ArrayImgs.bits( 1, 1 );
-		final ImgPlus< BitType > imgPlus = new ImgPlus< BitType >( img, "title", new AxisType[] { Axes.X, Axes.Y } );
+		final ImgPlus< BitType > imgPlus = new ImgPlus<>( img, "title", new AxisType[] { Axes.X, Axes.Y } );
 		final ImagePlus imagePlus = ImgToVirtualStack.wrapAndScaleBitType( imgPlus );
 		// process
 		final ImageProcessor processor = imagePlus.getStack().getProcessor( 1 );
