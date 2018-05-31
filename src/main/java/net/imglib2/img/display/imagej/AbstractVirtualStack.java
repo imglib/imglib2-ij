@@ -358,6 +358,6 @@ public abstract class AbstractVirtualStack extends VirtualStack
 	@Override
 	public ImageStack convertToFloat()
 	{
-		throw new UnsupportedOperationException();
+		return ImageStackUtils.convertToFloat( this );
 	}
 }

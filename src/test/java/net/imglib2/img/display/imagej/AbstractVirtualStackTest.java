@@ -47,6 +47,22 @@ public class AbstractVirtualStackTest
 		assertArrayEquals( new byte[] { 6 }, ( byte[] ) duplicate.getPixels( 2 ) );
 	}
 
+	@Test
+	public void testConvetToFloat()
+	{
+		// setup
+		final ImageStack original = new TestVirtualStack( 1, 1, 2, new byte[][] { { 4 }, { 2 } } );
+		// process
+		final ImageStack result = original.convertToFloat();
+		// test
+		assertEquals( ImageStack.class, result.getClass() );
+		assertEquals( 1, result.getWidth() );
+		assertEquals( 1, result.getHeight() );
+		assertEquals( 2, result.getSize() );
+		assertArrayEquals( new float[] { 4 }, ( float[] ) result.getPixels( 1 ), 0 );
+		assertArrayEquals( new float[] { 2 }, ( float[] ) result.getPixels( 2 ), 0 );
+	}
+
 	private static class TestVirtualStack extends AbstractVirtualStack
 	{
 

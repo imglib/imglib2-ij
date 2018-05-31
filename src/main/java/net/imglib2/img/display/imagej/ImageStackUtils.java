@@ -72,4 +72,17 @@ class ImageStackUtils
 		}
 		return result;
 	}
+
+	/**
+	 * Create a new {@link ImageStack} with same content but featuring {@link ij.process.FloatProcessor}s.
+	 */
+	public static ImageStack convertToFloat( ImageStack stack )
+	{
+		ImageStack result = new ImageStack(stack.getWidth(), stack.getHeight(), stack.getColorModel());
+		for (int i=1; i<= stack.getSize(); i++) {
+			ImageProcessor ip = stack.getProcessor(i);
+			result.addSlice(stack.getSliceLabel(i), ip.convertToFloat() );
+		}
+		return result;
+	}
 }
