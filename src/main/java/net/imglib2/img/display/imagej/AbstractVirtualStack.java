@@ -42,6 +42,11 @@ import ij.ImageStack;
 import ij.VirtualStack;
 import ij.process.ImageProcessor;
 
+/**
+ * Abstract class to simplify the implementation of an {@link VirtualStack}.
+ *
+ * @author Matthias Arzt
+ */
 public abstract class AbstractVirtualStack extends VirtualStack
 {
 	private final int width;
@@ -341,13 +346,13 @@ public abstract class AbstractVirtualStack extends VirtualStack
 	@Override
 	public ImageStack duplicate()
 	{
-		throw new UnsupportedOperationException();
+		return ImageStackUtils.duplicate( this );
 	}
 
 	@Override
 	public ImageStack crop( final int x, final int y, final int z, final int width, final int height, final int depth )
 	{
-		throw new UnsupportedOperationException();
+		return ImageStackUtils.crop( this, x, y, z, width, height, depth );
 	}
 
 	@Override
