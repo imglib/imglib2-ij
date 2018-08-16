@@ -160,7 +160,25 @@ public class PlanarImgToVirtualStack extends AbstractVirtualStack
 	@Override
 	protected void setPixelsZeroBasedIndex( int index, Object pixels )
 	{
-		// ignore
+		setPlaneCastType( img, indexer.applyAsInt( index ), wrapPixelsToAccess( pixels ) );
+	}
+
+	private static < A extends ArrayDataAccess< ? > > void setPlaneCastType( PlanarAccess< A > img, int index, ArrayDataAccess< ? > arrayDataAccess )
+	{
+		img.setPlane( index, ( A ) arrayDataAccess );
+	}
+
+	private ArrayDataAccess wrapPixelsToAccess( Object pixels )
+	{
+		if ( pixels instanceof byte[] )
+			return new ByteArray( ( byte[] ) pixels );
+		if ( pixels instanceof short[] )
+			return new ShortArray( ( short[] ) pixels );
+		if ( pixels instanceof int[] )
+			return new IntArray( ( int[] ) pixels );
+		if ( pixels instanceof float[] )
+			return new FloatArray( ( float[] ) pixels );
+		throw new UnsupportedOperationException();
 	}
 
 	// Helper methods
