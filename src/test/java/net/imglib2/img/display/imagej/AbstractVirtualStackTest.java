@@ -1,10 +1,17 @@
 package net.imglib2.img.display.imagej;
 
+import ij.IJ;
+import ij.ImagePlus;
 import ij.ImageStack;
+import ij.gui.Roi;
+import ij.plugin.Resizer;
 import org.junit.Test;
+
+import java.awt.*;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assume.assumeFalse;
 
 /**
  * Tests {@link AbstractVirtualStack}
@@ -63,6 +70,84 @@ public class AbstractVirtualStackTest
 		assertArrayEquals( new float[] { 2 }, ( float[] ) result.getPixels( 2 ), 0 );
 	}
 
+	@Test
+	public void testDeleteFirstSlice()
+	{
+		byte[][] pixels = { { 1 }, { 2 }, { 3 } };
+		AbstractVirtualStack stack = new TestVirtualStack( 1, 1, 3, pixels );
+		assertArrayEquals( pixels[ 0 ], ( byte[] ) stack.getPixels( 1 ) );
+		stack.deleteSlice( 1 );
+		assertArrayEquals( pixels[ 1 ], ( byte[] ) stack.getPixels( 1 ) );
+		stack.deleteSlice( 1 );
+		assertArrayEquals( pixels[ 2 ], ( byte[] ) stack.getPixels( 1 ) );
+		assertEquals( 1, stack.getSize() );
+	}
+
+	@Test
+	public void testSliceNameAfterDeletion()
+	{
+		byte[][] pixels = { { 0 }, { 0 }, { 0 } };
+		AbstractVirtualStack stack = new TestVirtualStack( 1, 1, 3, pixels );
+		assertEquals( "1", stack.getSliceLabel( 1 ) );
+		stack.deleteSlice( 1 );
+		assertEquals( "2", stack.getSliceLabel( 1 ) );
+	}
+
+	@Test
+	public void testDeleteLastSlice()
+	{
+		byte[][] pixels = { { 1 }, { 2 }, { 3 } };
+		AbstractVirtualStack stack = new TestVirtualStack( 1, 1, 3, pixels );
+		stack.deleteSlice( 3 );
+		stack.deleteSlice( 2 );
+		assertEquals( 1, stack.getSize() );
+	}
+
+	@Test( expected = UnsupportedOperationException.class )
+	public void testDeleteMideSlice()
+	{
+		// NB: This is not implemented yet, because:
+		//  * It's maybe not really needed.
+		//  * A implementation with good performance would need some thinking.
+		// NB: As it's not implemented yet,
+		// a UnsupportedOperationException is throw.
+		byte[][] pixels = { { 1 }, { 2 }, { 3 } };
+		AbstractVirtualStack stack = new TestVirtualStack( 1, 1, 3, pixels );
+		stack.deleteSlice( 2 );
+	}
+
+	@Test
+	public void testResizer()
+	{
+		assumeFalse( GraphicsEnvironment.isHeadless() );
+		// Try to crop the image with ij.plugin.Resizer
+		Resizer resizer = new Resizer();
+		int width = 5;
+		int height = 5;
+		int depth = 2;
+		int numPixels = width * height * depth;
+		ImageStack firstStack = new TestVirtualStack( width, height, depth, new byte[][] { byteRange( 0, 25 ), byteRange( 25, 50 ) } );
+		ImagePlus imagePlus = new ImagePlus( "title", firstStack );
+		imagePlus.show();
+		imagePlus.setRoi( new Roi( 2, 2, 2, 2 ) );
+		resizer.run( "crop" );
+		ImagePlus result = IJ.getImage();
+		ImageStack stack = result.getStack();
+		assertEquals( 2, stack.getWidth() );
+		assertEquals( 2, stack.getHeight() );
+		assertEquals( depth, stack.getSize() );
+		assertArrayEquals( new byte[] { 12, 13, 17, 18 }, ( byte[] ) stack.getProcessor( 1 ).getPixels() );
+		assertArrayEquals( new byte[] { 37, 38, 42, 43 }, ( byte[] ) stack.getProcessor( 2 ).getPixels() );
+	}
+
+	private byte[] byteRange( int start, int endExcluded )
+	{
+		byte[] result = new byte[ endExcluded - start ];
+		for ( int i = start; i < endExcluded; i++ )
+			result[ i - start ] = ( byte ) i;
+		return result;
+	}
+
 	private static class TestVirtualStack extends AbstractVirtualStack
 	{
 
@@ -74,9 +159,16 @@ public class AbstractVirtualStackTest
 			this.pixels = pixels;
 		}
 
-		@Override public Object getPixels( int n )
+		@Override
+		protected Object getPixelsZeroBasedIndex( int index )
 		{
-			return pixels[ n - 1 ];
+			return pixels[ index ];
+		}
+
+		@Override
+		protected void setPixelsZeroBasedIndex( int index, Object pixels )
+		{
+			this.pixels[ index ] = ( byte[] ) pixels;
 		}
 	}
 }

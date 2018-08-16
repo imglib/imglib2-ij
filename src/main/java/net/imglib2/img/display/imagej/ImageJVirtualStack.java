@@ -130,7 +130,7 @@ public class ImageJVirtualStack< S, T extends NativeType< T > > extends Abstract
 		return isWritable;
 	}
 
-	private ArrayImg< T, ? > getSlice( final int n )
+	private ArrayImg< T, ? > getSlice( final int index )
 	{
 		final int sizeX = ( int ) source.dimension( 0 );
 		final int sizeY = ( int ) source.dimension( 1 );
@@ -141,7 +141,7 @@ public class ImageJVirtualStack< S, T extends NativeType< T > > extends Abstract
 		if ( higherSourceDimensions.length > 0 )
 		{
 			final int[] position = new int[ higherSourceDimensions.length ];
-			IntervalIndexer.indexToPosition( n - 1, higherSourceDimensions, position );
+			IntervalIndexer.indexToPosition( index, higherSourceDimensions, position );
 			for ( int i = 0; i < position.length; i++ )
 				projector.setPosition( position[ i ], i + 2 );
 		}
@@ -150,14 +150,14 @@ public class ImageJVirtualStack< S, T extends NativeType< T > > extends Abstract
 	}
 
 	@Override
-	public Object getPixels( final int n )
+	protected Object getPixelsZeroBasedIndex( final int index )
 	{
-		final ArrayImg< T, ? > img = getSlice( n );
+		final ArrayImg< T, ? > img = getSlice( index );
 		return ( ( ArrayDataAccess< ? > ) img.update( null ) ).getCurrentStorageArray();
 	}
 
 	@Override
-	public void setPixels( final Object pixels, final int n )
+	protected void setPixelsZeroBasedIndex( final int index, final Object pixels )
 	{
 		if ( isWritable() )
 		{
@@ -171,7 +171,7 @@ public class ImageJVirtualStack< S, T extends NativeType< T > > extends Abstract
 			if ( higherSourceDimensions.length > 0 )
 			{
 				final int[] position = new int[ higherSourceDimensions.length ];
-				IntervalIndexer.indexToPosition( n - 1, higherSourceDimensions, position );
+				IntervalIndexer.indexToPosition( index, higherSourceDimensions, position );
 				for ( int i = 0; i < position.length; i++ )
 					origin = Views.hyperSlice( origin, 2, position[ i ] );
 			}

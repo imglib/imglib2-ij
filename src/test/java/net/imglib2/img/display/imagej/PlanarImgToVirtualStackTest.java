@@ -133,4 +133,16 @@ public class PlanarImgToVirtualStackTest
 		// test
 		assertEquals( expected, img.cursor().next().get(), 0.0f );
 	}
+
+	@Test
+	public void testSetPixels() {
+		// setup
+		final PlanarImg< FloatType, FloatArray > img = PlanarImgs.floats( 1, 1 );
+		final ImagePlus imagePlus = PlanarImgToVirtualStack.wrap( new ImgPlus<>( img, "title" ) );
+		final float expected = 42.0f;
+		// process
+		imagePlus.getStack().setPixels( new float[] { expected }, 1 );
+		// test
+		assertEquals( expected, img.cursor().next().get(), 0.0f );
+	}
 }

@@ -50,6 +50,10 @@ import net.imglib2.Interval;
 import net.imglib2.img.Img;
 import net.imglib2.img.basictypeaccess.PlanarAccess;
 import net.imglib2.img.basictypeaccess.array.ArrayDataAccess;
+import net.imglib2.img.basictypeaccess.array.ByteArray;
+import net.imglib2.img.basictypeaccess.array.FloatArray;
+import net.imglib2.img.basictypeaccess.array.IntArray;
+import net.imglib2.img.basictypeaccess.array.ShortArray;
 import net.imglib2.img.planar.PlanarImg;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.Type;
@@ -122,7 +126,7 @@ public class PlanarImgToVirtualStack extends AbstractVirtualStack
 
 	public static VirtualStack wrap( final PlanarImg< ?, ? > img )
 	{
-		return new PlanarImgToVirtualStack( img, x -> x - 1 );
+		return new PlanarImgToVirtualStack( img, x -> x );
 	}
 
 	// fields
@@ -148,9 +152,33 @@ public class PlanarImgToVirtualStack extends AbstractVirtualStack
 	// public methods
 
 	@Override
-	public Object getPixels( final int n )
+	protected Object getPixelsZeroBasedIndex( final int index )
 	{
-		return img.getPlane( indexer.applyAsInt( n ) ).getCurrentStorageArray();
+		return img.getPlane( indexer.applyAsInt( index ) ).getCurrentStorageArray();
+	}
+
+	@Override
+	protected void setPixelsZeroBasedIndex( int index, Object pixels )
+	{
+		setPlaneCastType( img, indexer.applyAsInt( index ), wrapPixelsToAccess( pixels ) );
+	}
+
+	private static < A extends ArrayDataAccess< ? > > void setPlaneCastType( PlanarAccess< A > img, int index, ArrayDataAccess< ? > arrayDataAccess )
+	{
+		img.setPlane( index, ( A ) arrayDataAccess );
+	}
+
+	private ArrayDataAccess wrapPixelsToAccess( Object pixels )
+	{
+		if ( pixels instanceof byte[] )
+			return new ByteArray( ( byte[] ) pixels );
+		if ( pixels instanceof short[] )
+			return new ShortArray( ( short[] ) pixels );
+		if ( pixels instanceof int[] )
+			return new IntArray( ( int[] ) pixels );
+		if ( pixels instanceof float[] )
+			return new FloatArray( ( float[] ) pixels );
+		throw new UnsupportedOperationException();
 	}
 
 	// Helper methods
@@ -174,14 +202,14 @@ public class PlanarImgToVirtualStack extends AbstractVirtualStack
 		if ( !checkAxisOrder( axes ) )
 			throw new IllegalArgumentException( "Unsupported axis order, first axis must be X, second axis must be Y, and then optionally, arbitrary ordered: channel, Z and time." );
 		if ( inPreferredOrder( axes ) )
-			return x -> x - 1;
+			return x -> x;
 		final int[] stackSizes = { dimension( imgPlus, Axes.CHANNEL ), dimension( imgPlus, Axes.Z ), dimension( imgPlus, Axes.TIME ) };
 		final int channelSkip = getSkip( imgPlus, Axes.CHANNEL );
 		final int zSkip = getSkip( imgPlus, Axes.Z );
 		final int timeSkip = getSkip( imgPlus, Axes.TIME );
 		return stackIndex -> {
 			final int[] stackPosition = new int[ 3 ];
-			IntervalIndexer.indexToPosition( stackIndex - 1, stackSizes, stackPosition );
+			IntervalIndexer.indexToPosition( stackIndex, stackSizes, stackPosition );
 			return channelSkip * stackPosition[ 0 ] + zSkip * stackPosition[ 1 ] + timeSkip * stackPosition[ 2 ];
 		};
 	}

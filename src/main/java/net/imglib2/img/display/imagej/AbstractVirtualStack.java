@@ -53,7 +53,9 @@ public abstract class AbstractVirtualStack extends VirtualStack
 
 	private final int height;
 
-	private final int size;
+	private int size;
+
+	private int offset;
 
 	private final int bitDepth;
 
@@ -68,6 +70,7 @@ public abstract class AbstractVirtualStack extends VirtualStack
 		super( 10, 10, null, "" );
 		this.width = width;
 		this.height = height;
+		this.offset = 0;
 		this.size = size;
 		this.bitDepth = bitDepth;
 		this.colorModel = null;
@@ -81,7 +84,25 @@ public abstract class AbstractVirtualStack extends VirtualStack
 	}
 
 	@Override
-	public abstract Object getPixels( int n );
+	public final Object getPixels( int n )
+	{
+		return getPixelsZeroBasedIndex( toZeroBasedIndex( n ) );
+	}
+
+	@Override
+	public final void setPixels( final Object pixels, final int n )
+	{
+		setPixelsZeroBasedIndex( toZeroBasedIndex( n ), pixels );
+	}
+
+	private int toZeroBasedIndex( int n )
+	{
+		return ( n - 1 ) + offset;
+	}
+
+	protected abstract Object getPixelsZeroBasedIndex( int index );
+
+	protected abstract void setPixelsZeroBasedIndex( int index, Object pixels );
 
 	@Override
 	public ImageProcessor getProcessor( final int n )
@@ -120,19 +141,24 @@ public abstract class AbstractVirtualStack extends VirtualStack
 	@Override
 	public void deleteSlice( final int n )
 	{
-		// ignore
+		if ( n == 1 )
+			deleteFirstSlice();
+		else if ( n == size )
+			deleteLastSlice();
+		else
+			throw new UnsupportedOperationException( "AbstractVirtualStack only supports to delete first or last slice." );
+	}
+
+	private void deleteFirstSlice()
+	{
+		size--;
+		offset++;
 	}
 
 	@Override
 	public void deleteLastSlice()
 	{
-		// ignore
-	}
-
-	@Override
-	public void setPixels( final Object pixels, final int n )
-	{
-		// ignore for now
+		size--;
 	}
 
 	/**
@@ -153,7 +179,7 @@ public abstract class AbstractVirtualStack extends VirtualStack
 	@Override
 	public String getSliceLabel( final int n )
 	{
-		return Integer.toString( n );
+		return Integer.toString( toZeroBasedIndex( n ) + 1 );
 	}
 
 	@Override
