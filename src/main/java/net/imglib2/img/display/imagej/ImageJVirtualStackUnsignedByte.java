@@ -41,6 +41,7 @@ import net.imglib2.converter.Converter;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
+import net.imglib2.util.Util;
 
 /**
  * TODO
@@ -50,7 +51,9 @@ public class ImageJVirtualStackUnsignedByte< S > extends ImageJVirtualStack< S, 
 {
 	public static < T extends RealType< ? > > ImageJVirtualStackUnsignedByte< T > wrap( final RandomAccessibleInterval< T > source )
 	{
-		return new ImageJVirtualStackUnsignedByte<>( source, new ByteConverter() );
+		final Converter< ? super T, UnsignedByteType > converter =
+				initConverter( Util.getTypeFromInterval( source ) );
+		return new ImageJVirtualStackUnsignedByte<>( source, converter );
 	}
 
 	public static ImageJVirtualStackUnsignedByte< BitType > wrapAndScaleBitType( final RandomAccessibleInterval< BitType > source )
@@ -69,7 +72,25 @@ public class ImageJVirtualStackUnsignedByte< S > extends ImageJVirtualStack< S, 
 		setMinAndMax( 0, 255 );
 	}
 
-	private static class ByteConverter implements
+	private static < T extends RealType< ? > > Converter< ? super T, UnsignedByteType > initConverter( T type )
+	{
+		if( type instanceof UnsignedByteType )
+			return (Converter) new ByteToByteConverter();
+		return new RealToByteConverter();
+	}
+
+	private static class ByteToByteConverter implements
+			Converter< UnsignedByteType, UnsignedByteType >
+	{
+
+		@Override
+		public void convert( final UnsignedByteType input, final UnsignedByteType output )
+		{
+			output.set( input );
+		}
+	}
+
+	private static class RealToByteConverter implements
 			Converter< RealType< ? >, UnsignedByteType >
 	{
 
