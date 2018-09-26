@@ -39,6 +39,7 @@ import java.util.concurrent.ExecutorService;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converter;
 import net.imglib2.type.logic.BitType;
+import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.util.Util;
@@ -74,8 +75,10 @@ public class ImageJVirtualStackUnsignedByte< S > extends ImageJVirtualStack< S, 
 
 	private static < T extends RealType< ? > > Converter< ? super T, UnsignedByteType > initConverter( T type )
 	{
-		if( type instanceof UnsignedByteType )
+		if ( type instanceof UnsignedByteType )
 			return (Converter) new ByteToByteConverter();
+		if ( type instanceof IntegerType )
+			return (Converter) new IntegerToByteConverter();
 		return new RealToByteConverter();
 	}
 
@@ -90,6 +93,22 @@ public class ImageJVirtualStackUnsignedByte< S > extends ImageJVirtualStack< S, 
 		}
 	}
 
+	private static class IntegerToByteConverter implements
+			Converter< IntegerType, UnsignedByteType >
+	{
+
+		@Override
+		public void convert( IntegerType input, UnsignedByteType output )
+		{
+			int value = input.getInteger();
+			if ( value < 0 )
+				value = 0;
+			else if ( value > 255 )
+				value = 255;
+			output.set( value );
+		}
+	}
+
 	private static class RealToByteConverter implements
 			Converter< RealType< ? >, UnsignedByteType >
 	{
@@ -97,12 +116,12 @@ public class ImageJVirtualStackUnsignedByte< S > extends ImageJVirtualStack< S, 
 		@Override
 		public void convert( final RealType< ? > input, final UnsignedByteType output )
 		{
-			double val = input.getRealDouble();
-			if ( val < 0 )
-				val = 0;
-			else if ( val > 255 )
-				val = 255;
-			output.setReal( val );
+			double value = input.getRealDouble();
+			if ( value < 0 )
+				value = 0;
+			else if ( value > 255 )
+				value = 255;
+			output.setReal( value );
 		}
 	}
 
