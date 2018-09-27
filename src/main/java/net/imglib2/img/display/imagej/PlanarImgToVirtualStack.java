@@ -66,6 +66,15 @@ import net.imglib2.util.IntervalIndexer;
 import ij.ImagePlus;
 import ij.VirtualStack;
 
+/**
+ * Utility class to convert a {@link PlanarImg} to an {@link ImagePlus}
+ * without copying data. It is restricted to certain pixel types:
+ * UnsignedByteType, UnsignedShortType, ARGBType and FloatType.
+ *
+ * @see ArrayImgToVirtualStack
+ * @see ImgToVirtualStack
+ * @see CellImgToVirtualStack
+ */
 public class PlanarImgToVirtualStack extends AbstractVirtualStack
 {
 
@@ -73,9 +82,6 @@ public class PlanarImgToVirtualStack extends AbstractVirtualStack
 
 	/**
 	 * Returns true, if {@link #wrap(ImgPlus)} supports the given image.
-	 *
-	 * @see ArrayImgToVirtualStack
-	 * @see ImgToVirtualStack
 	 */
 	public static boolean isSupported( ImgPlus< ? > imgPlus )
 	{
@@ -101,8 +107,6 @@ public class PlanarImgToVirtualStack extends AbstractVirtualStack
 	 * supported.
 	 *
 	 * @see #isSupported(ImgPlus)
-	 * @see ArrayImgToVirtualStack
-	 * @see ImgToVirtualStack
 	 */
 	public static ImagePlus wrap( ImgPlus< ? > imgPlus )
 	{
