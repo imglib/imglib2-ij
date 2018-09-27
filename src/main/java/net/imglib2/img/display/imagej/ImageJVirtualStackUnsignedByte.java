@@ -73,7 +73,7 @@ public class ImageJVirtualStackUnsignedByte< S > extends ImageJVirtualStack< S, 
 		setMinAndMax( 0, 255 );
 	}
 
-	private static < T extends RealType< ? > > Converter< ? super T, UnsignedByteType > initConverter( T type )
+	static < T extends RealType< ? > > Converter< ? super T, UnsignedByteType > initConverter( T type )
 	{
 		if ( type instanceof UnsignedByteType )
 			return (Converter) new ByteToByteConverter();
