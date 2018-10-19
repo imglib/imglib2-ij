@@ -1,4 +1,4 @@
-package net.imglib2.io;
+package net.imglib2.img.io;
 
 import ij.IJ;
 import net.imglib2.img.Img;
