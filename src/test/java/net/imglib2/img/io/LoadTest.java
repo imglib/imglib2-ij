@@ -66,7 +66,7 @@ public class LoadTest
 		}
 	}
 	
-	@Test
+	//@Test
 	public void testLazyStack()
 	{
 		final LazyCellImg< UnsignedShortType, ? > cellImg = Load.lazyStack( paths, new SoftCachingLoader< UnsignedShortType >( new IJLoader< UnsignedShortType >(), 10 ) );
@@ -83,7 +83,7 @@ public class LoadTest
 		com.show();
 	}
 	
-	@Test
+	//@Test
 	public void testStack()
 	{
 		final RandomAccessibleInterval< UnsignedShortType > img = Load.stack( paths, new IJLoader< UnsignedShortType >() );
