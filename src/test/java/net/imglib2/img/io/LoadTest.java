@@ -1,8 +1,12 @@
 package net.imglib2.img.io;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 import org.junit.Test;
 
 import ij.CompositeImage;
+import ij.IJ;
 import ij.ImageJ;
 import ij.ImagePlus;
 import ij.VirtualStack;
@@ -14,6 +18,7 @@ import net.imglib2.img.array.ArrayImg;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.basictypeaccess.array.ArrayDataAccess;
 import net.imglib2.img.cell.LazyCellImg;
+import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
@@ -86,10 +91,21 @@ public class LoadTest
 		show( img, "stack", 1, ( int )img.dimension( 2 ), ( int )img.dimension( 3 ) );
 	}
 	
+	public void testStackDefault()
+	{
+		final RandomAccessibleInterval< ? > img = Views.stack( Arrays.stream( paths )
+				.map( IJ::openImage )
+				.map( ImageJFunctions::wrap )
+				.collect( Collectors.toList() ) );
+		
+		show( ( RandomAccessibleInterval< UnsignedShortType > )img, "stack", 1, ( int )img.dimension( 2 ), ( int )img.dimension( 3 ) );
+	}
+	
 	static public void main( final String[] args )
 	{
 		new ImageJ();
 		new LoadTest().testLazyStack();
 		new LoadTest().testStack();
+		//new LoadTest().testStackDefault();
 	}
 }

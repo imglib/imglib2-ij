@@ -179,6 +179,35 @@ public class Load
 	}
 	
 	/**
+	 * Convenient method that invokes {@link Load#lazyStack(String[], Loader)}
+	 * with a cache-enabled {@link IJLoader}.
+	 * 
+	 * @see Load#lazyStack(String[], Loader)
+	 * 
+	 * @param paths The ordered list of file paths, one per image to load.
+	 * @return a {@link LazyCellImg} that lazily loads each time point, one per file path.
+	 */
+	static public final < T extends NumericType< T > & NativeType< T >, A extends ArrayDataAccess< A > > LazyCellImg< T, A > lazyStack( final String[] paths )
+	{
+		return Load.lazyStack( paths, new SoftCachingLoader< T >( new IJLoader< T >(), paths.length ) );
+	}
+	
+	/**
+	 * Convenient method that invokes {@link Load#lazyStack(String[], Loader)}
+	 * with a cache-enabled {@link IJLoader}.
+	 * 
+	 * @see Load#lazyStack(String[], Loader)
+	 * 
+	 * @param paths The ordered list of file paths, one per image to load.
+	 * @return a {@link LazyCellImg} that lazily loads each time point, one per file path.
+	 */
+	static public final < T extends NumericType< T > & NativeType< T >, A extends ArrayDataAccess< A > > LazyCellImg< T, A > lazyStack( final List< String > paths )
+	{
+		return Load.lazyStack( paths.toArray( new String[ paths.size() ] ) );
+	}
+
+	
+	/**
 	 * Return an {@link Img} representation of the ordered list of file paths,
 	 * with each file path pointing to an image that can be loaded with the {@link Loader}. 
 	 * All images are expected to be of the same dimensions and of {@link NativeType}.
