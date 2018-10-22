@@ -40,6 +40,10 @@ import java.util.stream.Collectors;
 
 import net.imagej.ImgPlus;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.cache.CacheLoader;
+import net.imglib2.cache.img.CachedCellImg;
+import net.imglib2.cache.img.ReadOnlyCachedCellImgFactory;
+import net.imglib2.cache.img.ReadOnlyCachedCellImgOptions;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImg;
 import net.imglib2.img.basictypeaccess.array.ArrayDataAccess;
@@ -103,6 +107,42 @@ public class Load
 		final CellGrid grid = new CellGrid( dimensions_all, dimensions_cell );
 
 		return new LazyCellImg< T, A >( grid, first.firstElement().createVariable(), get );
+	}
+	
+	static public final < T extends NumericType< T > & NativeType< T >, A extends ArrayDataAccess< ? > >
+	CachedCellImg< T, A > lazyStackCached(
+			final String[] paths,
+			final Loader< T > loader
+			)
+	{
+		final Img< T > first = loader.load( paths[ 0 ] );
+		
+		final int[] dimensions_cell = new int[ first.numDimensions() + 1 ];
+		for ( int d = 0; d < dimensions_cell.length -1; ++ d )
+			dimensions_cell[ d ] = ( int )first.dimension( d );
+		
+		final long[] dimensions_all = new long[ first.numDimensions() + 1 ];
+		first.dimensions( dimensions_all );
+		dimensions_all[ dimensions_all.length - 1 ] = paths.length;
+		
+		final CacheLoader< Long, Cell< A > > cache_loader = new CacheLoader< Long, Cell< A > >()
+		{
+			@Override
+			final public Cell< A > get( final Long index ) throws Exception {
+				final long[] min = new long[ first.numDimensions() + 1 ];
+				min[ min.length - 1 ] = index;
+				return new Cell< A >( dimensions_cell, min, extractDataAccess( loader.load( paths[ index.intValue() ] ) ) );
+			}
+		};
+		
+		final CachedCellImg< T, A > ccimg = new ReadOnlyCachedCellImgFactory().createWithCacheLoader(
+				dimensions_all,
+				first.firstElement().createVariable(),
+				cache_loader,
+				ReadOnlyCachedCellImgOptions.options().volatileAccesses( true ) );
+		
+		
+		return ccimg;
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
