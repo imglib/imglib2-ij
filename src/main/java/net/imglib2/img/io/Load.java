@@ -210,7 +210,7 @@ public class Load
 	 */
 	static public final < T extends NumericType< T > & NativeType< T >, A extends ArrayDataAccess< A > > LazyCellImg< T, A > lazyStack( final List< String > paths )
 	{
-		return Load.lazyStack( paths.toArray( new String[ paths.size() ] ) );
+		return Load.lazyStack( paths, new IJLoader< T >() );
 	}
 
 	
