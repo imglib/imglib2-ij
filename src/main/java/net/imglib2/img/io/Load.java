@@ -41,9 +41,11 @@ import java.util.stream.Collectors;
 import net.imagej.ImgPlus;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.cache.CacheLoader;
+import net.imglib2.cache.UncheckedCache;
 import net.imglib2.cache.img.CachedCellImg;
 import net.imglib2.cache.img.ReadOnlyCachedCellImgFactory;
 import net.imglib2.cache.img.ReadOnlyCachedCellImgOptions;
+import net.imglib2.cache.ref.SoftRefLoaderCache;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImg;
 import net.imglib2.img.basictypeaccess.array.ArrayDataAccess;
@@ -115,8 +117,12 @@ public class Load
 			final Loader< T > loader
 			)
 	{
-		final Img< T > first = loader.load( paths[ 0 ] );
-		
+		final UncheckedCache< Integer, Img< T > > loading_cache = new SoftRefLoaderCache< Integer, Img< T > >()
+				.withLoader( i -> loader.load( paths[ i ] ) )
+				.unchecked();
+
+		final Img< T > first = loading_cache.get( 0 );
+
 		final int[] dimensions_cell = new int[ first.numDimensions() + 1 ];
 		for ( int d = 0; d < dimensions_cell.length -1; ++ d )
 			dimensions_cell[ d ] = ( int )first.dimension( d );
@@ -133,7 +139,7 @@ public class Load
 			final public Cell< A > get( final Long index ) throws Exception {
 				final long[] min = new long[ first.numDimensions() + 1 ];
 				min[ min.length - 1 ] = index;
-				return new Cell< A >( dimensions_cell, min, extractDataAccess( loader.load( paths[ index.intValue() ] ) ) );
+				return new Cell< A >( dimensions_cell, min, extractDataAccess( loading_cache.get( index.intValue() ) ) );
 			}
 		};
 		
