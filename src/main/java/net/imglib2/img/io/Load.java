@@ -79,19 +79,19 @@ public class Load
 	 */
 	static public final < T extends NumericType< T > & NativeType< T >, A extends ArrayDataAccess< A > >
 	CachedCellImg< T, A > lazyStack(
-			final String[] paths,
+			final List< String > paths,
 			final CacheLoader< String, Img< T > > loader
 			)
 	{
 		final UncheckedCache< Integer, Img< T > > loading_cache = new SoftRefLoaderCache< Integer, Img< T > >()
-				.withLoader( i -> loader.get( paths[ i ] ) )
+				.withLoader( i -> loader.get( paths.get( i ) ) )
 				.unchecked();
 
 		final Img< T > first = loading_cache.get( 0 );
 		
 		final long[] dimensions_all = new long[ first.numDimensions() + 1 ];
 		first.dimensions( dimensions_all );
-		dimensions_all[ dimensions_all.length - 1 ] = paths.length;
+		dimensions_all[ dimensions_all.length - 1 ] = paths.size();
 		
 		final CacheLoader< Long, Cell< A > > cache_loader;
 		final int[] dimensions_cell = new int[ first.numDimensions() + 1 ];
@@ -186,7 +186,7 @@ public class Load
 	 */
 	static public final < T extends NumericType< T > & NativeType< T >, A extends ArrayDataAccess< A > > LazyCellImg< T, A > lazyStack( final String[] paths )
 	{
-		return Load.lazyStack( paths, new IJLoader< T >() );
+		return Load.lazyStack( Arrays.asList( paths ), new IJLoader< T >() );
 	}
 	
 	/**
@@ -217,7 +217,7 @@ public class Load
 	{
 		return stack( Arrays.asList( paths ), loader );
 	}
-	
+
 	/**
 	 * @see Load#stack(String[], Loader)
 	 */

@@ -68,7 +68,7 @@ public class LoadTest
 	
 	public void testLazyStackCached()
 	{
-		final CachedCellImg< UnsignedShortType, ? > ccimg = Load.lazyStack( paths, new IJLoader< UnsignedShortType >() );
+		final CachedCellImg< UnsignedShortType, ? > ccimg = Load.lazyStack( Arrays.asList( paths ), new IJLoader< UnsignedShortType >() );
 		
 		show( ccimg, "lazy stack", 1, ( int )ccimg.dimension( 2 ), ( int )ccimg.dimension( 3 ) );
 	}
