@@ -120,6 +120,8 @@ public class Load
 		final int[] dimensions_cell = new int[ first.numDimensions() + 1 ];
 		for ( int d = 0; d < dimensions_cell.length -1; ++ d )
 			dimensions_cell[ d ] = ( int )first.dimension( d );
+
+		dimensions_cell[ dimensions_cell.length - 1 ] = 1;
 		
 		final long[] dimensions_all = new long[ first.numDimensions() + 1 ];
 		first.dimensions( dimensions_all );
@@ -139,7 +141,7 @@ public class Load
 				dimensions_all,
 				first.firstElement().createVariable(),
 				cache_loader,
-				ReadOnlyCachedCellImgOptions.options().volatileAccesses( true ) );
+				ReadOnlyCachedCellImgOptions.options().volatileAccesses( true ).cellDimensions( dimensions_cell) );
 		
 		
 		return ccimg;
