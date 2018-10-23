@@ -111,7 +111,20 @@ public class Load
 		return new LazyCellImg< T, A >( grid, first.firstElement().createVariable(), get );
 	}
 	
-	static public final < T extends NumericType< T > & NativeType< T >, A extends ArrayDataAccess< ? > >
+	/** Return a {@link CachedCellImg} representation of the ordered list of file paths,
+	 * with each file path pointing to an image that can be loaded with the {@link Loader}.
+	 * All images are expected to be of the same dimensions and of {@link NativeType}.
+	 * Each image is loaded as a {@link Cell} of the {@link LazyCellImg}, or,
+	 * in the case of {@link PlanarImg}, each stack plane is loaded as a {@link Cell}.
+	 *
+	 * For example, load a 4D volume by providing a list of file paths to the 3D volume of each time point.
+	 *
+	 * The first image will be loaded to find out the dimensions, but it is cached.
+	 *
+	 * @param paths The ordered list of file paths, one per image to load.
+	 * @param loader The reader that turns a file path into an {@link Img}.
+	 */
+	static public final < T extends NumericType< T > & NativeType< T >, A extends ArrayDataAccess< A > >
 	CachedCellImg< T, A > lazyStackCached(
 			final String[] paths,
 			final Loader< T > loader
@@ -122,37 +135,69 @@ public class Load
 				.unchecked();
 
 		final Img< T > first = loading_cache.get( 0 );
-
-		final int[] dimensions_cell = new int[ first.numDimensions() + 1 ];
-		for ( int d = 0; d < dimensions_cell.length -1; ++ d )
-			dimensions_cell[ d ] = ( int )first.dimension( d );
-
-		dimensions_cell[ dimensions_cell.length - 1 ] = 1;
 		
 		final long[] dimensions_all = new long[ first.numDimensions() + 1 ];
 		first.dimensions( dimensions_all );
 		dimensions_all[ dimensions_all.length - 1 ] = paths.length;
 		
-		final CacheLoader< Long, Cell< A > > cache_loader = new CacheLoader< Long, Cell< A > >()
+		final CacheLoader< Long, Cell< A > > cache_loader;
+		final int[] dimensions_cell = new int[ first.numDimensions() + 1 ];
+
+		if ( first instanceof PlanarImg )
 		{
-			@Override
-			final public Cell< A > get( final Long index ) throws Exception {
-				final long[] min = new long[ first.numDimensions() + 1 ];
-				min[ min.length - 1 ] = index;
-				return new Cell< A >( dimensions_cell, min, extractDataAccess( loading_cache.get( index.intValue() ) ) );
-			}
-		};
+			@SuppressWarnings("unchecked")
+			final int numSlices = ( ( PlanarImg< T, ? > )first ).numSlices();
+
+			dimensions_cell[ 0 ] = ( int )first.dimension( 0 );
+			dimensions_cell[ 1 ] = ( int )first.dimension( 1 );
+			dimensions_cell[ 2 ] = 1; // single unit in Z
+			dimensions_cell[ 3 ] = 1; // single unit in T
+
+			cache_loader = new CacheLoader< Long, Cell< A > >()
+			{
+				@Override
+				final public Cell< A > get( final Long index ) throws Exception {
+					final int i = index.intValue();
+					final int t = ( ( int )i ) / numSlices;
+					final int z = ( ( int )i ) % numSlices;
+					// Origin of coordinates for the Cell: 0,0,z,t
+					final long[] min = new long[ first.numDimensions() + 1 ];
+					min[ 2 ] = z;
+					min[ 3 ] = t;
+					@SuppressWarnings("unchecked")
+					final PlanarImg< T, A > stack = ( PlanarImg< T, A > )loading_cache.get( t );
+					return new Cell< A >( dimensions_cell, min, stack.getPlane( z ) );
+				}
+			};
+		}
+		else
+		{
+			for ( int d = 0; d < dimensions_cell.length -1; ++ d )
+				dimensions_cell[ d ] = ( int )first.dimension( d );
+
+			dimensions_cell[ dimensions_cell.length - 1 ] = 1;
+
+			cache_loader = new CacheLoader< Long, Cell< A > >()
+			{
+				@Override
+				final public Cell< A > get( final Long index ) throws Exception {
+					final long[] min = new long[ first.numDimensions() + 1 ];
+					min[ min.length - 1 ] = index;
+					return new Cell< A >( dimensions_cell, min, extractDataAccess( loading_cache.get( index.intValue() ) ) );
+				}
+			};
+		}
 		
 		final CachedCellImg< T, A > ccimg = new ReadOnlyCachedCellImgFactory().createWithCacheLoader(
 				dimensions_all,
 				first.firstElement().createVariable(),
 				cache_loader,
-				ReadOnlyCachedCellImgOptions.options().volatileAccesses( true ).cellDimensions( dimensions_cell) );
+				ReadOnlyCachedCellImgOptions.options().volatileAccesses( true ).cellDimensions( dimensions_cell ) );
 		
 		
 		return ccimg;
 	}
-	
+
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	static private final < T extends NumericType< T > & NativeType< T >, A extends ArrayDataAccess< ? > > A extractDataAccess( final Img< T > img )
 	{
