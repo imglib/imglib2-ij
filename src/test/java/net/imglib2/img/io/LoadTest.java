@@ -18,7 +18,6 @@ import net.imglib2.cache.img.CachedCellImg;
 import net.imglib2.img.array.ArrayImg;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.basictypeaccess.array.ArrayDataAccess;
-import net.imglib2.img.cell.LazyCellImg;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.view.IntervalView;
@@ -67,17 +66,9 @@ public class LoadTest
 		}
 	}
 	
-	//@Test
-	public void testLazyStack()
-	{
-		final LazyCellImg< UnsignedShortType, ? > cellImg = Load.lazyStack( paths, new SoftCachingLoader< UnsignedShortType >( new IJLoader< UnsignedShortType >(), 10 ) );
-		
-		show( cellImg, "lazy stack", 1, ( int )cellImg.dimension( 2 ), ( int )cellImg.dimension( 3 ) );
-	}
-	
 	public void testLazyStackCached()
 	{
-		final CachedCellImg< UnsignedShortType, ? > ccimg = Load.lazyStackCached( paths, new IJLoader< UnsignedShortType >() );
+		final CachedCellImg< UnsignedShortType, ? > ccimg = Load.lazyStack( paths, new IJLoader< UnsignedShortType >() );
 		
 		show( ccimg, "lazy stack", 1, ( int )ccimg.dimension( 2 ), ( int )ccimg.dimension( 3 ) );
 	}
@@ -112,7 +103,7 @@ public class LoadTest
 	static public void main( final String[] args )
 	{
 		new ImageJ();
-		new LoadTest().testLazyStack();
+		//new LoadTest().testLazyStack();
 		//new LoadTest().testStack();
 		//new LoadTest().testStackDefault();
 		new LoadTest().testLazyStackCached();

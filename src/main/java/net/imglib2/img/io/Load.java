@@ -50,7 +50,6 @@ import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImg;
 import net.imglib2.img.basictypeaccess.array.ArrayDataAccess;
 import net.imglib2.img.cell.Cell;
-import net.imglib2.img.cell.CellGrid;
 import net.imglib2.img.cell.LazyCellImg;
 import net.imglib2.img.planar.PlanarImg;
 import net.imglib2.io.proxyaccess.ByteAccessProxy;
@@ -64,53 +63,7 @@ import net.imglib2.type.numeric.integer.GenericShortType;
 import net.imglib2.view.Views;
 
 public class Load
-{
-	/** Return a {@link LazyCellImg} representation of the ordered list of file paths,
-	 * with each file path pointing to an image that can be loaded with the {@link Loader}. 
-	 * All images are expected to be of the same dimensions and of {@link NativeType}.
-	 * Each image is loaded as a {@link Cell} of the {@link LazyCellImg}.
-	 * 
-	 * For example, load a 4D volume by providing a list of file paths to the 3D volume of each time point.
-	 * 
-	 * The first image will be loaded to find out the dimensions.
-	 * 
-	 * @param paths The ordered list of file paths, one per image to load.
-	 * @param loader The reader that turns a file path into an Img.
-	 */
-	@SuppressWarnings("unchecked")
-	static public final < T extends NumericType< T > & NativeType< T >, A extends ArrayDataAccess< A > > LazyCellImg< T, A > lazyStack( final String[] paths, final Loader< T > loader )
-	{
-		final Img< T > first = loader.load( paths[ 0 ] );
-		
-		// Handle PlanarImg specially: would work with a proxy too, but with less performance.
-		if ( PlanarImg.class.isAssignableFrom( first.getClass() ) )
-			return lazyPlanarImgStack( ( PlanarImg< T, A > ) first, paths, loader );
-		
-		final int[] dimensions_cell = new int[ first.numDimensions() + 1 ];
-		for ( int d = 0; d < dimensions_cell.length -1; ++ d )
-			dimensions_cell[ d ] = ( int )first.dimension( d );
-
-		dimensions_cell[ dimensions_cell.length - 1 ] = 1;
-		
-		final LazyCellImg.Get< Cell < A > > get = new LazyCellImg.Get<Cell< A > >()
-		{
-			@Override
-			public final Cell< A > get( final long index ) {
-				final long[] min = new long[ first.numDimensions() + 1 ];
-				min[ min.length - 1 ] = index;
-				return new Cell< A >( dimensions_cell, min, extractDataAccess( loader.load( paths[ (int) index ] ) ) );
-			}
-		};
-		
-		final long[] dimensions_all = new long[ first.numDimensions() + 1 ];
-		first.dimensions( dimensions_all );
-		dimensions_all[ dimensions_all.length - 1 ] = paths.length;
-
-		final CellGrid grid = new CellGrid( dimensions_all, dimensions_cell );
-
-		return new LazyCellImg< T, A >( grid, first.firstElement().createVariable(), get );
-	}
-	
+{	
 	/** Return a {@link CachedCellImg} representation of the ordered list of file paths,
 	 * with each file path pointing to an image that can be loaded with the {@link Loader}.
 	 * All images are expected to be of the same dimensions and of {@link NativeType}.
@@ -125,13 +78,13 @@ public class Load
 	 * @param loader The reader that turns a file path into an {@link Img}.
 	 */
 	static public final < T extends NumericType< T > & NativeType< T >, A extends ArrayDataAccess< A > >
-	CachedCellImg< T, A > lazyStackCached(
+	CachedCellImg< T, A > lazyStack(
 			final String[] paths,
-			final Loader< T > loader
+			final CacheLoader< String, Img< T > > loader
 			)
 	{
 		final UncheckedCache< Integer, Img< T > > loading_cache = new SoftRefLoaderCache< Integer, Img< T > >()
-				.withLoader( i -> loader.load( paths[ i ] ) )
+				.withLoader( i -> loader.get( paths[ i ] ) )
 				.unchecked();
 
 		final Img< T > first = loading_cache.get( 0 );
@@ -223,55 +176,6 @@ public class Load
 	}
 	
 	/**
-	 * Uses a {@link Cell} for each plane of each {@link PlanarImg} to load.
-	 * Assumes all file paths encode images of the same kind, all of them loading as {@link PlanarImg}.
-	 * 
-	 * @param first
-	 * @param paths
-	 * @param loader
-	 * @return
-	 */
-	static private final < T extends NumericType< T > & NativeType< T >, A extends ArrayDataAccess< A > >
-		LazyCellImg< T, A > lazyPlanarImgStack( final PlanarImg< T, A > first, final String[] paths, final Loader< T > loader )
-	{
-		final SoftCachingLoader< T > caching_loader;
-		if ( loader instanceof SoftCachingLoader )
-			caching_loader = ( SoftCachingLoader< T > )loader;
-		else
-			caching_loader = new SoftCachingLoader<>( loader, paths.length ); // OK to be big: it's SoftReferences
-		
-		final int[] dimensions_cell = new int[ first.numDimensions() + 1 ];
-		dimensions_cell[ 0 ] = ( int )first.dimension( 0 );
-		dimensions_cell[ 1 ] = ( int )first.dimension( 1 );
-		dimensions_cell[ 2 ] = 1; // single unit in Z
-		dimensions_cell[ 3 ] = 1; // single unit in T
-
-		final LazyCellImg.Get< Cell < A > > get = new LazyCellImg.Get<Cell< A > >()
-		{
-			@SuppressWarnings("unchecked")
-			@Override
-			public final Cell< A > get( final long index ) {
-				final int t = ( ( int )index ) / first.numSlices();
-				final int z = ( ( int )index ) % first.numSlices();
-				// Origin of coordinates for the Cell: 0,0,z,t
-				final long[] min = new long[ first.numDimensions() + 1 ];
-				min[ 2 ] = z;
-				min[ 3 ] = t;
-				final PlanarImg< T, A > stack = ( PlanarImg< T, A > )caching_loader.load( paths[ t ] );
-				return new Cell< A >( dimensions_cell, min, stack.getPlane( z ) );
-			}
-		};
-		
-		final long[] dimensions_all = new long[ first.numDimensions() + 1 ];
-		first.dimensions( dimensions_all );
-		dimensions_all[ dimensions_all.length - 1 ] = paths.length;
-
-		final CellGrid grid = new CellGrid( dimensions_all, dimensions_cell );
-
-		return new LazyCellImg< T, A >( grid, first.firstElement().createVariable(), get );
-	}
-	
-	/**
 	 * Convenient method that invokes {@link Load#lazyStack(String[], Loader)}
 	 * with a cache-enabled {@link IJLoader}.
 	 * 
@@ -282,7 +186,7 @@ public class Load
 	 */
 	static public final < T extends NumericType< T > & NativeType< T >, A extends ArrayDataAccess< A > > LazyCellImg< T, A > lazyStack( final String[] paths )
 	{
-		return Load.lazyStack( paths, new SoftCachingLoader< T >( new IJLoader< T >(), paths.length ) );
+		return Load.lazyStack( paths, new IJLoader< T >() );
 	}
 	
 	/**
@@ -309,7 +213,7 @@ public class Load
 	 * @param loader The reader that turns a file path into an Img.
 	 * @return
 	 */
-	static public final < T extends NumericType< T > & NativeType< T > > RandomAccessibleInterval< T > stack( final String[] paths, final Loader< T > loader )
+	static public final < T extends NumericType< T > & NativeType< T > > RandomAccessibleInterval< T > stack( final String[] paths, final CacheLoader< String, Img< T > > loader )
 	{
 		return stack( Arrays.asList( paths ), loader );
 	}
@@ -317,8 +221,15 @@ public class Load
 	/**
 	 * @see Load#stack(String[], Loader)
 	 */
-	static public final < T extends NumericType< T > & NativeType< T > > RandomAccessibleInterval< T > stack( final List< String > paths, final Loader< T > loader )
+	static public final < T extends NumericType< T > & NativeType< T > > RandomAccessibleInterval< T > stack( final List< String > paths, final CacheLoader< String, Img< T > > loader )
 	{
-		return Views.stack( paths.stream().map( loader::load ).collect( Collectors.toList() ) );
+		return Views.stack( paths.stream().map( path -> {
+			try {
+				return loader.get( path );
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			return null;
+		} ).collect( Collectors.toList() ) );
 	}
 }
