@@ -21,7 +21,7 @@ public class ByteAccessProxy< T extends GenericByteType< T > > extends AbstractA
 	}
 	
 	@Override
-	public byte getValue( final int index )
+	synchronized public byte getValue( final int index )
 	{
 		IntervalIndexer.indexToPosition( index, this.dimensions, this.position );
 		this.ra.setPosition( this.position );
@@ -29,7 +29,7 @@ public class ByteAccessProxy< T extends GenericByteType< T > > extends AbstractA
 	}
 
 	@Override
-	public void setValue( final int index, final byte value )
+	synchronized public void setValue( final int index, final byte value )
 	{
 		IntervalIndexer.indexToPosition( index, this.dimensions, this.position );
 		this.ra.setPosition( this.position );

@@ -21,7 +21,7 @@ public class ShortAccessProxy< T extends GenericShortType< T > > extends Abstrac
 	}
 	
 	@Override
-	public short getValue( final int index )
+	synchronized public short getValue( final int index )
 	{
 		IntervalIndexer.indexToPosition( index, this.dimensions, this.position );
 		this.ra.setPosition( this.position );
@@ -29,7 +29,7 @@ public class ShortAccessProxy< T extends GenericShortType< T > > extends Abstrac
 	}
 
 	@Override
-	public void setValue( final int index, final short value )
+	synchronized public void setValue( final int index, final short value )
 	{
 		IntervalIndexer.indexToPosition( index, this.dimensions, this.position );
 		this.ra.setPosition( this.position );

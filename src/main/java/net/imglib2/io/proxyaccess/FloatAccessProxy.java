@@ -21,7 +21,7 @@ public class FloatAccessProxy< T extends RealType< T > > extends AbstractAccessP
 	}
 	
 	@Override
-	public float getValue( final int index )
+	synchronized public float getValue( final int index )
 	{
 		IntervalIndexer.indexToPosition( index, this.dimensions, this.position );
 		this.ra.setPosition( this.position );
@@ -29,7 +29,7 @@ public class FloatAccessProxy< T extends RealType< T > > extends AbstractAccessP
 	}
 
 	@Override
-	public void setValue( final int index, final float value )
+	synchronized public void setValue( final int index, final float value )
 	{
 		IntervalIndexer.indexToPosition( index, this.dimensions, this.position );
 		this.ra.setPosition( this.position );
