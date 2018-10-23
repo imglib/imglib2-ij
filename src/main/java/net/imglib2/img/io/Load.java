@@ -54,11 +54,15 @@ import net.imglib2.img.cell.LazyCellImg;
 import net.imglib2.img.planar.PlanarImg;
 import net.imglib2.io.proxyaccess.ByteAccessProxy;
 import net.imglib2.io.proxyaccess.FloatAccessProxy;
+import net.imglib2.io.proxyaccess.IntAccessProxy;
+import net.imglib2.io.proxyaccess.LongAccessProxy;
 import net.imglib2.io.proxyaccess.ShortAccessProxy;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.GenericByteType;
+import net.imglib2.type.numeric.integer.GenericIntType;
+import net.imglib2.type.numeric.integer.GenericLongType;
 import net.imglib2.type.numeric.integer.GenericShortType;
 import net.imglib2.view.Views;
 
@@ -168,6 +172,12 @@ public class Load
 					
 		if ( type instanceof GenericShortType )
 			return ( A ) new ShortAccessProxy( img );
+		
+		if ( type instanceof GenericIntType )
+			return ( A ) new IntAccessProxy( img );
+		
+		if ( type instanceof GenericLongType )
+			return ( A ) new LongAccessProxy( img );
 		
 		if ( type instanceof RealType )
 			return ( A ) new FloatAccessProxy( img );
