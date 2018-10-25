@@ -7,7 +7,7 @@ import net.imglib2.type.numeric.integer.GenericIntType;
 import net.imglib2.util.IntervalIndexer;
 
 /**
- * Proxy access over any {@link GenericShortType} container.
+ * Proxy access over any {@link GenericIntType} container.
  * 
  * @author Albert Cardona
  */
