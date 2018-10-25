@@ -69,12 +69,13 @@ import net.imglib2.view.Views;
 public class Load
 {	
 	/** Return a {@link CachedCellImg} representation of the ordered list of file paths,
-	 * with each file path pointing to an image that can be loaded with the {@link Loader}.
+	 * with each file path pointing to an image that can be loaded with the {@link CacheLoader}.
 	 * All images are expected to be of the same dimensions and of {@link NativeType}.
 	 * Each image is loaded as a {@link Cell} of the {@link LazyCellImg}, or,
 	 * in the case of {@link PlanarImg}, each stack plane is loaded as a {@link Cell}.
 	 *
 	 * For example, load a 4D volume by providing a list of file paths to the 3D volume of each time point.
+	 * Can equally load a 3D volume by providing a list of file paths to the 2D images.
 	 *
 	 * The first image will be loaded to find out the dimensions, but it is cached.
 	 *
@@ -186,10 +187,10 @@ public class Load
 	}
 	
 	/**
-	 * Convenient method that invokes {@link Load#lazyStack(String[], Loader)}
+	 * Convenient method that invokes {@link Load#lazyStack(List, CacheLoader)}
 	 * with a cache-enabled {@link IJLoader}.
 	 * 
-	 * @see Load#lazyStack(String[], Loader)
+	 * @see Load#lazyStack(List, CacheLoader)
 	 * 
 	 * @param paths The ordered list of file paths, one per image to load.
 	 * @return a {@link LazyCellImg} that lazily loads each time point, one per file path.
@@ -198,12 +199,12 @@ public class Load
 	{
 		return Load.lazyStack( Arrays.asList( paths ), new IJLoader< T >() );
 	}
-	
+
 	/**
-	 * Convenient method that invokes {@link Load#lazyStack(String[], Loader)}
+	 * Convenient method that invokes {@link Load#lazyStack(List, CacheLoader)}
 	 * with a cache-enabled {@link IJLoader}.
 	 * 
-	 * @see Load#lazyStack(String[], Loader)
+	 * @see Load#lazyStack(List, CacheLoader)
 	 * 
 	 * @param paths The ordered list of file paths, one per image to load.
 	 * @return a {@link LazyCellImg} that lazily loads each time point, one per file path.
@@ -213,23 +214,15 @@ public class Load
 		return Load.lazyStack( paths, new IJLoader< T >() );
 	}
 
-	
 	/**
 	 * Return an {@link Img} representation of the ordered list of file paths,
-	 * with each file path pointing to an image that can be loaded with the {@link Loader}. 
+	 * with each file path pointing to an image that can be loaded with the {@link CacheLoader}. 
 	 * All images are expected to be of the same dimensions and of {@link NativeType}.
+	 * Eager: loads all images right away.
 	 * 
 	 * @param paths The ordered list of file paths, one per image to load.
-	 * @param loader The reader that turns a file path into an Img.
+	 * @param loader The reader that turns a file path into an {@link Img}.
 	 * @return
-	 */
-	static public final < T extends NumericType< T > & NativeType< T > > RandomAccessibleInterval< T > stack( final String[] paths, final CacheLoader< String, Img< T > > loader )
-	{
-		return stack( Arrays.asList( paths ), loader );
-	}
-
-	/**
-	 * @see Load#stack(String[], Loader)
 	 */
 	static public final < T extends NumericType< T > & NativeType< T > > RandomAccessibleInterval< T > stack( final List< String > paths, final CacheLoader< String, Img< T > > loader )
 	{
@@ -241,5 +234,13 @@ public class Load
 			}
 			return null;
 		} ).collect( Collectors.toList() ) );
+	}
+
+	/**
+	 * @see Load#stack(List, CacheLoader)
+	 */
+	static public final < T extends NumericType< T > & NativeType< T > > RandomAccessibleInterval< T > stack( final String[] paths, final CacheLoader< String, Img< T > > loader )
+	{
+		return stack( Arrays.asList( paths ), loader );
 	}
 }
