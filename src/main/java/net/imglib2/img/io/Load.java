@@ -170,25 +170,45 @@ public class Load
 			return extractDataAccess( ( ( ImgPlus< T > )img ).getImg() );
 
 		if ( ArrayImg.class.isAssignableFrom( img.getClass() ) )
-			return ( A )( ( ArrayImg< T, A > )img ).update( null );
+			return (A) wrapAsVolatile( ( ( ArrayImg< T, ArrayDataAccess< ? > > )img ).update( null ) );
 		
 		// If images are not of type ArrayImg, provide read/write proxy random access
 		final T type = img.firstElement();
 		
 		if ( type instanceof GenericByteType )
-			return ( A ) new ByteAccessProxy( img );
-					
+			return (A) new ByteAccessProxy( img );
+		
 		if ( type instanceof GenericShortType )
-			return ( A ) new ShortAccessProxy( img );
+			return (A) new ShortAccessProxy( img );
 		
 		if ( type instanceof GenericIntType )
-			return ( A ) new IntAccessProxy( img );
+			return (A) new IntAccessProxy( img );
 		
 		if ( type instanceof GenericLongType )
-			return ( A ) new LongAccessProxy( img );
+			return (A) new LongAccessProxy( img );
 		
 		if ( type instanceof RealType )
-			return ( A ) new FloatAccessProxy( img );
+			return (A) new FloatAccessProxy( img );
+		
+		return null;
+	}
+	
+	static private final VolatileArrayDataAccess< ? >  wrapAsVolatile( final ArrayDataAccess< ? > access )
+	{
+		final Object array = access.getCurrentStorageArray();
+		
+		if ( array instanceof byte[] )
+			return new VolatileByteArray( ( byte[] )array, true );
+		else if ( array instanceof short[] )
+			return new VolatileShortArray( ( short[] )array, true ); 
+		else if ( array instanceof int[] )
+			return new VolatileIntArray( ( int[] )array, true );
+		else if ( array instanceof long[] )
+			return new VolatileLongArray( ( long[] )array, true );
+		else if ( array instanceof float[] )
+			return new VolatileFloatArray( ( float[] )array, true );
+		else if (array instanceof double[] )
+			return new VolatileDoubleArray( ( double[] )array, true );
 		
 		return null;
 	}
