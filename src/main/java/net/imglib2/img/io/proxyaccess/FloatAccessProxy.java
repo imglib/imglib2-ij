@@ -1,4 +1,4 @@
-package net.imglib2.io.proxyaccess;
+package net.imglib2.img.io.proxyaccess;
 
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.basictypeaccess.FloatAccess;
