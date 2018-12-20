@@ -40,6 +40,7 @@ import java.util.stream.IntStream;
 
 import ij.ImageStack;
 import ij.VirtualStack;
+import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
 
 /**
@@ -110,7 +111,8 @@ public abstract class AbstractVirtualStack extends VirtualStack
 
 		final Object pixels = getPixels( n );
 		final ImageProcessor processor = ImageProcessorUtils.initProcessor( width, height, pixels, colorModel );
-		processor.setMinAndMax( min, max );
+		if ( min != Double.MAX_VALUE && !( processor instanceof ColorProcessor ) )
+			processor.setMinAndMax( min, max );
 		return processor;
 	}
 
