@@ -70,22 +70,23 @@ public class ImageJVirtualStack< S, T extends NativeType< T > > extends Abstract
 
 	private boolean isWritable = false;
 
-	final protected ExecutorService service;
+	protected ExecutorService service;
 
 	/* old constructor -> non-multithreaded projector */
 	protected ImageJVirtualStack( final RandomAccessibleInterval< S > source, final Converter< ? super S, T > converter,
 			final T type, final int bitDepth )
 	{
-		this( source, converter, type, bitDepth, null );
+		this( Converters.convert( source, converter, type ), bitDepth );
 	}
 
 	protected ImageJVirtualStack( final RandomAccessibleInterval< S > source, final Converter< ? super S, T > converter,
 			final T type, final int bitDepth, final ExecutorService service )
 	{
-		this( Converters.convert( source, converter, type ), bitDepth, service);
+		this( source, converter, type, bitDepth );
+		setExecutorService(service);
 	}
 
-	protected ImageJVirtualStack( final RandomAccessibleInterval< T > source, final int bitDepth, final ExecutorService service )
+	protected ImageJVirtualStack( final RandomAccessibleInterval< T > source, final int bitDepth )
 	{
 		super( ( int ) source.dimension( 0 ), ( int ) source.dimension( 1 ), multiply( initHigherDimensions( source ) ), bitDepth );
 		// if the source interval is not zero-min, we wrap it into a view that
@@ -95,7 +96,6 @@ public class ImageJVirtualStack< S, T extends NativeType< T > > extends Abstract
 		this.source = zeroMin( source );
 		this.type = Util.getTypeFromInterval( source );
 		this.higherSourceDimensions = initHigherDimensions( source );
-		this.service = service;
 	}
 
 	private static int multiply( final long[] higherSourceDimensions )
@@ -113,6 +113,11 @@ public class ImageJVirtualStack< S, T extends NativeType< T > > extends Abstract
 	private static < S > RandomAccessibleInterval< S > zeroMin( final RandomAccessibleInterval< S > source )
 	{
 		return Views.isZeroMin( source ) ? source : Views.zeroMin( source );
+	}
+
+	public void setExecutorService( ExecutorService service )
+	{
+		this.service = service;
 	}
 
 	/**

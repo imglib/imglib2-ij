@@ -64,7 +64,7 @@ public class ImageJVirtualStackARGB< S > extends ImageJVirtualStack< S, ARGBType
 
 	private ImageJVirtualStackARGB( final RandomAccessibleInterval< ARGBType > source )
 	{
-		super( source, 24, null );
+		super( source, 24 );
 		setMinAndMax( 0, 255 );
 	}
 }

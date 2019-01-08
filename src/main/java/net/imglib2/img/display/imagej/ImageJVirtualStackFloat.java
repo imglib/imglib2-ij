@@ -85,9 +85,9 @@ public class ImageJVirtualStackFloat< S > extends ImageJVirtualStack< S, FloatTy
 		setMinAndMax( 0, 1 );
 	}
 
-	public ImageJVirtualStackFloat( final RandomAccessibleInterval< FloatType > source )
+	private ImageJVirtualStackFloat( final RandomAccessibleInterval< FloatType > source )
 	{
-		super( source, 32, null );
+		super( source, 32 );
 		setMinAndMax( 0, 1 );
 	}
 

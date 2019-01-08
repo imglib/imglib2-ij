@@ -84,7 +84,7 @@ public class ImageJVirtualStackUnsignedByte< S > extends ImageJVirtualStack< S, 
 
 	private ImageJVirtualStackUnsignedByte( final RandomAccessibleInterval< UnsignedByteType > source )
 	{
-		super( source, 8, null );
+		super( source, 8 );
 		setMinAndMax( 0, 255 );
 	}
 

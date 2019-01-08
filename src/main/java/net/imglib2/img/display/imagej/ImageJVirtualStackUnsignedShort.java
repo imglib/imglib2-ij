@@ -81,7 +81,7 @@ public class ImageJVirtualStackUnsignedShort< S > extends ImageJVirtualStack< S,
 
 	private ImageJVirtualStackUnsignedShort( final RandomAccessibleInterval< UnsignedShortType > source )
 	{
-		super( source, 16, null );
+		super( source, 16 );
 	}
 
 	private void initMinMax( Object s )
