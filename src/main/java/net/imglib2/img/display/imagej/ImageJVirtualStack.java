@@ -186,4 +186,18 @@ public class ImageJVirtualStack< S, T extends NativeType< T > > extends Abstract
 		}
 	}
 
+	@Override
+	protected RandomAccessibleInterval< T > getSliceZeroBasedIndex( int index )
+	{
+		RandomAccessibleInterval< T > origin = source;
+		// Get the 2D plane represented by the virtual array
+		if ( higherSourceDimensions.length > 0 )
+		{
+			final int[] position = new int[ higherSourceDimensions.length ];
+			IntervalIndexer.indexToPosition( index, higherSourceDimensions, position );
+			for ( int i = 0; i < position.length; i++ )
+				origin = Views.hyperSlice( origin, 2, position[ i ] );
+		}
+		return origin;
+	}
 }

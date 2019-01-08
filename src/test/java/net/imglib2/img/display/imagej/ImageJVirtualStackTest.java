@@ -42,6 +42,7 @@ import static org.junit.Assert.assertTrue;
 import net.imglib2.RandomAccess;
 import net.imglib2.converter.Converter;
 import net.imglib2.img.Img;
+import net.imglib2.img.array.ArrayImg;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.test.RandomImgs;
 import net.imglib2.type.Type;
@@ -219,6 +220,26 @@ public class ImageJVirtualStackTest
 		vs.setWritable( true );
 		vs.setPixels( new float[] { value }, 1 );
 		assertEquals( value, image.firstElement().get(), 0 );
+	}
+
+	@Test
+	public void testGetVoxels5DStack() {
+		// NB: this tests ImageJVirtualStack getSliceZeroBasedIndex
+		Img< UnsignedByteType > img = ArrayImgs.unsignedBytes( new byte[] { 0, 1, 2, 3, 4, 5, 6, 7 }, 1, 1, 2, 2, 2 );
+		final ImageStack stack = ImageJVirtualStackUnsignedByte.wrap( img );
+		float[] voxels = new float[8];
+		stack.getVoxels( 0, 0, 0, 1, 1, 8, voxels );
+		assertArrayEquals( new float[] { 0, 1, 2, 3, 4, 5, 6, 7 }, voxels, 0);
+	}
+
+	@Test
+	public void testSetVoxels() {
+		// NB: this tests ImageJVirtualStack getSliceZeroBasedIndex
+		Img< UnsignedByteType > img = ArrayImgs.unsignedBytes( 1, 1 );
+		final ImageStack stack = ImageJVirtualStackUnsignedByte.wrap( img );
+		float[] voxels = { 42 };
+		stack.setVoxels( 0, 0, 0, 1, 1, 1, voxels );
+		assertEquals( 42, img.firstElement().get() );
 	}
 
 	@Test
