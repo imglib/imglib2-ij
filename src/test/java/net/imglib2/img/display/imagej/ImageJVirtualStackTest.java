@@ -48,6 +48,9 @@ import net.imglib2.type.Type;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 
+import net.imglib2.type.numeric.integer.UnsignedShortType;
+import net.imglib2.type.numeric.real.FloatType;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import ij.ImagePlus;
@@ -176,6 +179,47 @@ public class ImageJVirtualStackTest
 		final ImageProcessor processor = vs.getProcessor( 1 );
 		assertTrue( processor instanceof ColorProcessor );
 		assertEquals( value, processor.get( 0, 0 ) & 0x00ffffff );
+	}
+
+	@Test
+	public void testSetPixelsBytes() {
+		final Img< UnsignedByteType > image = ArrayImgs.unsignedBytes( 1, 1, 1 );
+		final ImageJVirtualStack vs = ImageJVirtualStackUnsignedByte.wrap( image );
+		byte value = 42;
+		vs.setWritable( true );
+		vs.setPixels( new byte[] { value }, 1 );
+		assertEquals( value, image.firstElement().get() );
+	}
+
+	@Test
+	public void testSetPixelsShort() {
+		final Img< UnsignedShortType > image = ArrayImgs.unsignedShorts( 1, 1, 1 );
+		final ImageJVirtualStack vs = ImageJVirtualStackUnsignedShort.wrap( image );
+		short value = 42;
+		vs.setWritable( true );
+		vs.setPixels( new short[] { value }, 1 );
+		assertEquals( value, image.firstElement().get() );
+	}
+
+	@Ignore("not working yet")
+	@Test
+	public void testSetPixelsARGB() {
+		final Img< ARGBType > image = ArrayImgs.argbs( 1, 1, 1 );
+		final ImageJVirtualStack vs = ImageJVirtualStackARGB.wrap( image );
+		int value = 42;
+		vs.setWritable( true );
+		vs.setPixels( new int[] { value }, 1 );
+		assertEquals( value, image.firstElement().get() );
+	}
+
+	@Test
+	public void testSetPixelsFloat() {
+		final Img< FloatType > image = ArrayImgs.floats( 1, 1, 1 );
+		final ImageJVirtualStack vs = ImageJVirtualStackFloat.wrap( image );
+		float value = 42;
+		vs.setWritable( true );
+		vs.setPixels( new float[] { value }, 1 );
+		assertEquals( value, image.firstElement().get(), 0 );
 	}
 
 	private < T extends Type< T > > Converter< T, T > copyConverter()
