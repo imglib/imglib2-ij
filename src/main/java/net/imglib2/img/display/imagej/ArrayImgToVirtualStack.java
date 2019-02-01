@@ -104,7 +104,7 @@ public class ArrayImgToVirtualStack
 		final int sizeX = ( int ) img.dimension( 0 );
 		final int sizeY = ( int ) img.dimension( 1 );
 		final Object pixels = arrayImg.update( null ).getCurrentStorageArray();
-		final ImageProcessor processor = ImageProcessorUtils.initProcessor( sizeX, sizeY, pixels, null );
+		final ImageProcessor processor = ImageProcessorUtils.createImageProcessor( pixels, sizeX, sizeY, null );
 		final ImagePlus imagePlus = new ImagePlus( imgPlus.getName(), processor );
 		CalibrationUtils.copyCalibrationToImagePlus( imgPlus, imagePlus );
 		return imagePlus;

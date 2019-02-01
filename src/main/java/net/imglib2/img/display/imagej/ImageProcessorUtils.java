@@ -34,8 +34,11 @@
 
 package net.imglib2.img.display.imagej;
 
-import java.awt.image.ColorModel;
-
+import ij.process.ByteProcessor;
+import ij.process.ColorProcessor;
+import ij.process.FloatProcessor;
+import ij.process.ImageProcessor;
+import ij.process.ShortProcessor;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.type.Type;
@@ -44,11 +47,7 @@ import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.type.numeric.real.FloatType;
 
-import ij.process.ByteProcessor;
-import ij.process.ColorProcessor;
-import ij.process.FloatProcessor;
-import ij.process.ImageProcessor;
-import ij.process.ShortProcessor;
+import java.awt.image.ColorModel;
 
 public class ImageProcessorUtils
 {
@@ -57,35 +56,62 @@ public class ImageProcessorUtils
 		// prevent from instantiation
 	}
 
-	public static ImageProcessor initProcessor( final int sizeX, final int sizeY, final Object pixels, final ColorModel colorModel )
+	/**
+	 * Creates an {@link ImageProcessor}.
+	 *
+	 * @param pixels     The parameter must be an array: byte[], short[], int[] or float[].
+	 *                   The array length must equal width * height.
+	 *                   The array will be used by the {@link ImageProcessor} to read and store the pixel values.
+	 * @param width      Width of the returned {@link ImageProcessor}.
+	 * @param height     Height of the returned {@link ImageProcessor}.
+	 * @param colorModel {@link ColorModel} used by the returned {@link ImageProcessor}.
+	 * @return Will return a {@link ByteProcessor}, {@link ShortProcessor}, {@link ColorProcessor} or {@link FloatProcessor}.
+	 * The concrete type is determined by the type of the array given as pixels.
+	 */
+	public static ImageProcessor createImageProcessor( final Object pixels, final int width, final int height, final ColorModel colorModel )
 	{
 		if ( pixels instanceof byte[] )
-			return new ByteProcessor( sizeX, sizeY, ( byte[] ) pixels, colorModel );
+			return new ByteProcessor( width, height, ( byte[] ) pixels, colorModel );
 		if ( pixels instanceof short[] )
-			return new ShortProcessor( sizeX, sizeY, ( short[] ) pixels, colorModel );
+			return new ShortProcessor( width, height, ( short[] ) pixels, colorModel );
 		if ( pixels instanceof int[] )
-			return new ColorProcessor( sizeX, sizeY, ( int[] ) pixels );
+			return new ColorProcessor( width, height, ( int[] ) pixels );
 		if ( pixels instanceof float[] )
-			return new FloatProcessor( sizeX, sizeY, ( float[] ) pixels, colorModel );
+			return new FloatProcessor( width, height, ( float[] ) pixels, colorModel );
 		throw new IllegalArgumentException( "unsupported color type" );
 	}
 
+	/**
+	 * Returns true if the given ImgLib2 pixel type is also supported by ImageJ1.
+	 */
 	public static boolean isSupported( final Type< ? > type )
 	{
 		return ( type instanceof UnsignedByteType ) || ( type instanceof UnsignedShortType ) ||
 				( type instanceof ARGBType ) || ( type instanceof FloatType );
 	}
 
-	public static Img< ? > initArrayImg( final int sizeX, final int sizeY, final Object pixels )
+	/**
+	 * Creates a two dimensional {@link Img} that wraps around the array given as pixels.
+	 * Only supports UnsignedByteType, UnsignedShortType, FloatType and ARGBType.
+	 * This method is like {@link #createImageProcessor(Object, int, int, ColorModel)} but
+	 * creates an imglib2 {@link Img} instead of an {@link ImageProcessor}.
+	 *
+	 * @param pixels The parameter must be an array: byte[], short[], int[] or float[].
+	 *               The array length must equal width * height.
+	 *               The array will be used by the {@link Img} to read and store the pixel values.
+	 * @param width  Width of the returned {@link Img}.
+	 * @param height Height of the returned {@link Img}.
+	 */
+	public static Img< ? > createImg( final Object pixels, final int width, final int height )
 	{
 		if ( pixels instanceof int[] )
-			return ArrayImgs.argbs( ( int[] ) pixels, sizeX, sizeY );
+			return ArrayImgs.argbs( ( int[] ) pixels, width, height );
 		if ( pixels instanceof byte[] )
-			return ArrayImgs.unsignedBytes( ( byte[] ) pixels, sizeX, sizeY );
+			return ArrayImgs.unsignedBytes( ( byte[] ) pixels, width, height );
 		if ( pixels instanceof short[] )
-			return ArrayImgs.unsignedShorts( ( short[] ) pixels, sizeX, sizeY );
+			return ArrayImgs.unsignedShorts( ( short[] ) pixels, width, height );
 		if ( pixels instanceof float[] )
-			return ArrayImgs.floats( ( float[] ) pixels, sizeX, sizeY );
+			return ArrayImgs.floats( ( float[] ) pixels, width, height );
 		throw new IllegalArgumentException( "unsupported pixel type" );
 	}
 }

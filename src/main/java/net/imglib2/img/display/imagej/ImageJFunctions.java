@@ -77,6 +77,7 @@ import ij.VirtualStack;
  * Likewise, when an ImgLib2 {@link RandomAccessibleInterval} needs to be passed
  * to ImageJ 1.x, it can be wrapped into an {@link ImagePlus} via
  * {@code ImageJFunctions.wrap(img, title)}.
+ * (For details on this see {@link ImageJVirtualStack}).
  * </p>
  *
  * @author Tobis Pietzsch

@@ -34,6 +34,9 @@
 
 package net.imglib2.img.display.imagej;
 
+import ij.ImageStack;
+import ij.VirtualStack;
+import ij.process.ImageProcessor;
 import net.imglib2.Interval;
 import net.imglib2.Positionable;
 import net.imglib2.RandomAccessibleInterval;
@@ -47,6 +50,10 @@ import net.imglib2.img.array.ArrayImg;
 import net.imglib2.img.array.ArrayImgFactory;
 import net.imglib2.img.basictypeaccess.array.ArrayDataAccess;
 import net.imglib2.type.NativeType;
+import net.imglib2.type.numeric.ARGBType;
+import net.imglib2.type.numeric.integer.UnsignedByteType;
+import net.imglib2.type.numeric.integer.UnsignedShortType;
+import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.IntervalIndexer;
 import net.imglib2.util.Util;
 import net.imglib2.view.Views;
@@ -56,8 +63,21 @@ import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 
 /**
- * TODO
- *
+ * {@link VirtualStack} that wraps around a {@link RandomAccessibleInterval} of
+ * type {@link UnsignedByteType}, {@link UnsignedShortType}, {@link FloatType}
+ * or {@link ARGBType}.
+ * <p>
+ * By default {@link ImageJVirtualStack} is not writable. A call to
+ * {@link #setPixels} or {@link #setVoxels} has no effect. Buf if
+ * {@link #setWritable(boolean)} is set to true, the pixels set by this methods
+ * are copied to the {@link RandomAccessibleInterval}.
+ * <p>
+ * A call to {@link #getPixels(int)} will return a copy of pixels of the specified image
+ * plane. Writing to the returned array has no effect.
+ * The {@link ImageProcessor} returned by {@link #getProcessor(int)}
+ * wraps around a copy of the pixels of the image plane too. So methods like
+ * {@link ImageProcessor#set(int, int, int)} will not change the content of
+ * wrapped {@link RandomAccessibleInterval}.
  */
 public class ImageJVirtualStack< T extends NativeType< T > > extends AbstractVirtualStack
 {
@@ -121,18 +141,22 @@ public class ImageJVirtualStack< T extends NativeType< T > > extends AbstractVir
 	}
 
 	/**
-	 * Sets whether or not this virtual stack is writable. The classic ImageJ
-	 * VirtualStack was read-only; but if this stack is backed by a CellCache it
-	 * may now be writable.
+	 * Set if the {@link ImageStack} is writable.
+	 * <p>
+	 * No call to any method of this class will change the wrapped {@link RandomAccessibleInterval},
+	 * if this {@link ImageStack} is not writable.
+	 * <p>
+	 * If writable, the pixels written to the image by the methods {@link #setPixels(Object, int)}
+	 * or {@link #setVoxels} will be copied to the wrapped {@link RandomAccessibleInterval}.
+	 * Please note: The {@link ImageProcessor} cannot be used to persistently change the image
+	 * content.
 	 */
 	public void setWritable( final boolean writable )
 	{
 		isWritable = writable;
 	}
 
-	/**
-	 * @return True if this VirtualStack will attempt to persist changes
-	 */
+	/** True if the image is writable. */
 	@Override
 	public boolean isWritable()
 	{
@@ -178,7 +202,7 @@ public class ImageJVirtualStack< T extends NativeType< T > > extends AbstractVir
 	@Override
 	protected void setPixelsZeroBasedIndex( final int index, final Object pixels )
 	{
-		Img< T > img = ( Img< T > ) ImageProcessorUtils.initArrayImg( getWidth(), getHeight(), pixels );
+		Img< T > img = ( Img< T > ) ImageProcessorUtils.createImg( pixels, getWidth(), getHeight() );
 		// NB: The use of Converter and Projector2D is a bit surprising.
 		// As the converter intentionally uses the first parameter a output.
 		project( index, img, (o, i) -> o.set( i ) );

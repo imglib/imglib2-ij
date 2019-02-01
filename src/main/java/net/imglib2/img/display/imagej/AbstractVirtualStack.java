@@ -55,6 +55,8 @@ import net.imglib2.view.Views;
 
 /**
  * Abstract class to simplify the implementation of an {@link VirtualStack}.
+ * <p>
+ * This class is intended to be used in {@link ImageJVirtualStack} and {@link PlanarImgToVirtualStack}.
  *
  * @author Matthias Arzt
  */
@@ -112,18 +114,46 @@ public abstract class AbstractVirtualStack extends VirtualStack
 		return ( n - 1 ) + offset;
 	}
 
+	/** If this method return's false the methods {@link #setPixels} and {@link #setVoxels} will have no effect. */
 	protected boolean isWritable() {
 		return true;
 	}
 
+	/**
+	 * This method is used internally by {@link AbstractVirtualStack} to implement {@link #getPixels}.
+	 * <p>
+	 * Returns an array that contains the pixels of the specified XY-plane.
+	 * The type of the array must be byte[], short[], int[] or float[] and must match the type indicated by {@link #getBitDepth()}.
+	 *
+	 * @param index Zero based index of the plane. (Warning {@link VirtualStack#getPixels(int)} uses one base indices).
+	 * @see ImageStack#getBitDepth()
+	 */
 	protected abstract Object getPixelsZeroBasedIndex( int index );
 
+	/**
+	 * This method is used internally by {@link AbstractVirtualStack} to implement {@link #setPixels}.
+	 * <p>
+	 * Set all pixels in the specified XY-plane.
+	 *
+	 * @param index  Zero based index of the plane. (Warning {@link VirtualStack#getPixels(int)} uses one base indices).
+	 * @param pixels Array that contains the pixel data. Array length must equal {@link #getWidth()} times {@link #getHeight()}.
+	 *               Type of the array must be byte[], short[], int[] or float[] and match the type indicated by {@link #getBitDepth()}.
+	 */
 	protected abstract void setPixelsZeroBasedIndex( int index, Object pixels );
 
+	/**
+	 * This method is used internally by {@link AbstractVirtualStack} to implement {@link #getVoxels} and {@link #setVoxels}.
+	 * <p>
+	 * Returns a two dimensional {@link RandomAccessibleInterval} that provides read and write access to the specified XY-plane.
+	 * The pixel type must be match {@link #getBitDepth()}. {@link RealType} for 8, 16 and 32 bit images, and {@link ARGBType}
+	 * fot 32-bit images.
+	 *
+	 * @param index Zero based index of the plane. (Warning {@link VirtualStack#getPixels(int)} uses one base indices).
+	 */
 	protected RandomAccessibleInterval< ? > getSliceZeroBasedIndex( int index )
 	{
 		Object pixels = getPixelsZeroBasedIndex( index );
-		return ImageProcessorUtils.initArrayImg( getWidth(), getHeight(), pixels );
+		return ImageProcessorUtils.createImg( pixels, getWidth(), getHeight() );
 	}
 
 	@Override
@@ -131,7 +161,7 @@ public abstract class AbstractVirtualStack extends VirtualStack
 	{
 
 		final Object pixels = getPixels( n );
-		final ImageProcessor processor = ImageProcessorUtils.initProcessor( width, height, pixels, colorModel );
+		final ImageProcessor processor = ImageProcessorUtils.createImageProcessor( pixels, width, height, colorModel );
 		if ( min != Double.MAX_VALUE && !( processor instanceof ColorProcessor ) )
 			processor.setMinAndMax( min, max );
 		return processor;
