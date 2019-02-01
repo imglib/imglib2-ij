@@ -52,7 +52,7 @@ import net.imglib2.util.Util;
  * TODO
  *
  */
-public class ImageJVirtualStackUnsignedShort< S > extends ImageJVirtualStack< S, UnsignedShortType >
+public class ImageJVirtualStackUnsignedShort< S > extends ImageJVirtualStack< UnsignedShortType >
 {
 	public static < T extends RealType< ? > > ImageJVirtualStackUnsignedShort< T > wrap( final RandomAccessibleInterval< T > source )
 	{

@@ -58,7 +58,7 @@ import net.imglib2.view.Views;
  * TODO
  *
  */
-public class ImageJVirtualStackFloat< S > extends ImageJVirtualStack< S, FloatType >
+public class ImageJVirtualStackFloat< S > extends ImageJVirtualStack< FloatType >
 {
 	public static < T extends RealType< ? > > ImageJVirtualStackFloat< T > wrap( final RandomAccessibleInterval< T > source )
 	{

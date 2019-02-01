@@ -59,7 +59,7 @@ import java.util.stream.LongStream;
  * TODO
  *
  */
-public class ImageJVirtualStack< S, T extends NativeType< T > > extends AbstractVirtualStack
+public class ImageJVirtualStack< T extends NativeType< T > > extends AbstractVirtualStack
 {
 
 	final private long[] higherSourceDimensions;
@@ -73,13 +73,13 @@ public class ImageJVirtualStack< S, T extends NativeType< T > > extends Abstract
 	protected ExecutorService service;
 
 	/* old constructor -> non-multithreaded projector */
-	protected ImageJVirtualStack( final RandomAccessibleInterval< S > source, final Converter< ? super S, T > converter,
+	protected < S > ImageJVirtualStack( final RandomAccessibleInterval< S > source, final Converter< ? super S, T > converter,
 			final T type, final int bitDepth )
 	{
 		this( Converters.convert( source, converter, type ), bitDepth );
 	}
 
-	protected ImageJVirtualStack( final RandomAccessibleInterval< S > source, final Converter< ? super S, T > converter,
+	protected < S > ImageJVirtualStack( final RandomAccessibleInterval< S > source, final Converter< ? super S, T > converter,
 			final T type, final int bitDepth, final ExecutorService service )
 	{
 		this( source, converter, type, bitDepth );

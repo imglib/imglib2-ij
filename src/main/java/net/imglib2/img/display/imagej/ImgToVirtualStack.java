@@ -115,7 +115,7 @@ public class ImgToVirtualStack
 		final Object type = rai.randomAccess().get();
 		if ( type instanceof RealType )
 		{
-			final ImageJVirtualStack< ?, ? > result = createVirtualStackRealType( cast( rai ) );
+			final ImageJVirtualStack< ? > result = createVirtualStackRealType( cast( rai ) );
 			result.setWritable( true );
 			return result;
 		}
@@ -132,7 +132,7 @@ public class ImgToVirtualStack
 		return out;
 	}
 
-	private static ImageJVirtualStack< ?, ? > createVirtualStackRealType( final RandomAccessibleInterval< ? extends RealType< ? > > rai )
+	private static ImageJVirtualStack< ? > createVirtualStackRealType( final RandomAccessibleInterval< ? extends RealType< ? > > rai )
 	{
 		final RealType< ? extends RealType< ? > > type = rai.randomAccess().get();
 		final int bitDepth = type.getBitsPerPixel();

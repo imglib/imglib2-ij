@@ -44,7 +44,7 @@ import net.imglib2.type.numeric.ARGBType;
  * TODO
  *
  */
-public class ImageJVirtualStackARGB< S > extends ImageJVirtualStack< S, ARGBType >
+public class ImageJVirtualStackARGB< S > extends ImageJVirtualStack< ARGBType >
 {
 	public static ImageJVirtualStackARGB< ARGBType > wrap( final RandomAccessibleInterval< ARGBType > source )
 	{

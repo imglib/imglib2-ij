@@ -52,7 +52,7 @@ import java.util.concurrent.ExecutorService;
  * TODO
  *
  */
-public class ImageJVirtualStackUnsignedByte< S > extends ImageJVirtualStack< S, UnsignedByteType >
+public class ImageJVirtualStackUnsignedByte< S > extends ImageJVirtualStack< UnsignedByteType >
 {
 	public static < T extends RealType< ? > > ImageJVirtualStackUnsignedByte< T > wrap( final RandomAccessibleInterval< T > source )
 	{
