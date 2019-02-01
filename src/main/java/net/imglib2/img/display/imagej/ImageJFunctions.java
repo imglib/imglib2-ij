@@ -183,7 +183,7 @@ public class ImageJFunctions
 			final String title,
 			final ExecutorService service )
 	{
-		final ImageJVirtualStackFloat< T > stack = new ImageJVirtualStackFloat<>( img, converter, service );
+		final ImageJVirtualStackFloat stack = new ImageJVirtualStackFloat( img, converter, service );
 		final ImagePlus imp = new ImagePlus( title, stack );
 		imp.show();
 
@@ -281,7 +281,7 @@ public class ImageJFunctions
 			final String title,
 			final ExecutorService service )
 	{
-		final ImageJVirtualStackFloat< T > stack = ImageJVirtualStackFloat.wrap( img );
+		final ImageJVirtualStackFloat stack = ImageJVirtualStackFloat.wrap( img );
 		stack.setExecutorService( service );
 		return makeImagePlus( img, stack, title );
 	}
@@ -329,7 +329,7 @@ public class ImageJFunctions
 			final String title,
 			final ExecutorService service )
 	{
-		final ImageJVirtualStackFloat< T > stack = new ImageJVirtualStackFloat<>( img, converter, service );
+		final ImageJVirtualStackFloat stack = new ImageJVirtualStackFloat( img, converter, service );
 		return makeImagePlus( img, stack, title );
 	}
 
@@ -404,7 +404,7 @@ public class ImageJFunctions
 	public static ImagePlus wrapRGB( final RandomAccessibleInterval< ARGBType > img, final String title,
 			final ExecutorService service )
 	{
-		final ImageJVirtualStackARGB< ARGBType > stack = ImageJVirtualStackARGB.wrap( img );
+		final ImageJVirtualStackARGB stack = ImageJVirtualStackARGB.wrap( img );
 		stack.setExecutorService(service);
 		return makeImagePlus( img, stack, title );
 	}
@@ -458,7 +458,7 @@ public class ImageJFunctions
 			final String title,
 			final ExecutorService service )
 	{
-		final ImageJVirtualStackUnsignedByte< T > stack = ImageJVirtualStackUnsignedByte.wrap( img );
+		final ImageJVirtualStackUnsignedByte stack = ImageJVirtualStackUnsignedByte.wrap( img );
 		stack.setExecutorService( service );
 		return makeImagePlus( img, stack, title );
 	}
@@ -582,7 +582,7 @@ public class ImageJFunctions
 			final String title,
 			final ExecutorService service )
 	{
-		final ImageJVirtualStackUnsignedShort< T > stack = ImageJVirtualStackUnsignedShort.wrap( img );
+		final ImageJVirtualStackUnsignedShort stack = ImageJVirtualStackUnsignedShort.wrap( img );
 		stack.setExecutorService( service );
 		return makeImagePlus( img, stack, title );
 	}

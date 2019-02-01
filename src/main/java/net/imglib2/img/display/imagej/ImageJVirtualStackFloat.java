@@ -58,11 +58,11 @@ import net.imglib2.view.Views;
  * TODO
  *
  */
-public class ImageJVirtualStackFloat< S > extends ImageJVirtualStack< FloatType >
+public class ImageJVirtualStackFloat extends ImageJVirtualStack< FloatType >
 {
-	public static < T extends RealType< ? > > ImageJVirtualStackFloat< T > wrap( final RandomAccessibleInterval< T > source )
+	public static < T extends RealType< ? > > ImageJVirtualStackFloat wrap( final RandomAccessibleInterval< T > source )
 	{
-		return new ImageJVirtualStackFloat<>( toFloat(source) );
+		return new ImageJVirtualStackFloat( toFloat(source) );
 	}
 
 	private static < T extends RealType< ? > > RandomAccessibleInterval<FloatType> toFloat( RandomAccessibleInterval<T> source )
@@ -72,13 +72,13 @@ public class ImageJVirtualStackFloat< S > extends ImageJVirtualStack< FloatType 
 		return Converters.convert( source, new ToFloatSamplerConverter( Util.getTypeFromInterval( source )));
 	}
 
-	public ImageJVirtualStackFloat( final RandomAccessibleInterval< S > source,
+	public < S > ImageJVirtualStackFloat( final RandomAccessibleInterval< S > source,
 			final Converter< ? super S, FloatType > converter )
 	{
 		this( source, converter, null );
 	}
 
-	public ImageJVirtualStackFloat( final RandomAccessibleInterval< S > source,
+	public < S > ImageJVirtualStackFloat( final RandomAccessibleInterval< S > source,
 			final Converter< ? super S, FloatType > converter, final ExecutorService service )
 	{
 		super( source, converter, new FloatType(), 32, service );
@@ -91,7 +91,7 @@ public class ImageJVirtualStackFloat< S > extends ImageJVirtualStack< FloatType 
 		setMinAndMax( 0, 1 );
 	}
 
-	public void setMinMax( final RandomAccessibleInterval< S > source, final Converter< S, FloatType > converter )
+	public < S > void setMinMax( final RandomAccessibleInterval< S > source, final Converter< S, FloatType > converter )
 	{
 		if ( service != null )
 		{
@@ -126,7 +126,7 @@ public class ImageJVirtualStackFloat< S > extends ImageJVirtualStack< FloatType 
 		}
 	}
 
-	private void setMinMaxMT( final RandomAccessibleInterval< S > source, final Converter< S, FloatType > converter )
+	private < S > void setMinMaxMT( final RandomAccessibleInterval< S > source, final Converter< S, FloatType > converter )
 	{
 		final long nTasks = Runtime.getRuntime().availableProcessors();
 		long size = 1;

@@ -52,11 +52,11 @@ import net.imglib2.util.Util;
  * TODO
  *
  */
-public class ImageJVirtualStackUnsignedShort< S > extends ImageJVirtualStack< UnsignedShortType >
+public class ImageJVirtualStackUnsignedShort extends ImageJVirtualStack< UnsignedShortType >
 {
-	public static < T extends RealType< ? > > ImageJVirtualStackUnsignedShort< T > wrap( final RandomAccessibleInterval< T > source )
+	public static < T extends RealType< ? > > ImageJVirtualStackUnsignedShort wrap( final RandomAccessibleInterval< T > source )
 	{
-		final ImageJVirtualStackUnsignedShort< T > result = new ImageJVirtualStackUnsignedShort<>( toUnsignedShort( source ) );
+		final ImageJVirtualStackUnsignedShort result = new ImageJVirtualStackUnsignedShort( toUnsignedShort( source ) );
 		result.initMinMax( Util.getTypeFromInterval( source ) );
 		return result;
 	}
@@ -68,12 +68,12 @@ public class ImageJVirtualStackUnsignedShort< S > extends ImageJVirtualStack< Un
 		return Converters.convert( source, new ShortConverter( Util.getTypeFromInterval( source ) ) );
 	}
 
-	public ImageJVirtualStackUnsignedShort( final RandomAccessibleInterval< S > source, final Converter< ? super S, UnsignedShortType > converter )
+	public < S > ImageJVirtualStackUnsignedShort( final RandomAccessibleInterval< S > source, final Converter< ? super S, UnsignedShortType > converter )
 	{
 		this( source, converter, null );
 	}
 
-	public ImageJVirtualStackUnsignedShort( final RandomAccessibleInterval< S > source, final Converter< ? super S, UnsignedShortType > converter, final ExecutorService service )
+	public < S > ImageJVirtualStackUnsignedShort( final RandomAccessibleInterval< S > source, final Converter< ? super S, UnsignedShortType > converter, final ExecutorService service )
 	{
 		super( source, converter, new UnsignedShortType(), 16, service );
 		initMinMax( Util.getTypeFromInterval( source ) );

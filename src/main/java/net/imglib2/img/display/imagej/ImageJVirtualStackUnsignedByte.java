@@ -52,11 +52,11 @@ import java.util.concurrent.ExecutorService;
  * TODO
  *
  */
-public class ImageJVirtualStackUnsignedByte< S > extends ImageJVirtualStack< UnsignedByteType >
+public class ImageJVirtualStackUnsignedByte extends ImageJVirtualStack< UnsignedByteType >
 {
-	public static < T extends RealType< ? > > ImageJVirtualStackUnsignedByte< T > wrap( final RandomAccessibleInterval< T > source )
+	public static < T extends RealType< ? > > ImageJVirtualStackUnsignedByte wrap( final RandomAccessibleInterval< T > source )
 	{
-		return new ImageJVirtualStackUnsignedByte<>( toUnsignedByteType( source ) );
+		return new ImageJVirtualStackUnsignedByte( toUnsignedByteType( source ) );
 	}
 
 	private static < T extends RealType< ? > > RandomAccessibleInterval< UnsignedByteType > toUnsignedByteType( RandomAccessibleInterval< T > source )
@@ -66,17 +66,17 @@ public class ImageJVirtualStackUnsignedByte< S > extends ImageJVirtualStack< Uns
 		return Converters.convert(source, new ToUnsignedByteSamplerConverter( Util.getTypeFromInterval( source ) ) );
 	}
 
-	public static ImageJVirtualStackUnsignedByte< BitType > wrapAndScaleBitType( final RandomAccessibleInterval< BitType > source )
+	public static ImageJVirtualStackUnsignedByte wrapAndScaleBitType( final RandomAccessibleInterval< BitType > source )
 	{
-		return new ImageJVirtualStackUnsignedByte<>( Converters.convert(source, new ToBitByteSamplerConverter()) );
+		return new ImageJVirtualStackUnsignedByte( Converters.convert(source, new ToBitByteSamplerConverter()) );
 	}
 
-	public ImageJVirtualStackUnsignedByte( final RandomAccessibleInterval< S > source, final Converter< ? super S, UnsignedByteType > converter )
+	public < S > ImageJVirtualStackUnsignedByte( final RandomAccessibleInterval< S > source, final Converter< ? super S, UnsignedByteType > converter )
 	{
 		this( source, converter, null );
 	}
 
-	public ImageJVirtualStackUnsignedByte( final RandomAccessibleInterval< S > source, final Converter< ? super S, UnsignedByteType > converter, final ExecutorService service )
+	public < S > ImageJVirtualStackUnsignedByte( final RandomAccessibleInterval< S > source, final Converter< ? super S, UnsignedByteType > converter, final ExecutorService service )
 	{
 		super( source, converter, new UnsignedByteType(), 8, service );
 		setMinAndMax( 0, 255 );

@@ -103,9 +103,9 @@ public class ImgToVirtualStack
 		return result;
 	}
 
-	private static ImageJVirtualStackUnsignedByte< BitType > createVirtualStackBits( final RandomAccessibleInterval< BitType > sorted )
+	private static ImageJVirtualStackUnsignedByte createVirtualStackBits( final RandomAccessibleInterval< BitType > sorted )
 	{
-		final ImageJVirtualStackUnsignedByte< BitType > stack = ImageJVirtualStackUnsignedByte.wrapAndScaleBitType( sorted );
+		final ImageJVirtualStackUnsignedByte stack = ImageJVirtualStackUnsignedByte.wrapAndScaleBitType( sorted );
 		stack.setWritable( true );
 		return stack;
 	}
