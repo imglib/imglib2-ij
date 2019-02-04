@@ -36,6 +36,8 @@ package net.imglib2.img.display.imagej;
 
 import java.awt.image.ColorModel;
 
+import net.imglib2.img.Img;
+import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.type.Type;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
@@ -72,5 +74,18 @@ public class ImageProcessorUtils
 	{
 		return ( type instanceof UnsignedByteType ) || ( type instanceof UnsignedShortType ) ||
 				( type instanceof ARGBType ) || ( type instanceof FloatType );
+	}
+
+	public static Img< ? > initArrayImg( final int sizeX, final int sizeY, final Object pixels )
+	{
+		if ( pixels instanceof int[] )
+			return ArrayImgs.argbs( ( int[] ) pixels, sizeX, sizeY );
+		if ( pixels instanceof byte[] )
+			return ArrayImgs.unsignedBytes( ( byte[] ) pixels, sizeX, sizeY );
+		if ( pixels instanceof short[] )
+			return ArrayImgs.unsignedShorts( ( short[] ) pixels, sizeX, sizeY );
+		if ( pixels instanceof float[] )
+			return ArrayImgs.floats( ( float[] ) pixels, sizeX, sizeY );
+		throw new IllegalArgumentException( "unsupported pixel type" );
 	}
 }

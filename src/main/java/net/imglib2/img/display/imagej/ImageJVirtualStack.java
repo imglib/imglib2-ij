@@ -34,26 +34,26 @@
 
 package net.imglib2.img.display.imagej;
 
-import java.util.concurrent.ExecutorService;
-import java.util.stream.IntStream;
-import java.util.stream.LongStream;
-
-import net.imglib2.Cursor;
 import net.imglib2.Interval;
+import net.imglib2.Positionable;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converter;
+import net.imglib2.converter.Converters;
 import net.imglib2.display.projector.AbstractProjector2D;
 import net.imglib2.display.projector.IterableIntervalProjector2D;
 import net.imglib2.display.projector.MultithreadedIterableIntervalProjector2D;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImg;
 import net.imglib2.img.array.ArrayImgFactory;
-import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.basictypeaccess.array.ArrayDataAccess;
 import net.imglib2.type.NativeType;
-import net.imglib2.type.numeric.RealType;
 import net.imglib2.util.IntervalIndexer;
+import net.imglib2.util.Util;
 import net.imglib2.view.Views;
+
+import java.util.concurrent.ExecutorService;
+import java.util.stream.IntStream;
+import java.util.stream.LongStream;
 
 /**
  * TODO
@@ -61,13 +61,12 @@ import net.imglib2.view.Views;
  */
 public class ImageJVirtualStack< S, T extends NativeType< T > > extends AbstractVirtualStack
 {
+
 	final private long[] higherSourceDimensions;
 
-	final private RandomAccessibleInterval< S > source;
+	final private RandomAccessibleInterval< T > source;
 
 	private final T type;
-
-	private final Converter< ? super S, T > converter;
 
 	private boolean isWritable = false;
 
@@ -83,15 +82,19 @@ public class ImageJVirtualStack< S, T extends NativeType< T > > extends Abstract
 	protected ImageJVirtualStack( final RandomAccessibleInterval< S > source, final Converter< ? super S, T > converter,
 			final T type, final int bitDepth, final ExecutorService service )
 	{
+		this( Converters.convert( source, converter, type ), bitDepth, service);
+	}
+
+	protected ImageJVirtualStack( final RandomAccessibleInterval< T > source, final int bitDepth, final ExecutorService service )
+	{
 		super( ( int ) source.dimension( 0 ), ( int ) source.dimension( 1 ), multiply( initHigherDimensions( source ) ), bitDepth );
 		// if the source interval is not zero-min, we wrap it into a view that
 		// translates it to the origin
 		// if we were given an ExecutorService, use a multithreaded projector
 		assert source.numDimensions() > 1;
 		this.source = zeroMin( source );
+		this.type = Util.getTypeFromInterval( source );
 		this.higherSourceDimensions = initHigherDimensions( source );
-		this.type = type;
-		this.converter = converter;
 		this.service = service;
 	}
 
@@ -135,9 +138,21 @@ public class ImageJVirtualStack< S, T extends NativeType< T > > extends Abstract
 		final int sizeX = ( int ) source.dimension( 0 );
 		final int sizeY = ( int ) source.dimension( 1 );
 		final ArrayImg< T, ? > img = new ArrayImgFactory<>( type ).create( new long[] { sizeX, sizeY } );
+		project( index, img, (i, o) -> o.set( i ) );
+		return img;
+	}
+
+	private void project( int index, Img< T > img, Converter< T, T > converter )
+	{
 		final AbstractProjector2D projector = ( service == null )
 				? new IterableIntervalProjector2D<>( 0, 1, source, img, converter )
 				: new MultithreadedIterableIntervalProjector2D<>( 0, 1, source, img, converter, service );
+		setPosition( index, projector );
+		projector.map();
+	}
+
+	private void setPosition( int index, Positionable projector )
+	{
 		if ( higherSourceDimensions.length > 0 )
 		{
 			final int[] position = new int[ higherSourceDimensions.length ];
@@ -145,8 +160,6 @@ public class ImageJVirtualStack< S, T extends NativeType< T > > extends Abstract
 			for ( int i = 0; i < position.length; i++ )
 				projector.setPosition( position[ i ], i + 2 );
 		}
-		projector.map();
-		return img;
 	}
 
 	@Override
@@ -161,40 +174,11 @@ public class ImageJVirtualStack< S, T extends NativeType< T > > extends Abstract
 	{
 		if ( isWritable() )
 		{
-
-			// Input and output need to be RealTypes
-			if ( !( source.randomAccess().get() instanceof RealType ) || !( type instanceof RealType ) )
-				return;
-
-			RandomAccessibleInterval< S > origin = source;
-			// Get the 2D plane represented by the virtual array
-			if ( higherSourceDimensions.length > 0 )
-			{
-				final int[] position = new int[ higherSourceDimensions.length ];
-				IntervalIndexer.indexToPosition( index, higherSourceDimensions, position );
-				for ( int i = 0; i < position.length; i++ )
-					origin = Views.hyperSlice( origin, 2, position[ i ] );
-			}
-
-			final Cursor< S > originCursor = Views.flatIterable( origin ).cursor();
-			final Cursor< ? extends RealType< ? > > cursor = createArrayImg( ( int ) source.dimension( 0 ), ( int ) source.dimension( 1 ), pixels ).cursor();
-
-			// Replace the origin values with the current state of the virtual array
-			while ( originCursor.hasNext() )
-			{
-				( ( RealType ) originCursor.next() ).setReal( cursor.next().getRealDouble() );
-			}
+			Img< T > img = ( Img< T > ) ImageProcessorUtils.initArrayImg( getWidth(), getHeight(), pixels );
+			// NB: The use of Converter and Projector2D is a bit surprising.
+			// As the converter intentionally uses the first parameter a output.
+			project( index, img, (o, i) -> o.set( i ) );
 		}
 	}
 
-	private static Img< ? extends RealType< ? > > createArrayImg( final int sizeX, final int sizeY, final Object pixels )
-	{
-		if ( pixels instanceof byte[] )
-			return ArrayImgs.unsignedBytes( ( byte[] ) pixels, sizeX, sizeY );
-		if ( pixels instanceof short[] )
-			return ArrayImgs.unsignedShorts( ( short[] ) pixels, sizeX, sizeY );
-		if ( pixels instanceof float[] )
-			return ArrayImgs.floats( ( float[] ) pixels, sizeX, sizeY );
-		throw new IllegalArgumentException( "unsupported pixel type" );
-	}
 }

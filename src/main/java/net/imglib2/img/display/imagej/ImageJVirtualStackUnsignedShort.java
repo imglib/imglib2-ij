@@ -37,7 +37,11 @@ package net.imglib2.img.display.imagej;
 import java.util.concurrent.ExecutorService;
 
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.Sampler;
 import net.imglib2.converter.Converter;
+import net.imglib2.converter.Converters;
+import net.imglib2.converter.readwrite.SamplerConverter;
+import net.imglib2.img.basictypeaccess.ShortAccess;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.Unsigned12BitType;
@@ -52,7 +56,16 @@ public class ImageJVirtualStackUnsignedShort< S > extends ImageJVirtualStack< S,
 {
 	public static < T extends RealType< ? > > ImageJVirtualStackUnsignedShort< T > wrap( final RandomAccessibleInterval< T > source )
 	{
-		return new ImageJVirtualStackUnsignedShort<>( source, new ShortConverter() );
+		final ImageJVirtualStackUnsignedShort< T > result = new ImageJVirtualStackUnsignedShort<>( toUnsignedShort( source ) );
+		result.initMinMax( Util.getTypeFromInterval( source ) );
+		return result;
+	}
+
+	private static < T extends RealType< ? > > RandomAccessibleInterval< UnsignedShortType > toUnsignedShort( RandomAccessibleInterval< T > source )
+	{
+		if( Util.getTypeFromInterval( source ) instanceof UnsignedShortType )
+			return ( RandomAccessibleInterval< UnsignedShortType > ) source;
+		return Converters.convert( source, new ShortConverter( Util.getTypeFromInterval( source ) ) );
 	}
 
 	public ImageJVirtualStackUnsignedShort( final RandomAccessibleInterval< S > source, final Converter< ? super S, UnsignedShortType > converter )
@@ -63,10 +76,17 @@ public class ImageJVirtualStackUnsignedShort< S > extends ImageJVirtualStack< S,
 	public ImageJVirtualStackUnsignedShort( final RandomAccessibleInterval< S > source, final Converter< ? super S, UnsignedShortType > converter, final ExecutorService service )
 	{
 		super( source, converter, new UnsignedShortType(), 16, service );
+		initMinMax( Util.getTypeFromInterval( source ) );
+	}
 
+	private ImageJVirtualStackUnsignedShort( final RandomAccessibleInterval< UnsignedShortType > source )
+	{
+		super( source, 16, null );
+	}
+
+	private void initMinMax( Object s )
+	{
 		int maxDisplay = ( 1 << 16 ) - 1;
-
-		final S s = Util.getTypeFromInterval( source );
 
 		if ( BitType.class.isInstance( s ) )
 			maxDisplay = 1;
@@ -76,20 +96,45 @@ public class ImageJVirtualStackUnsignedShort< S > extends ImageJVirtualStack< S,
 		setMinAndMax( 0, maxDisplay );
 	}
 
-	private static class ShortConverter implements
-			Converter< RealType< ? >, UnsignedShortType >
+	private static class ShortConverter implements SamplerConverter< RealType< ? >, UnsignedShortType >
 	{
 
-		@Override
-		public void convert( final RealType< ? > input, final UnsignedShortType output )
-		{
-			double val = input.getRealDouble();
-			if ( val < 0 )
-				val = 0;
-			else if ( val > 65535 )
-				val = 65535;
-			output.setReal( val );
+		private final double min;
+
+		private final double max;
+
+		ShortConverter(RealType<?> type) {
+			this.min = type.getMinValue();
+			this.max = type.getMaxValue();
 		}
 
+		@Override
+		public UnsignedShortType convert( Sampler< ? extends RealType< ? > > sampler )
+		{
+			return new UnsignedShortType( new ShortAccess()
+			{
+				@Override
+				public short getValue( int index )
+				{
+					double val = sampler.get().getRealDouble() + 0.5;
+					if ( val < 0 )
+						val = 0;
+					else if ( val > 65535 )
+						val = 65535;
+					return (short) ((int) val);
+				}
+
+				@Override
+				public void setValue( int index, short value )
+				{
+					double val = value;
+					if ( val < min )
+						val = min;
+					else if ( val > max )
+						val = max;
+					sampler.get().setReal( val );
+				}
+			} );
+		}
 	}
 }

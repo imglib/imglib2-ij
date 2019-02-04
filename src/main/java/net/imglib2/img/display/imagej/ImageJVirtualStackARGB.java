@@ -48,7 +48,7 @@ public class ImageJVirtualStackARGB< S > extends ImageJVirtualStack< S, ARGBType
 {
 	public static ImageJVirtualStackARGB< ARGBType > wrap( final RandomAccessibleInterval< ARGBType > source )
 	{
-		return new ImageJVirtualStackARGB<>( source, ( input, output ) -> output.set( input ) );
+		return new ImageJVirtualStackARGB<>( source );
 	}
 
 	public ImageJVirtualStackARGB( final RandomAccessibleInterval< S > source, final Converter< ? super S, ARGBType > converter )
@@ -59,6 +59,12 @@ public class ImageJVirtualStackARGB< S > extends ImageJVirtualStack< S, ARGBType
 	public ImageJVirtualStackARGB( final RandomAccessibleInterval< S > source, final Converter< ? super S, ARGBType > converter, final ExecutorService service )
 	{
 		super( source, converter, new ARGBType(), 24, service );
+		setMinAndMax( 0, 255 );
+	}
+
+	private ImageJVirtualStackARGB( final RandomAccessibleInterval< ARGBType > source )
+	{
+		super( source, 24, null );
 		setMinAndMax( 0, 255 );
 	}
 }
