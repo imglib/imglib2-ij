@@ -236,9 +236,9 @@ public class ImageJVirtualStackTest
 	public void testSetVoxels() {
 		// NB: this tests ImageJVirtualStack getSliceZeroBasedIndex
 		Img< UnsignedByteType > img = ArrayImgs.unsignedBytes( 1, 1 );
-		final ImageStack stack = ImageJVirtualStackUnsignedByte.wrap( img );
-		float[] voxels = { 42 };
-		stack.setVoxels( 0, 0, 0, 1, 1, 1, voxels );
+		final ImageJVirtualStack<?> stack = ImageJVirtualStackUnsignedByte.wrap( img );
+		stack.setWritable( true );
+		stack.setVoxels( 0, 0, 0, 1, 1, 1, new float[] { 42 } );
 		assertEquals( 42, img.firstElement().get() );
 	}
 

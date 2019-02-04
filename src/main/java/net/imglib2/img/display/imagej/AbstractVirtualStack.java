@@ -103,12 +103,17 @@ public abstract class AbstractVirtualStack extends VirtualStack
 	@Override
 	public final void setPixels( final Object pixels, final int n )
 	{
-		setPixelsZeroBasedIndex( toZeroBasedIndex( n ), pixels );
+		if( isWritable() )
+			setPixelsZeroBasedIndex( toZeroBasedIndex( n ), pixels );
 	}
 
 	private int toZeroBasedIndex( int n )
 	{
 		return ( n - 1 ) + offset;
+	}
+
+	protected boolean isWritable() {
+		return true;
 	}
 
 	protected abstract Object getPixelsZeroBasedIndex( int index );
@@ -372,13 +377,15 @@ public abstract class AbstractVirtualStack extends VirtualStack
 	@Override
 	public void setVoxels( final int x0, final int y0, final int z0, final int w, final int h, final int d, final float[] voxels )
 	{
-		accessVoxels( x0, y0, z0, w, h, d, voxels, null, true );
+		if ( isWritable() )
+			accessVoxels( x0, y0, z0, w, h, d, voxels, null, true );
 	}
 
 	@Override
 	public void setVoxels( final int x0, final int y0, final int z0, final int w, final int h, final int d, final float[] voxels, final int channel )
 	{
-		accessVoxels( x0, y0, z0, w, h, d, voxels, channel, true );
+		if ( isWritable() )
+			accessVoxels( x0, y0, z0, w, h, d, voxels, channel, true );
 	}
 
 	private float[] accessVoxels( int x0, int y0, int z0, int w, int h, int d, float[] voxels, Integer optionalChannel, boolean setVoxel )

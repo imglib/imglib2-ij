@@ -133,6 +133,7 @@ public class ImageJVirtualStack< T extends NativeType< T > > extends AbstractVir
 	/**
 	 * @return True if this VirtualStack will attempt to persist changes
 	 */
+	@Override
 	public boolean isWritable()
 	{
 		return isWritable;
@@ -177,13 +178,10 @@ public class ImageJVirtualStack< T extends NativeType< T > > extends AbstractVir
 	@Override
 	protected void setPixelsZeroBasedIndex( final int index, final Object pixels )
 	{
-		if ( isWritable() )
-		{
-			Img< T > img = ( Img< T > ) ImageProcessorUtils.initArrayImg( getWidth(), getHeight(), pixels );
-			// NB: The use of Converter and Projector2D is a bit surprising.
-			// As the converter intentionally uses the first parameter a output.
-			project( index, img, (o, i) -> o.set( i ) );
-		}
+		Img< T > img = ( Img< T > ) ImageProcessorUtils.initArrayImg( getWidth(), getHeight(), pixels );
+		// NB: The use of Converter and Projector2D is a bit surprising.
+		// As the converter intentionally uses the first parameter a output.
+		project( index, img, (o, i) -> o.set( i ) );
 	}
 
 	@Override

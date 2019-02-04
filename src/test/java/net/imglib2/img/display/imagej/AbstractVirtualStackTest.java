@@ -3,8 +3,10 @@ package net.imglib2.img.display.imagej;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
+import ij.VirtualStack;
 import ij.gui.Roi;
 import ij.plugin.Resizer;
+import ij.process.ByteProcessor;
 import org.junit.Test;
 
 import java.awt.*;
@@ -148,6 +150,27 @@ public class AbstractVirtualStackTest
 		return result;
 	}
 
+	@Test
+	public void testSetPixels()
+	{
+		byte[][] pixels = new byte[ 1 ][ 1 ];
+		VirtualStack stack = new TestVirtualStack( 1, 1, 1, pixels );
+		stack.setPixels( new byte[] { 42 }, 1 );
+		assertEquals( 42, pixels[ 0 ][ 0 ] );
+	}
+
+	@Test
+	public void testWriteProtection()
+	{
+		byte[][] pixels = new byte[ 1 ][ 1 ];
+		// NB: use non writable stack
+		VirtualStack stack = new TestReadonlyVirtualStack( 1, 1, 1, pixels );
+		stack.setPixels( new byte[] { 42 }, 1 );
+		stack.setProcessor( new ByteProcessor( 1, 1, new byte[] { 43 } ), 1 );
+		stack.setVoxels( 0, 0, 0, 1, 1, 1, new float[] { 44 } );
+		assertEquals( 0, pixels[ 0 ][ 0 ] );
+	}
+
 	private static class TestVirtualStack extends AbstractVirtualStack
 	{
 
@@ -171,4 +194,20 @@ public class AbstractVirtualStackTest
 			this.pixels[ index ] = ( byte[] ) pixels;
 		}
 	}
+
+	private static class TestReadonlyVirtualStack extends TestVirtualStack
+	{
+
+		public TestReadonlyVirtualStack( int width, int height, int size, byte[][] pixels )
+		{
+			super( width, height, size, pixels );
+		}
+
+		@Override
+		protected boolean isWritable()
+		{
+			return false;
+		}
+	}
+
 }
