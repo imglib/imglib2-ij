@@ -353,7 +353,12 @@ public abstract class AbstractVirtualStack extends VirtualStack
 	@Override
 	public void setProcessor( final ImageProcessor ip, final int n )
 	{
-		// ignore
+		// NB: Try to behave like ImageStack.setProcessor
+		if (ip.getWidth() != width || ip.getHeight() != height)
+			throw new IllegalArgumentException("Wrong dimensions for this stack");
+		if (getBitDepth() != ip.getBitDepth())
+			throw new IllegalArgumentException("Wrong type for this stack");
+		setPixels( ip.getPixels(), n );
 	}
 
 	@Override

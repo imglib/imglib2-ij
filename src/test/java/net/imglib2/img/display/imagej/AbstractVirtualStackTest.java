@@ -7,6 +7,8 @@ import ij.VirtualStack;
 import ij.gui.Roi;
 import ij.plugin.Resizer;
 import ij.process.ByteProcessor;
+import ij.process.FloatProcessor;
+import ij.process.ImageProcessor;
 import org.junit.Test;
 
 import java.awt.*;
@@ -157,6 +159,32 @@ public class AbstractVirtualStackTest
 		VirtualStack stack = new TestVirtualStack( 1, 1, 1, pixels );
 		stack.setPixels( new byte[] { 42 }, 1 );
 		assertEquals( 42, pixels[ 0 ][ 0 ] );
+	}
+
+	@Test
+	public void testSetProcessor()
+	{
+		byte[][] pixels = new byte[ 1 ][ 1 ];
+		VirtualStack stack = new TestVirtualStack( 1, 1, 1, pixels );
+		final ImageProcessor processor = new ByteProcessor( 1, 1, new byte[] { 42 } );
+		stack.setProcessor( processor, 1 );
+		assertEquals( 42, pixels[ 0 ][ 0 ] );
+	}
+
+	@Test( expected = IllegalArgumentException.class )
+	public void testSetProcessorWrongSize()
+	{
+		VirtualStack stack = new TestVirtualStack( 1, 1, 1, new byte[ 1 ][ 1 ] );
+		final ImageProcessor processor = new ByteProcessor( 2, 1, new byte[ 2 ] );
+		stack.setProcessor( processor, 1 );
+	}
+
+	@Test( expected = IllegalArgumentException.class )
+	public void testSetProcessorWrongType()
+	{
+		VirtualStack stack = new TestVirtualStack( 1, 1, 1, new byte[ 1 ][ 1 ] );
+		final ImageProcessor processor = new FloatProcessor( 1, 1, new float[ 1 ] );
+		stack.setProcessor( processor, 1 );
 	}
 
 	@Test
