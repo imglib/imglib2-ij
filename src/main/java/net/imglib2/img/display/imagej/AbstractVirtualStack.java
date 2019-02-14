@@ -36,14 +36,27 @@ package net.imglib2.img.display.imagej;
 
 import java.awt.Rectangle;
 import java.awt.image.ColorModel;
+import java.util.function.BiConsumer;
 import java.util.stream.IntStream;
 
 import ij.ImageStack;
 import ij.VirtualStack;
+import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
+import net.imglib2.Cursor;
+import net.imglib2.FinalInterval;
+import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.img.array.ArrayImgs;
+import net.imglib2.type.numeric.ARGBType;
+import net.imglib2.type.numeric.RealType;
+import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.util.Intervals;
+import net.imglib2.view.Views;
 
 /**
  * Abstract class to simplify the implementation of an {@link VirtualStack}.
+ * <p>
+ * This class is intended to be used in {@link ImageJVirtualStack} and {@link PlanarImgToVirtualStack}.
  *
  * @author Matthias Arzt
  */
@@ -92,7 +105,8 @@ public abstract class AbstractVirtualStack extends VirtualStack
 	@Override
 	public final void setPixels( final Object pixels, final int n )
 	{
-		setPixelsZeroBasedIndex( toZeroBasedIndex( n ), pixels );
+		if( isWritable() )
+			setPixelsZeroBasedIndex( toZeroBasedIndex( n ), pixels );
 	}
 
 	private int toZeroBasedIndex( int n )
@@ -100,17 +114,56 @@ public abstract class AbstractVirtualStack extends VirtualStack
 		return ( n - 1 ) + offset;
 	}
 
+	/** If this method return's false the methods {@link #setPixels} and {@link #setVoxels} will have no effect. */
+	protected boolean isWritable() {
+		return true;
+	}
+
+	/**
+	 * This method is used internally by {@link AbstractVirtualStack} to implement {@link #getPixels}.
+	 * <p>
+	 * Returns an array that contains the pixels of the specified XY-plane.
+	 * The type of the array must be byte[], short[], int[] or float[] and must match the type indicated by {@link #getBitDepth()}.
+	 *
+	 * @param index Zero based index of the plane. (Warning {@link VirtualStack#getPixels(int)} uses one base indices).
+	 * @see ImageStack#getBitDepth()
+	 */
 	protected abstract Object getPixelsZeroBasedIndex( int index );
 
+	/**
+	 * This method is used internally by {@link AbstractVirtualStack} to implement {@link #setPixels}.
+	 * <p>
+	 * Set all pixels in the specified XY-plane.
+	 *
+	 * @param index  Zero based index of the plane. (Warning {@link VirtualStack#getPixels(int)} uses one base indices).
+	 * @param pixels Array that contains the pixel data. Array length must equal {@link #getWidth()} times {@link #getHeight()}.
+	 *               Type of the array must be byte[], short[], int[] or float[] and match the type indicated by {@link #getBitDepth()}.
+	 */
 	protected abstract void setPixelsZeroBasedIndex( int index, Object pixels );
+
+	/**
+	 * This method is used internally by {@link AbstractVirtualStack} to implement {@link #getVoxels} and {@link #setVoxels}.
+	 * <p>
+	 * Returns a two dimensional {@link RandomAccessibleInterval} that provides read and write access to the specified XY-plane.
+	 * The pixel type must be match {@link #getBitDepth()}. {@link RealType} for 8, 16 and 32 bit images, and {@link ARGBType}
+	 * fot 32-bit images.
+	 *
+	 * @param index Zero based index of the plane. (Warning {@link VirtualStack#getPixels(int)} uses one base indices).
+	 */
+	protected RandomAccessibleInterval< ? > getSliceZeroBasedIndex( int index )
+	{
+		Object pixels = getPixelsZeroBasedIndex( index );
+		return ImageProcessorUtils.createImg( pixels, getWidth(), getHeight() );
+	}
 
 	@Override
 	public ImageProcessor getProcessor( final int n )
 	{
 
 		final Object pixels = getPixels( n );
-		final ImageProcessor processor = ImageProcessorUtils.initProcessor( width, height, pixels, colorModel );
-		processor.setMinAndMax( min, max );
+		final ImageProcessor processor = ImageProcessorUtils.createImageProcessor( pixels, width, height, colorModel );
+		if ( min != Double.MAX_VALUE && !( processor instanceof ColorProcessor ) )
+			processor.setMinAndMax( min, max );
 		return processor;
 	}
 
@@ -300,7 +353,12 @@ public abstract class AbstractVirtualStack extends VirtualStack
 	@Override
 	public void setProcessor( final ImageProcessor ip, final int n )
 	{
-		// ignore
+		// NB: Try to behave like ImageStack.setProcessor
+		if (ip.getWidth() != width || ip.getHeight() != height)
+			throw new IllegalArgumentException("Wrong dimensions for this stack");
+		if (getBitDepth() != ip.getBitDepth())
+			throw new IllegalArgumentException("Wrong type for this stack");
+		setPixels( ip.getPixels(), n );
 	}
 
 	@Override
@@ -340,27 +398,89 @@ public abstract class AbstractVirtualStack extends VirtualStack
 	}
 
 	@Override
-	public float[] getVoxels( final int x0, final int y0, final int z0, final int w, final int h, final int d, final float[] voxels )
+	public float[] getVoxels( final int x0, final int y0, final int z0, final int w, final int h, final int d, float[] voxels )
 	{
-		throw new UnsupportedOperationException();
+		return accessVoxels( x0, y0, z0, w, h, d, voxels, null, false );
 	}
 
 	@Override
-	public float[] getVoxels( final int x0, final int y0, final int z0, final int w, final int h, final int d, final float[] voxels, final int channel )
+	public float[] getVoxels( final int x0, final int y0, final int z0, final int w, final int h, final int d, float[] voxels, final int channel )
 	{
-		throw new UnsupportedOperationException();
+		return accessVoxels( x0, y0, z0, w, h, d, voxels, channel, false );
 	}
 
 	@Override
 	public void setVoxels( final int x0, final int y0, final int z0, final int w, final int h, final int d, final float[] voxels )
 	{
-		throw new UnsupportedOperationException();
+		if ( isWritable() )
+			accessVoxels( x0, y0, z0, w, h, d, voxels, null, true );
 	}
 
 	@Override
 	public void setVoxels( final int x0, final int y0, final int z0, final int w, final int h, final int d, final float[] voxels, final int channel )
 	{
-		throw new UnsupportedOperationException();
+		if ( isWritable() )
+			accessVoxels( x0, y0, z0, w, h, d, voxels, channel, true );
+	}
+
+	private float[] accessVoxels( int x0, int y0, int z0, int w, int h, int d, float[] voxels, Integer optionalChannel, boolean setVoxel )
+	{
+		checkBounds( x0, y0, z0, w, h, d );
+		if( ! setVoxel )
+			voxels = checkResultArray( w, h, d, voxels );
+		BiConsumer< Object, FloatType > action = ( BiConsumer< Object, FloatType > ) voxelAccessAction( optionalChannel, setVoxel );
+		loopOverVoxels( x0, y0, z0, w, h, d, voxels, action );
+		return voxels;
+	}
+
+	private void checkBounds( int x0, int y0, int z0, int w, int h, int d )
+	{
+		boolean inBounds = (x0 >= 0) && (x0 + w <= width) && (y0 >= 0) && (y0 + h <= height) && (z0 >= 0) && (z0 + d <= size);
+		if(! inBounds)
+			throw new IndexOutOfBoundsException();
+	}
+
+	private float[] checkResultArray( int w, int h, int d, float[] voxels )
+	{
+		if ( voxels == null || voxels.length != w * h * d )
+			voxels = new float[ w * h * d ];
+		return voxels;
+	}
+
+	private void loopOverVoxels( int x0, int y0, int z0, int w, int h, int d, float[] voxels, BiConsumer< Object, FloatType > action )
+	{
+		FinalInterval interval = Intervals.createMinSize( x0, y0, w, h );
+		Cursor< FloatType > output = ArrayImgs.floats( voxels, w, h, d ).cursor();
+		for ( int z = z0 + offset; z < z0 + offset + d; z++ )
+		{
+			Cursor< ? > cursor = Views.flatIterable( Views.interval( getSliceZeroBasedIndex( z ), interval ) ).cursor();
+			while ( cursor.hasNext() ) {
+				action.accept( cursor.next(), output.next() );
+			}
+		}
+	}
+
+
+	private BiConsumer<?, FloatType> voxelAccessAction( Integer channel, boolean isSetVoxels )
+	{
+		if ( bitDepth == 24 )
+			return arbgVoxelAccessAction( channel, isSetVoxels );
+		return isSetVoxels ?
+				(BiConsumer< RealType, FloatType >) ( a, b ) -> a.setReal( b.getRealFloat() ) :
+				(BiConsumer< RealType, FloatType >) ( a, b ) -> b.setReal( a.getRealFloat() );
+	}
+
+	private static BiConsumer<ARGBType, FloatType> arbgVoxelAccessAction( Integer channel, boolean isSetVoxel )
+	{
+		if( channel == null )
+			return isSetVoxel ?
+					( a, b ) -> a.set( (int) b.getRealFloat() ) :
+					( a, b ) -> b.set( a.get() );
+		int shift = 8 * (2 - channel);
+		int mask = ~ (0xff << shift);
+		return isSetVoxel ?
+				( a, b ) -> a.set( a.get() & mask | ((((int) b.get()) & 0xff) << shift )) :
+				( a, b ) -> b.set( ( a.get() >> shift) & 0xff );
 	}
 
 	@Override

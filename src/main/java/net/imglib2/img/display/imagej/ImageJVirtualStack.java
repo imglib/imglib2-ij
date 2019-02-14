@@ -34,54 +34,79 @@
 
 package net.imglib2.img.display.imagej;
 
-import java.util.concurrent.ExecutorService;
-import java.util.stream.IntStream;
-import java.util.stream.LongStream;
-
-import net.imglib2.Cursor;
+import ij.ImageStack;
+import ij.VirtualStack;
+import ij.process.ImageProcessor;
 import net.imglib2.Interval;
+import net.imglib2.Positionable;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converter;
+import net.imglib2.converter.Converters;
 import net.imglib2.display.projector.AbstractProjector2D;
 import net.imglib2.display.projector.IterableIntervalProjector2D;
 import net.imglib2.display.projector.MultithreadedIterableIntervalProjector2D;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImg;
 import net.imglib2.img.array.ArrayImgFactory;
-import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.basictypeaccess.array.ArrayDataAccess;
 import net.imglib2.type.NativeType;
-import net.imglib2.type.numeric.RealType;
+import net.imglib2.type.numeric.ARGBType;
+import net.imglib2.type.numeric.integer.UnsignedByteType;
+import net.imglib2.type.numeric.integer.UnsignedShortType;
+import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.IntervalIndexer;
+import net.imglib2.util.Util;
 import net.imglib2.view.Views;
 
+import java.util.concurrent.ExecutorService;
+import java.util.stream.IntStream;
+import java.util.stream.LongStream;
+
 /**
- * TODO
- *
+ * {@link VirtualStack} that wraps around a {@link RandomAccessibleInterval} of
+ * type {@link UnsignedByteType}, {@link UnsignedShortType}, {@link FloatType}
+ * or {@link ARGBType}.
+ * <p>
+ * By default {@link ImageJVirtualStack} is not writable. A call to
+ * {@link #setPixels} or {@link #setVoxels} has no effect. Buf if
+ * {@link #setWritable(boolean)} is set to true, the pixels set by this methods
+ * are copied to the {@link RandomAccessibleInterval}.
+ * <p>
+ * A call to {@link #getPixels(int)} will return a copy of pixels of the specified image
+ * plane. Writing to the returned array has no effect.
+ * The {@link ImageProcessor} returned by {@link #getProcessor(int)}
+ * wraps around a copy of the pixels of the image plane too. So methods like
+ * {@link ImageProcessor#set(int, int, int)} will not change the content of
+ * wrapped {@link RandomAccessibleInterval}.
  */
-public class ImageJVirtualStack< S, T extends NativeType< T > > extends AbstractVirtualStack
+public class ImageJVirtualStack< T extends NativeType< T > > extends AbstractVirtualStack
 {
+
 	final private long[] higherSourceDimensions;
 
-	final private RandomAccessibleInterval< S > source;
+	final private RandomAccessibleInterval< T > source;
 
 	private final T type;
 
-	private final Converter< ? super S, T > converter;
-
 	private boolean isWritable = false;
 
-	final protected ExecutorService service;
+	protected ExecutorService service;
 
 	/* old constructor -> non-multithreaded projector */
-	protected ImageJVirtualStack( final RandomAccessibleInterval< S > source, final Converter< ? super S, T > converter,
+	protected < S > ImageJVirtualStack( final RandomAccessibleInterval< S > source, final Converter< ? super S, T > converter,
 			final T type, final int bitDepth )
 	{
-		this( source, converter, type, bitDepth, null );
+		this( Converters.convert( source, converter, type ), bitDepth );
 	}
 
-	protected ImageJVirtualStack( final RandomAccessibleInterval< S > source, final Converter< ? super S, T > converter,
+	protected < S > ImageJVirtualStack( final RandomAccessibleInterval< S > source, final Converter< ? super S, T > converter,
 			final T type, final int bitDepth, final ExecutorService service )
+	{
+		this( source, converter, type, bitDepth );
+		setExecutorService(service);
+	}
+
+	protected ImageJVirtualStack( final RandomAccessibleInterval< T > source, final int bitDepth )
 	{
 		super( ( int ) source.dimension( 0 ), ( int ) source.dimension( 1 ), multiply( initHigherDimensions( source ) ), bitDepth );
 		// if the source interval is not zero-min, we wrap it into a view that
@@ -89,10 +114,8 @@ public class ImageJVirtualStack< S, T extends NativeType< T > > extends Abstract
 		// if we were given an ExecutorService, use a multithreaded projector
 		assert source.numDimensions() > 1;
 		this.source = zeroMin( source );
+		this.type = Util.getTypeFromInterval( source );
 		this.higherSourceDimensions = initHigherDimensions( source );
-		this.type = type;
-		this.converter = converter;
-		this.service = service;
 	}
 
 	private static int multiply( final long[] higherSourceDimensions )
@@ -112,19 +135,29 @@ public class ImageJVirtualStack< S, T extends NativeType< T > > extends Abstract
 		return Views.isZeroMin( source ) ? source : Views.zeroMin( source );
 	}
 
+	public void setExecutorService( ExecutorService service )
+	{
+		this.service = service;
+	}
+
 	/**
-	 * Sets whether or not this virtual stack is writable. The classic ImageJ
-	 * VirtualStack was read-only; but if this stack is backed by a CellCache it
-	 * may now be writable.
+	 * Set if the {@link ImageStack} is writable.
+	 * <p>
+	 * No call to any method of this class will change the wrapped {@link RandomAccessibleInterval},
+	 * if this {@link ImageStack} is not writable.
+	 * <p>
+	 * If writable, the pixels written to the image by the methods {@link #setPixels(Object, int)}
+	 * or {@link #setVoxels} will be copied to the wrapped {@link RandomAccessibleInterval}.
+	 * Please note: The {@link ImageProcessor} cannot be used to persistently change the image
+	 * content.
 	 */
 	public void setWritable( final boolean writable )
 	{
 		isWritable = writable;
 	}
 
-	/**
-	 * @return True if this VirtualStack will attempt to persist changes
-	 */
+	/** True if the image is writable. */
+	@Override
 	public boolean isWritable()
 	{
 		return isWritable;
@@ -135,9 +168,21 @@ public class ImageJVirtualStack< S, T extends NativeType< T > > extends Abstract
 		final int sizeX = ( int ) source.dimension( 0 );
 		final int sizeY = ( int ) source.dimension( 1 );
 		final ArrayImg< T, ? > img = new ArrayImgFactory<>( type ).create( new long[] { sizeX, sizeY } );
+		project( index, img, (i, o) -> o.set( i ) );
+		return img;
+	}
+
+	private void project( int index, Img< T > img, Converter< T, T > converter )
+	{
 		final AbstractProjector2D projector = ( service == null )
 				? new IterableIntervalProjector2D<>( 0, 1, source, img, converter )
 				: new MultithreadedIterableIntervalProjector2D<>( 0, 1, source, img, converter, service );
+		setPosition( index, projector );
+		projector.map();
+	}
+
+	private void setPosition( int index, Positionable projector )
+	{
 		if ( higherSourceDimensions.length > 0 )
 		{
 			final int[] position = new int[ higherSourceDimensions.length ];
@@ -145,8 +190,6 @@ public class ImageJVirtualStack< S, T extends NativeType< T > > extends Abstract
 			for ( int i = 0; i < position.length; i++ )
 				projector.setPosition( position[ i ], i + 2 );
 		}
-		projector.map();
-		return img;
 	}
 
 	@Override
@@ -159,42 +202,24 @@ public class ImageJVirtualStack< S, T extends NativeType< T > > extends Abstract
 	@Override
 	protected void setPixelsZeroBasedIndex( final int index, final Object pixels )
 	{
-		if ( isWritable() )
-		{
-
-			// Input and output need to be RealTypes
-			if ( !( source.randomAccess().get() instanceof RealType ) || !( type instanceof RealType ) )
-				return;
-
-			RandomAccessibleInterval< S > origin = source;
-			// Get the 2D plane represented by the virtual array
-			if ( higherSourceDimensions.length > 0 )
-			{
-				final int[] position = new int[ higherSourceDimensions.length ];
-				IntervalIndexer.indexToPosition( index, higherSourceDimensions, position );
-				for ( int i = 0; i < position.length; i++ )
-					origin = Views.hyperSlice( origin, 2, position[ i ] );
-			}
-
-			final Cursor< S > originCursor = Views.flatIterable( origin ).cursor();
-			final Cursor< ? extends RealType< ? > > cursor = createArrayImg( ( int ) source.dimension( 0 ), ( int ) source.dimension( 1 ), pixels ).cursor();
-
-			// Replace the origin values with the current state of the virtual array
-			while ( originCursor.hasNext() )
-			{
-				( ( RealType ) originCursor.next() ).setReal( cursor.next().getRealDouble() );
-			}
-		}
+		Img< T > img = ( Img< T > ) ImageProcessorUtils.createImg( pixels, getWidth(), getHeight() );
+		// NB: The use of Converter and Projector2D is a bit surprising.
+		// As the converter intentionally uses the first parameter a output.
+		project( index, img, (o, i) -> o.set( i ) );
 	}
 
-	private static Img< ? extends RealType< ? > > createArrayImg( final int sizeX, final int sizeY, final Object pixels )
+	@Override
+	protected RandomAccessibleInterval< T > getSliceZeroBasedIndex( int index )
 	{
-		if ( pixels instanceof byte[] )
-			return ArrayImgs.unsignedBytes( ( byte[] ) pixels, sizeX, sizeY );
-		if ( pixels instanceof short[] )
-			return ArrayImgs.unsignedShorts( ( short[] ) pixels, sizeX, sizeY );
-		if ( pixels instanceof float[] )
-			return ArrayImgs.floats( ( float[] ) pixels, sizeX, sizeY );
-		throw new IllegalArgumentException( "unsupported pixel type" );
+		RandomAccessibleInterval< T > origin = source;
+		// Get the 2D plane represented by the virtual array
+		if ( higherSourceDimensions.length > 0 )
+		{
+			final int[] position = new int[ higherSourceDimensions.length ];
+			IntervalIndexer.indexToPosition( index, higherSourceDimensions, position );
+			for ( int i = 0; i < position.length; i++ )
+				origin = Views.hyperSlice( origin, 2, position[ i ] );
+		}
+		return origin;
 	}
 }

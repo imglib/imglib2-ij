@@ -44,21 +44,27 @@ import net.imglib2.type.numeric.ARGBType;
  * TODO
  *
  */
-public class ImageJVirtualStackARGB< S > extends ImageJVirtualStack< S, ARGBType >
+public class ImageJVirtualStackARGB extends ImageJVirtualStack< ARGBType >
 {
-	public static ImageJVirtualStackARGB< ARGBType > wrap( final RandomAccessibleInterval< ARGBType > source )
+	public static ImageJVirtualStackARGB wrap( final RandomAccessibleInterval< ARGBType > source )
 	{
-		return new ImageJVirtualStackARGB<>( source, ( input, output ) -> output.set( input ) );
+		return new ImageJVirtualStackARGB( source );
 	}
 
-	public ImageJVirtualStackARGB( final RandomAccessibleInterval< S > source, final Converter< ? super S, ARGBType > converter )
+	public < S > ImageJVirtualStackARGB( final RandomAccessibleInterval< S > source, final Converter< ? super S, ARGBType > converter )
 	{
 		this( source, converter, null );
 	}
 
-	public ImageJVirtualStackARGB( final RandomAccessibleInterval< S > source, final Converter< ? super S, ARGBType > converter, final ExecutorService service )
+	public < S > ImageJVirtualStackARGB( final RandomAccessibleInterval< S > source, final Converter< ? super S, ARGBType > converter, final ExecutorService service )
 	{
 		super( source, converter, new ARGBType(), 24, service );
+		setMinAndMax( 0, 255 );
+	}
+
+	private ImageJVirtualStackARGB( final RandomAccessibleInterval< ARGBType > source )
+	{
+		super( source, 24 );
 		setMinAndMax( 0, 255 );
 	}
 }

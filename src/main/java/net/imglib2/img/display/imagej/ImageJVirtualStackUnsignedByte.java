@@ -34,65 +34,121 @@
 
 package net.imglib2.img.display.imagej;
 
-import java.util.concurrent.ExecutorService;
-
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.Sampler;
 import net.imglib2.converter.Converter;
+import net.imglib2.converter.Converters;
+import net.imglib2.converter.readwrite.SamplerConverter;
+import net.imglib2.img.basictypeaccess.ByteAccess;
+import net.imglib2.type.BooleanType;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
+import net.imglib2.util.Util;
+
+import java.util.concurrent.ExecutorService;
 
 /**
  * TODO
  *
  */
-public class ImageJVirtualStackUnsignedByte< S > extends ImageJVirtualStack< S, UnsignedByteType >
+public class ImageJVirtualStackUnsignedByte extends ImageJVirtualStack< UnsignedByteType >
 {
-	public static < T extends RealType< ? > > ImageJVirtualStackUnsignedByte< T > wrap( final RandomAccessibleInterval< T > source )
+	public static < T extends RealType< ? > > ImageJVirtualStackUnsignedByte wrap( final RandomAccessibleInterval< T > source )
 	{
-		return new ImageJVirtualStackUnsignedByte<>( source, new ByteConverter() );
+		return new ImageJVirtualStackUnsignedByte( toUnsignedByteType( source ) );
 	}
 
-	public static ImageJVirtualStackUnsignedByte< BitType > wrapAndScaleBitType( final RandomAccessibleInterval< BitType > source )
+	private static < T extends RealType< ? > > RandomAccessibleInterval< UnsignedByteType > toUnsignedByteType( RandomAccessibleInterval< T > source )
 	{
-		return new ImageJVirtualStackUnsignedByte<>( source, new BitToByteConverter() );
+		if( Util.getTypeFromInterval( source ) instanceof UnsignedByteType )
+			return ( RandomAccessibleInterval< UnsignedByteType > ) source;
+		return Converters.convert(source, new ToUnsignedByteSamplerConverter( Util.getTypeFromInterval( source ) ) );
 	}
 
-	public ImageJVirtualStackUnsignedByte( final RandomAccessibleInterval< S > source, final Converter< ? super S, UnsignedByteType > converter )
+	public static ImageJVirtualStackUnsignedByte wrapAndScaleBitType( final RandomAccessibleInterval< BitType > source )
+	{
+		return new ImageJVirtualStackUnsignedByte( Converters.convert(source, new ToBitByteSamplerConverter()) );
+	}
+
+	public < S > ImageJVirtualStackUnsignedByte( final RandomAccessibleInterval< S > source, final Converter< ? super S, UnsignedByteType > converter )
 	{
 		this( source, converter, null );
 	}
 
-	public ImageJVirtualStackUnsignedByte( final RandomAccessibleInterval< S > source, final Converter< ? super S, UnsignedByteType > converter, final ExecutorService service )
+	public < S > ImageJVirtualStackUnsignedByte( final RandomAccessibleInterval< S > source, final Converter< ? super S, UnsignedByteType > converter, final ExecutorService service )
 	{
 		super( source, converter, new UnsignedByteType(), 8, service );
 		setMinAndMax( 0, 255 );
 	}
 
-	private static class ByteConverter implements
-			Converter< RealType< ? >, UnsignedByteType >
+	private ImageJVirtualStackUnsignedByte( final RandomAccessibleInterval< UnsignedByteType > source )
+	{
+		super( source, 8 );
+		setMinAndMax( 0, 255 );
+	}
+
+	private static class ToUnsignedByteSamplerConverter implements SamplerConverter< RealType, UnsignedByteType >
 	{
 
+		private final double min;
+		private final double max;
+
+		ToUnsignedByteSamplerConverter( RealType<?> type ) {
+			min = type.getMinValue();
+			max = type.getMaxValue();
+		}
+
 		@Override
-		public void convert( final RealType< ? > input, final UnsignedByteType output )
+		public UnsignedByteType convert( Sampler< ? extends RealType > sampler )
 		{
-			double val = input.getRealDouble();
-			if ( val < 0 )
-				val = 0;
-			else if ( val > 255 )
-				val = 255;
-			output.setReal( val );
+			return new UnsignedByteType( new ByteAccess()
+			{
+				@Override
+				public byte getValue( int index )
+				{
+					double val = sampler.get().getRealDouble() + 0.5;
+					if ( val < 0 )
+						val = 0;
+					else if ( val > 255 )
+						val = 255;
+					return (byte) val;
+				}
+
+				@Override
+				public void setValue( int index, byte value )
+				{
+					double val = value;
+					if ( val < min )
+						val = min;
+					else if ( val > max )
+						val = max;
+					sampler.get().setReal( val );
+				}
+			} );
 		}
 	}
 
-	private static class BitToByteConverter implements
-			Converter< BitType, UnsignedByteType >
+	private static class ToBitByteSamplerConverter implements SamplerConverter< BooleanType<?>, UnsignedByteType >
 	{
 
 		@Override
-		public void convert( final BitType input, final UnsignedByteType output )
+		public UnsignedByteType convert( Sampler< ? extends BooleanType<?> > sampler )
 		{
-			output.set( input.get() ? 255 : 0 );
+			return new UnsignedByteType( new ByteAccess()
+			{
+				@Override
+				public byte getValue( int index )
+				{
+					return sampler.get().get() ? (byte) 255 : 0;
+				}
+
+				@Override
+				public void setValue( int index, byte value )
+				{
+					sampler.get().set( value != 0 );
+				}
+			} );
 		}
 	}
 }

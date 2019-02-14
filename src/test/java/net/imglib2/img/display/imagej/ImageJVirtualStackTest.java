@@ -42,12 +42,16 @@ import static org.junit.Assert.assertTrue;
 import net.imglib2.RandomAccess;
 import net.imglib2.converter.Converter;
 import net.imglib2.img.Img;
+import net.imglib2.img.array.ArrayImg;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.test.RandomImgs;
 import net.imglib2.type.Type;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 
+import net.imglib2.type.numeric.integer.UnsignedShortType;
+import net.imglib2.type.numeric.real.FloatType;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import ij.ImagePlus;
@@ -66,7 +70,7 @@ public class ImageJVirtualStackTest
 	{
 		// NB: ColorModel can cause troubles when using a ColorProcessor so try to create one
 		final Img< ARGBType > img = ArrayImgs.argbs( 1, 1 );
-		final ImageStack stackARGB = new ImageJVirtualStackARGB<>( img, ( i, o ) -> o.set( i.get() ) );
+		final ImageStack stackARGB = ImageJVirtualStackARGB.wrap( img );
 		final ImagePlus imagePlus = new ImagePlus( "title", stackARGB );
 		final ImageStack stack = imagePlus.getStack();
 		assertTrue( stack.getProcessor( 1 ) instanceof ColorProcessor );
@@ -76,7 +80,7 @@ public class ImageJVirtualStackTest
 	public void test()
 	{
 		final Img< UnsignedByteType > img = RandomImgs.randomImage( new UnsignedByteType(), 1000, 1000, 10 );
-		final VirtualStack vs = new ImageJVirtualStackUnsignedByte<>( img, copyConverter() );
+		final VirtualStack vs = ImageJVirtualStackUnsignedByte.wrap( img );
 		final RandomAccess< UnsignedByteType > randomAccess = img.randomAccess();
 		for ( int z = 0; z < 10; z++ )
 		{
@@ -103,7 +107,7 @@ public class ImageJVirtualStackTest
 	private VirtualStack example()
 	{
 		final Img< UnsignedByteType > img = ArrayImgs.unsignedBytes( new byte[] { 1, 2, 3, 4, 5, 6 }, 3, 1, 2 );
-		return new ImageJVirtualStackUnsignedByte<>( img, copyConverter() );
+		return ImageJVirtualStackUnsignedByte.wrap( img );
 	}
 
 	@Test
@@ -152,7 +156,7 @@ public class ImageJVirtualStackTest
 	public void testFloatProcessor()
 	{
 		final float value = 42f;
-		final VirtualStack vs = new ImageJVirtualStackFloat<>( ArrayImgs.floats( new float[] { value }, 1, 1, 1 ), copyConverter() );
+		final VirtualStack vs = ImageJVirtualStackFloat.wrap( ArrayImgs.floats( new float[] { value }, 1, 1, 1 ) );
 		final ImageProcessor processor = vs.getProcessor( 1 );
 		assertTrue( processor instanceof FloatProcessor );
 		assertEquals( value, processor.getf( 0, 0 ), 0f );
@@ -162,7 +166,7 @@ public class ImageJVirtualStackTest
 	public void testShortProcessor()
 	{
 		final short value = 13;
-		final VirtualStack vs = new ImageJVirtualStackUnsignedShort<>( ArrayImgs.unsignedShorts( new short[] { value }, 1, 1, 1 ), copyConverter() );
+		final VirtualStack vs = ImageJVirtualStackUnsignedShort.wrap( ArrayImgs.unsignedShorts( new short[] { value }, 1, 1, 1 ) );
 		final ImageProcessor processor = vs.getProcessor( 1 );
 		assertTrue( processor instanceof ShortProcessor );
 		assertEquals( value, processor.get( 0, 0 ) );
@@ -172,15 +176,70 @@ public class ImageJVirtualStackTest
 	public void testProcessor()
 	{
 		final int value = 43;
-		final VirtualStack vs = new ImageJVirtualStackARGB<>( ArrayImgs.argbs( new int[] { value }, 1, 1, 1 ), copyConverter() );
+		final VirtualStack vs = ImageJVirtualStackARGB.wrap( ArrayImgs.argbs( new int[] { value }, 1, 1, 1 ) );
 		final ImageProcessor processor = vs.getProcessor( 1 );
 		assertTrue( processor instanceof ColorProcessor );
 		assertEquals( value, processor.get( 0, 0 ) & 0x00ffffff );
 	}
 
-	private < T extends Type< T > > Converter< T, T > copyConverter()
-	{
-		return ( i, o ) -> o.set( i );
+	@Test
+	public void testSetPixelsBytes() {
+		final Img< UnsignedByteType > image = ArrayImgs.unsignedBytes( 1, 1, 1 );
+		final ImageJVirtualStack vs = ImageJVirtualStackUnsignedByte.wrap( image );
+		byte value = 42;
+		vs.setWritable( true );
+		vs.setPixels( new byte[] { value }, 1 );
+		assertEquals( value, image.firstElement().get() );
+	}
+
+	@Test
+	public void testSetPixelsShort() {
+		final Img< UnsignedShortType > image = ArrayImgs.unsignedShorts( 1, 1, 1 );
+		final ImageJVirtualStack vs = ImageJVirtualStackUnsignedShort.wrap( image );
+		short value = 42;
+		vs.setWritable( true );
+		vs.setPixels( new short[] { value }, 1 );
+		assertEquals( value, image.firstElement().get() );
+	}
+
+	@Test
+	public void testSetPixelsARGB() {
+		final Img< ARGBType > image = ArrayImgs.argbs( 1, 1, 1 );
+		final ImageJVirtualStack vs = ImageJVirtualStackARGB.wrap( image );
+		int value = 42;
+		vs.setWritable( true );
+		vs.setPixels( new int[] { value }, 1 );
+		assertEquals( value, image.firstElement().get() );
+	}
+
+	@Test
+	public void testSetPixelsFloat() {
+		final Img< FloatType > image = ArrayImgs.floats( 1, 1, 1 );
+		final ImageJVirtualStack vs = ImageJVirtualStackFloat.wrap( image );
+		float value = 42;
+		vs.setWritable( true );
+		vs.setPixels( new float[] { value }, 1 );
+		assertEquals( value, image.firstElement().get(), 0 );
+	}
+
+	@Test
+	public void testGetVoxels5DStack() {
+		// NB: this tests ImageJVirtualStack getSliceZeroBasedIndex
+		Img< UnsignedByteType > img = ArrayImgs.unsignedBytes( new byte[] { 0, 1, 2, 3, 4, 5, 6, 7 }, 1, 1, 2, 2, 2 );
+		final ImageStack stack = ImageJVirtualStackUnsignedByte.wrap( img );
+		float[] voxels = new float[8];
+		stack.getVoxels( 0, 0, 0, 1, 1, 8, voxels );
+		assertArrayEquals( new float[] { 0, 1, 2, 3, 4, 5, 6, 7 }, voxels, 0);
+	}
+
+	@Test
+	public void testSetVoxels() {
+		// NB: this tests ImageJVirtualStack getSliceZeroBasedIndex
+		Img< UnsignedByteType > img = ArrayImgs.unsignedBytes( 1, 1 );
+		final ImageJVirtualStack<?> stack = ImageJVirtualStackUnsignedByte.wrap( img );
+		stack.setWritable( true );
+		stack.setVoxels( 0, 0, 0, 1, 1, 1, new float[] { 42 } );
+		assertEquals( 42, img.firstElement().get() );
 	}
 
 	@Test

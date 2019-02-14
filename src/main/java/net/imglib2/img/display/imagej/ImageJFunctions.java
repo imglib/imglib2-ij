@@ -42,10 +42,8 @@ import net.imglib2.Dimensions;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.ComplexPowerGLogFloatConverter;
 import net.imglib2.converter.Converter;
-import net.imglib2.converter.RealFloatConverter;
+import net.imglib2.converter.Converters;
 import net.imglib2.converter.RealUnsignedByteConverter;
-import net.imglib2.converter.RealUnsignedShortConverter;
-import net.imglib2.converter.TypeIdentity;
 import net.imglib2.img.ImagePlusAdapter;
 import net.imglib2.img.Img;
 import net.imglib2.type.NativeType;
@@ -79,6 +77,7 @@ import ij.VirtualStack;
  * Likewise, when an ImgLib2 {@link RandomAccessibleInterval} needs to be passed
  * to ImageJ 1.x, it can be wrapped into an {@link ImagePlus} via
  * {@code ImageJFunctions.wrap(img, title)}.
+ * (For details on this see {@link ImageJVirtualStack}).
  * </p>
  *
  * @author Tobis Pietzsch
@@ -185,7 +184,7 @@ public class ImageJFunctions
 			final String title,
 			final ExecutorService service )
 	{
-		final ImageJVirtualStackFloat< T > stack = new ImageJVirtualStackFloat<>( img, converter, service );
+		final ImageJVirtualStackFloat stack = new ImageJVirtualStackFloat( img, converter, service );
 		final ImagePlus imp = new ImagePlus( title, stack );
 		imp.show();
 
@@ -283,7 +282,8 @@ public class ImageJFunctions
 			final String title,
 			final ExecutorService service )
 	{
-		final ImageJVirtualStackFloat< T > stack = new ImageJVirtualStackFloat<>( img, new RealFloatConverter< T >(), service );
+		final ImageJVirtualStackFloat stack = ImageJVirtualStackFloat.wrap( img );
+		stack.setExecutorService( service );
 		return makeImagePlus( img, stack, title );
 	}
 
@@ -330,7 +330,7 @@ public class ImageJFunctions
 			final String title,
 			final ExecutorService service )
 	{
-		final ImageJVirtualStackFloat< T > stack = new ImageJVirtualStackFloat<>( img, converter, service );
+		final ImageJVirtualStackFloat stack = new ImageJVirtualStackFloat( img, converter, service );
 		return makeImagePlus( img, stack, title );
 	}
 
@@ -352,12 +352,7 @@ public class ImageJFunctions
 			final String title,
 			final ExecutorService service )
 	{
-		final ImagePlus imp = wrapFloat( img, converter, title, service );
-		imp.show();
-		imp.getProcessor().resetMinAndMax();
-		imp.updateAndRepaintWindow();
-
-		return imp;
+		return showFloat( Converters.convert( img, converter, new FloatType() ), title, service );
 	}
 
 	public static < T > ImagePlus showFloat(
@@ -375,7 +370,11 @@ public class ImageJFunctions
 	public static < T extends RealType< T > > ImagePlus showFloat( final RandomAccessibleInterval< T > img, final String title,
 			final ExecutorService service )
 	{
-		return showFloat( img, new RealFloatConverter< T >(), title, service );
+		final ImagePlus imp = wrapFloat( img, title, service );
+		imp.show();
+		imp.getProcessor().resetMinAndMax();
+		imp.updateAndRepaintWindow();
+		return imp;
 	}
 
 	public static < T extends RealType< T > > ImagePlus showFloat( final RandomAccessibleInterval< T > img, final String title )
@@ -406,7 +405,9 @@ public class ImageJFunctions
 	public static ImagePlus wrapRGB( final RandomAccessibleInterval< ARGBType > img, final String title,
 			final ExecutorService service )
 	{
-		return wrapRGB( img, new TypeIdentity< ARGBType >(), title, service );
+		final ImageJVirtualStackARGB stack = ImageJVirtualStackARGB.wrap( img );
+		stack.setExecutorService(service);
+		return makeImagePlus( img, stack, title );
 	}
 
 	public static ImagePlus wrapRGB( final RandomAccessibleInterval< ARGBType > img, final String title )
@@ -421,8 +422,7 @@ public class ImageJFunctions
 	public static < T > ImagePlus wrapRGB( final RandomAccessibleInterval< T > img, final Converter< T, ARGBType > converter, final String title,
 			final ExecutorService service )
 	{
-		final ImageJVirtualStackARGB< T > stack = new ImageJVirtualStackARGB<>( img, converter, service );
-		return makeImagePlus( img, stack, title );
+		return wrapRGB( Converters.convert( img, converter, new ARGBType() ), title, service );
 	}
 
 	public static < T > ImagePlus wrapRGB( final RandomAccessibleInterval< T > img, final Converter< T, ARGBType > converter, final String title )
@@ -459,7 +459,9 @@ public class ImageJFunctions
 			final String title,
 			final ExecutorService service )
 	{
-		return wrapUnsignedByte( img, new RealUnsignedByteConverter< T >( 0, 255 ), title, service );
+		final ImageJVirtualStackUnsignedByte stack = ImageJVirtualStackUnsignedByte.wrap( img );
+		stack.setExecutorService( service );
+		return makeImagePlus( img, stack, title );
 	}
 
 	public static < T extends RealType< T > > ImagePlus wrapUnsignedByte(
@@ -499,8 +501,7 @@ public class ImageJFunctions
 			final String title,
 			final ExecutorService service )
 	{
-		final ImageJVirtualStackUnsignedByte< T > stack = new ImageJVirtualStackUnsignedByte<>( img, converter, service );
-		return makeImagePlus( img, stack, title );
+		return wrapUnsignedByte( Converters.convert( img, converter, new UnsignedByteType() ), title, service );
 	}
 
 	public static < T > ImagePlus wrapUnsignedByte(
@@ -521,12 +522,7 @@ public class ImageJFunctions
 			final String title,
 			final ExecutorService service )
 	{
-		final ImagePlus imp = wrapUnsignedByte( img, converter, title, service );
-		imp.show();
-		imp.getProcessor().resetMinAndMax();
-		imp.updateAndRepaintWindow();
-
-		return imp;
+		return showUnsignedByte( Converters.convert( img, converter, new UnsignedByteType() ), title, service );
 	}
 
 	public static < T > ImagePlus showUnsignedByte(
@@ -547,7 +543,11 @@ public class ImageJFunctions
 			final String title,
 			final ExecutorService service )
 	{
-		return showUnsignedByte( img, new RealUnsignedByteConverter< T >( 0, 255 ), title, service );
+		final ImagePlus imp = wrapUnsignedByte( img, title, service );
+		imp.show();
+		imp.getProcessor().resetMinAndMax();
+		imp.updateAndRepaintWindow();
+		return imp;
 	}
 
 	public static < T extends RealType< T > > ImagePlus showUnsignedByte(
@@ -583,7 +583,9 @@ public class ImageJFunctions
 			final String title,
 			final ExecutorService service )
 	{
-		return wrapUnsignedShort( img, new RealUnsignedShortConverter< T >( 0, 65535 ), title, service );
+		final ImageJVirtualStackUnsignedShort stack = ImageJVirtualStackUnsignedShort.wrap( img );
+		stack.setExecutorService( service );
+		return makeImagePlus( img, stack, title );
 	}
 
 	public static < T extends RealType< T > > ImagePlus wrapUnsignedShort(
@@ -603,8 +605,7 @@ public class ImageJFunctions
 			final String title,
 			final ExecutorService service )
 	{
-		final ImageJVirtualStackUnsignedShort< T > stack = new ImageJVirtualStackUnsignedShort<>( img, converter, service );
-		return makeImagePlus( img, stack, title );
+		return wrapUnsignedShort( Converters.convert( img, converter, new UnsignedShortType() ), title, service );
 	}
 
 	public static < T > ImagePlus wrapUnsignedShort(
@@ -625,12 +626,7 @@ public class ImageJFunctions
 			final String title,
 			final ExecutorService service )
 	{
-		final ImagePlus imp = wrapUnsignedShort( img, converter, title, service );
-		imp.show();
-		imp.getProcessor().resetMinAndMax();
-		imp.updateAndRepaintWindow();
-
-		return imp;
+		return showUnsignedShort( Converters.convert( img, converter, new UnsignedShortType() ), title, service );
 	}
 
 	public static < T > ImagePlus showUnsignedShort(
@@ -651,7 +647,11 @@ public class ImageJFunctions
 			final String title,
 			final ExecutorService service )
 	{
-		return showUnsignedShort( img, new RealUnsignedShortConverter< T >( 0, 65535 ), title, service );
+		final ImagePlus imp = wrapUnsignedShort( img, title, service );
+		imp.show();
+		imp.getProcessor().resetMinAndMax();
+		imp.updateAndRepaintWindow();
+		return imp;
 	}
 
 	public static < T extends RealType< T > > ImagePlus showUnsignedShort(

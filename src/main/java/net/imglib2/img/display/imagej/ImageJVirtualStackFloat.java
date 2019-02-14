@@ -43,9 +43,14 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.Sampler;
 import net.imglib2.converter.Converter;
+import net.imglib2.converter.Converters;
+import net.imglib2.converter.readwrite.SamplerConverter;
+import net.imglib2.img.basictypeaccess.FloatAccess;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.util.Util;
 import net.imglib2.view.RandomAccessibleIntervalCursor;
 import net.imglib2.view.Views;
 
@@ -53,27 +58,40 @@ import net.imglib2.view.Views;
  * TODO
  *
  */
-public class ImageJVirtualStackFloat< S > extends ImageJVirtualStack< S, FloatType >
+public class ImageJVirtualStackFloat extends ImageJVirtualStack< FloatType >
 {
-	public static < T extends RealType< ? > > ImageJVirtualStackFloat< T > wrap( final RandomAccessibleInterval< T > source )
+	public static < T extends RealType< ? > > ImageJVirtualStackFloat wrap( final RandomAccessibleInterval< T > source )
 	{
-		return new ImageJVirtualStackFloat<>( source, new FloatConverter() );
+		return new ImageJVirtualStackFloat( toFloat(source) );
 	}
 
-	public ImageJVirtualStackFloat( final RandomAccessibleInterval< S > source,
+	private static < T extends RealType< ? > > RandomAccessibleInterval<FloatType> toFloat( RandomAccessibleInterval<T> source )
+	{
+		if( Util.getTypeFromInterval(source) instanceof FloatType )
+			return ( RandomAccessibleInterval< FloatType > ) source;
+		return Converters.convert( source, new ToFloatSamplerConverter( Util.getTypeFromInterval( source )));
+	}
+
+	public < S > ImageJVirtualStackFloat( final RandomAccessibleInterval< S > source,
 			final Converter< ? super S, FloatType > converter )
 	{
 		this( source, converter, null );
 	}
 
-	public ImageJVirtualStackFloat( final RandomAccessibleInterval< S > source,
+	public < S > ImageJVirtualStackFloat( final RandomAccessibleInterval< S > source,
 			final Converter< ? super S, FloatType > converter, final ExecutorService service )
 	{
 		super( source, converter, new FloatType(), 32, service );
 		setMinAndMax( 0, 1 );
 	}
 
-	public void setMinMax( final RandomAccessibleInterval< S > source, final Converter< S, FloatType > converter )
+	private ImageJVirtualStackFloat( final RandomAccessibleInterval< FloatType > source )
+	{
+		super( source, 32 );
+		setMinAndMax( 0, 1 );
+	}
+
+	public < S > void setMinMax( final RandomAccessibleInterval< S > source, final Converter< S, FloatType > converter )
 	{
 		if ( service != null )
 		{
@@ -108,7 +126,7 @@ public class ImageJVirtualStackFloat< S > extends ImageJVirtualStack< S, FloatTy
 		}
 	}
 
-	private void setMinMaxMT( final RandomAccessibleInterval< S > source, final Converter< S, FloatType > converter )
+	private < S > void setMinMaxMT( final RandomAccessibleInterval< S > source, final Converter< S, FloatType > converter )
 	{
 		final long nTasks = Runtime.getRuntime().availableProcessors();
 		long size = 1;
@@ -195,20 +213,43 @@ public class ImageJVirtualStackFloat< S > extends ImageJVirtualStack< S, FloatTy
 
 	}
 
-	private static class FloatConverter implements
-			Converter< RealType< ? >, FloatType >
+	private static class ToFloatSamplerConverter<S extends RealType<S>> implements SamplerConverter<S, FloatType>
 	{
+		private final float min;
+		private final float max;
 
-		@Override
-		public void convert( final RealType< ? > input, final FloatType output )
-		{
-			double val = input.getRealDouble();
-			if ( val < -Float.MAX_VALUE )
-				val = -Float.MAX_VALUE;
-			else if ( val > Float.MAX_VALUE )
-				val = Float.MAX_VALUE;
-			output.setReal( val );
+		ToFloatSamplerConverter(S type) {
+			this.min = (float) type.getMinValue();
+			this.max = (float) type.getMaxValue();
 		}
 
+		@Override
+		public FloatType convert( Sampler< ? extends S > sampler )
+		{
+			return new FloatType( new FloatAccess()
+			{
+				@Override
+				public float getValue( int index )
+				{
+					double val = sampler.get().getRealDouble();
+					if ( val < -Float.MAX_VALUE )
+						val = -Float.MAX_VALUE;
+					else if ( val > Float.MAX_VALUE )
+						val = Float.MAX_VALUE;
+					return ( float ) val;
+				}
+
+				@Override
+				public void setValue( int index, float value )
+				{
+					float val = value;
+					if ( val < min )
+						val = min;
+					else if ( val > max )
+						val = max;
+					sampler.get().setReal( val );
+				}
+			} );
+		}
 	}
 }

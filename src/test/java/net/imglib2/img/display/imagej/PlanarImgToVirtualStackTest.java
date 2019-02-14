@@ -45,9 +45,11 @@ import net.imagej.axis.Axes;
 import net.imagej.axis.AxisType;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.basictypeaccess.array.FloatArray;
+import net.imglib2.img.basictypeaccess.array.IntArray;
 import net.imglib2.img.planar.PlanarImg;
 import net.imglib2.img.planar.PlanarImgFactory;
 import net.imglib2.img.planar.PlanarImgs;
+import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.real.FloatType;
@@ -144,5 +146,17 @@ public class PlanarImgToVirtualStackTest
 		imagePlus.getStack().setPixels( new float[] { expected }, 1 );
 		// test
 		assertEquals( expected, img.cursor().next().get(), 0.0f );
+	}
+
+	@Test
+	public void testGetProcessorForColorProcessor() {
+		// NB: Test that the underlying data does not change, when a ColorProcessor is created.
+		// To achieve this min and max must not be set for ColorProcessor.
+		final PlanarImg< ARGBType, IntArray > argbs = PlanarImgs.argbs( 1, 1, 1 );
+		argbs.randomAccess().get().set( 0xff010203 );
+		final VirtualStack stack = PlanarImgToVirtualStack.wrap( argbs );
+		assertArrayEquals( new int[] { 0xff010203 }, (int[]) stack.getPixels( 1 ) );
+		stack.getProcessor( 1 );
+		assertArrayEquals( new int[] { 0xff010203 }, (int[]) stack.getPixels( 1 ) );
 	}
 }
