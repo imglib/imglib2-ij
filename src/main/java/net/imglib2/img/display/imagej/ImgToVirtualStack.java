@@ -45,9 +45,11 @@ import net.imagej.axis.Axes;
 import net.imagej.axis.AxisType;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.transform.integer.MixedTransform;
+import net.imglib2.type.NativeType;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.RealType;
+import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.view.MixedTransformView;
 import net.imglib2.view.Views;
 
@@ -92,33 +94,29 @@ public class ImgToVirtualStack
 		return wrap( imgPlus, ImgToVirtualStack::createVirtualStackBits );
 	}
 
-	private static < T > ImagePlus wrap( ImgPlus< T > imgPlus, final Function< RandomAccessibleInterval< T >, ImageStack > imageStackWrapper )
+	private static < T > ImagePlus wrap( ImgPlus< T > imgPlus, final Function< RandomAccessibleInterval< T >, ImageJVirtualStack<?> > imageStackWrapper )
 	{
 		imgPlus = ImgPlusViews.fixAxes( imgPlus );
 		final RandomAccessibleInterval< T > sorted = ensureXYCZT( imgPlus );
-		final ImageStack stack = imageStackWrapper.apply( sorted );
+		final ImageJVirtualStack<?> stack = imageStackWrapper.apply( sorted );
 		final ImagePlus result = new ImagePlus( imgPlus.getName(), stack );
+		// NB: setWritable after the ImagePlus is created. Otherwise a useless stack.setPixels(...) call would be performed.
+		stack.setWritable( true );
 		result.setDimensions( ( int ) sorted.dimension( 2 ), ( int ) sorted.dimension( 3 ), ( int ) sorted.dimension( 4 ) );
 		CalibrationUtils.copyCalibrationToImagePlus( imgPlus, result );
 		return result;
 	}
 
-	private static ImageJVirtualStackUnsignedByte createVirtualStackBits( final RandomAccessibleInterval< BitType > sorted )
+	private static ImageJVirtualStack<?> createVirtualStackBits( final RandomAccessibleInterval< BitType > sorted )
 	{
-		final ImageJVirtualStackUnsignedByte stack = ImageJVirtualStackUnsignedByte.wrapAndScaleBitType( sorted );
-		stack.setWritable( true );
-		return stack;
+		return ImageJVirtualStackUnsignedByte.wrapAndScaleBitType( sorted );
 	}
 
-	private static ImageStack createVirtualStack( final RandomAccessibleInterval< ? > rai )
+	private static ImageJVirtualStack<?> createVirtualStack( final RandomAccessibleInterval< ? > rai )
 	{
 		final Object type = rai.randomAccess().get();
 		if ( type instanceof RealType )
-		{
-			final ImageJVirtualStack< ? > result = createVirtualStackRealType( cast( rai ) );
-			result.setWritable( true );
-			return result;
-		}
+			return createVirtualStackRealType( cast( rai ) );
 		if ( type instanceof ARGBType )
 			return ImageJVirtualStackARGB.wrap( cast( rai ) );
 		throw new IllegalArgumentException( "Unsupported type" );
