@@ -42,7 +42,7 @@ import java.util.stream.LongStream;
 import net.imagej.ImgPlus;
 import net.imagej.axis.CalibratedAxis;
 import net.imglib2.cache.Cache;
-import net.imglib2.cache.ref.SoftRefLoaderRemoverCache;
+import net.imglib2.cache.ref.SoftRefLoaderCache;
 import net.imglib2.img.basictypeaccess.array.ArrayDataAccess;
 import net.imglib2.img.basictypeaccess.array.ByteArray;
 import net.imglib2.img.basictypeaccess.array.FloatArray;
@@ -167,7 +167,7 @@ public class VirtualStackAdapter
 		{
 			this.arrayFactory = arrayFactory;
 			this.image = image;
-			cache = new SoftRefLoaderRemoverCache< Integer, A >().withLoader( this::load ).withRemover( ( key, value ) -> {} );
+			cache = new SoftRefLoaderCache< Integer, A >().withLoader( this::load );
 		}
 
 		@Override
