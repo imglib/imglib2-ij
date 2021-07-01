@@ -103,8 +103,8 @@
 		<url>https://github.com/imglib/imglib2-ij/issues</url>
 	</issueManagement>
 	<ciManagement>
-		<system>Travis CI</system>
-		<url>https://travis-ci.org/imglib/imglib2-ij</url>
+		<system>GitHub Actions</system>
+		<url>https://github.com/imglib/imglib2-ij/actions</url>
 	</ciManagement>
 
 	<properties>
@@ -121,7 +121,7 @@ Mark Longair, Brian Northan, Nick Perry, Curtis Rueden, Johannes Schindelin,
 Jean-Yves Tinevez and Michael Zinsmaier.</license.copyrightOwners>
 
 		<!-- NB: Deploy releases to the SciJava Maven repository. -->
-		<releaseProfiles>deploy-to-scijava</releaseProfiles>
+		<releaseProfiles>sign,deploy-to-scijava</releaseProfiles>
 
 		<imglib2.version>5.9.0</imglib2.version>
 		<imglib2-cache.version>1.0.0-beta-13</imglib2-cache.version>
