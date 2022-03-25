@@ -52,6 +52,7 @@ import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.ComplexType;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
+import net.imglib2.type.numeric.integer.UnsignedIntType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.type.numeric.real.FloatType;
 
@@ -173,6 +174,22 @@ public class ImagePlusAdapter
 
 		// create a Type that is linked to the container
 		final UnsignedShortType linkedType = new UnsignedShortType( container );
+
+		// pass it to the DirectAccessContainer
+		container.setLinkedType( linkedType );
+
+		return container;
+	}
+
+	public static IntImagePlus< UnsignedIntType > wrapInt( final ImagePlus imp )
+	{
+		if( imp.getType() != ImagePlus.COLOR_RGB )
+			return null;
+
+		final IntImagePlus< UnsignedIntType > container = new IntImagePlus<>( imp );
+
+		// create a Type that is linked to the container
+		final UnsignedIntType linkedType = new UnsignedIntType( container );
 
 		// pass it to the DirectAccessContainer
 		container.setLinkedType( linkedType );

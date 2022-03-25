@@ -54,6 +54,7 @@ import net.imglib2.type.NativeType;
 import net.imglib2.type.NativeTypeFactory;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
+import net.imglib2.type.numeric.integer.UnsignedIntType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.Fraction;
@@ -99,6 +100,17 @@ public class VirtualStackAdapter
 	public static ImgPlus< FloatType > wrapFloat( final ImagePlus image )
 	{
 		return internWrap( image, ImagePlus.GRAY32, new FloatType(), array -> new FloatArray( ( float[] ) array ) );
+	}
+
+	/**
+	 * Wraps a 32 bit {@link ImagePlus}, into an {@link ImgPlus}, that is backed
+	 * by a {@link PlanarImg}. The {@link PlanarImg} loads the planes only if
+	 * needed, and caches them. The axes of the returned image are set according
+	 * to the calibration of the given image.
+	 */
+	public static ImgPlus< UnsignedIntType > wrapInt( final ImagePlus image )
+	{
+		return internWrap( image, ImagePlus.COLOR_RGB, new UnsignedIntType(), array -> new IntArray( ( int[] ) array ) );
 	}
 
 	/**
