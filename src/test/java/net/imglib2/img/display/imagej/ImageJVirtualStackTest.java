@@ -79,7 +79,7 @@ public class ImageJVirtualStackTest
 	@Test
 	public void test()
 	{
-		final Img< UnsignedByteType > img = RandomImgs.randomImage( new UnsignedByteType(), 1000, 1000, 10 );
+		final Img< UnsignedByteType > img = RandomImgs.seed(12345).nextImage( new UnsignedByteType(), 1000, 1000, 10 );
 		final VirtualStack vs = ImageJVirtualStackUnsignedByte.wrap( img );
 		final RandomAccess< UnsignedByteType > randomAccess = img.randomAccess();
 		for ( int z = 0; z < 10; z++ )
@@ -245,7 +245,7 @@ public class ImageJVirtualStackTest
 	@Test
 	public void testProcessorPerPlane()
 	{
-		final Img< UnsignedByteType > expected = RandomImgs.randomImage( new UnsignedByteType(), 100, 100, 100 );
+		final Img< UnsignedByteType > expected = RandomImgs.seed(54321).nextImage( new UnsignedByteType(), 100, 100, 100 );
 		final ImagePlus imagePlus = ImageJFunctions.wrap( expected, "title" );
 		final ImageStack stack = imagePlus.getStack();
 		final ImageProcessor p1 = stack.getProcessor( 1 );
