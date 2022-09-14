@@ -81,7 +81,44 @@
 	</developers>
 	<contributors>
 		<contributor>
-			<name>TODO</name>
+			<name>Matthias Arzt</name>
+			<url>https://imagej.net/people/maarzt</url>
+			<properties><id>maarzt</id></properties>
+		</contributor>
+		<contributor>
+			<name>Albert Cardona</name>
+			<url>https://imagej.net/people/acardona</url>
+			<properties><id>acardona</id></properties>
+		</contributor>
+		<contributor>
+			<name>Mark Hiner</name>
+			<url>https://imagej.net/people/hinerm</url>
+			<properties><id>hinerm</id></properties>
+		</contributor>
+		<contributor>
+			<name>Johannes Schindelin</name>
+			<url>https://imagej.net/people/dscho</url>
+			<properties><id>dscho</id></properties>
+		</contributor>
+		<contributor>
+			<name>David Hörl</name>
+			<url>https://imagej.net/people/hoerldavid</url>
+			<properties><id>hoerldavid</id></properties>
+		</contributor>
+		<contributor>
+			<name>Cyril Mongis</name>
+			<url>https://imagej.net/people/cmongis</url>
+			<properties><id>cmongis</id></properties>
+		</contributor>
+		<contributor>
+			<name>Mark Kittisopikul</name>
+			<url>https://imagej.net/people/mkitti</url>
+			<properties><id>mkitti</id></properties>
+		</contributor>
+		<contributor>
+			<name>Richard Domander</name>
+			<url>https://imagej.net/people/rimadoma</url>
+			<properties><id>rimadoma</id></properties>
 		</contributor>
 	</contributors>
 
