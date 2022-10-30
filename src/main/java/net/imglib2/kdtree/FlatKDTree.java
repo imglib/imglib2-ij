@@ -7,8 +7,15 @@ import net.imglib2.RealLocalizable;
 import net.imglib2.RealPoint;
 import net.imglib2.kdtree.FlatKDTree.NodeData.Node;
 
+import static net.imglib2.util.Partition.partitionSubList;
+
 public class FlatKDTree
 {
+	public static class KDTreeNode
+	{
+
+	}
+
 	/**
 	 * A list of points.
 	 * <p>
@@ -25,6 +32,8 @@ public class FlatKDTree
 
 		private final int[] indices;
 
+		private final int[] tree;
+
 		public NodeData( final int numDimensions, final int numPoints )
 		{
 			this.numDimensions = numDimensions;
@@ -34,6 +43,8 @@ public class FlatKDTree
 			// point order, initialize to {0,1,2,...}
 			indices = new int[ numPoints ];
 			Arrays.setAll( indices, j -> j );
+
+			tree = new int[ numPoints ];
 		}
 
 		public Node get( final int i, final Node ref )
@@ -50,6 +61,7 @@ public class FlatKDTree
 
 		public void swap( final int i, final int j )
 		{
+			// TODO unchecked version
 			checkIndexBounds( i );
 			checkIndexBounds( j );
 			final int tmp = indices[ i ];
@@ -79,6 +91,78 @@ public class FlatKDTree
 				throw new IndexOutOfBoundsException();
 		}
 
+		private int leftChild(final int i) {
+			// TODO checked version, returning -1 if no such child
+			return 2 * i + 1;
+		}
+
+		private int rightChild(final int i) {
+			// TODO checked version, returning -1 if no such child
+			return 2 * i + 2;
+		}
+
+		public void makeTree()
+		{
+			makeNode( 0, numPoints - 1, 0, 0 );
+		}
+
+		private void makeNode( final int i, final int j, final int d, final int nodeIndex )
+		{
+			if ( j > i )
+			{
+				final int k = i + ( j - i + 1 ) / 2;
+				kthElement( i, j, k, d );
+				tree[ nodeIndex ] = indices[ k ];
+				final int dChild = ( d + 1 ) % numDimensions;
+//				final int dChild = d + 1 == numDimensions ? 0 : d + 1;
+				makeNode( i, k - 1, dChild, leftChild( nodeIndex ) );
+				makeNode( k + 1, j, dChild, rightChild( nodeIndex ) );
+			}
+			else if ( j == i )
+			{
+				tree[ nodeIndex ] = indices[ i ];
+			}
+			else
+			{
+				throw new IllegalArgumentException();
+			}
+		}
+
+		/**
+		 * Partition a sublist of Nodes by their coordinate in the specified
+		 * dimension, such that the k-th smallest value is at position {@code
+		 * k}, elements before the k-th are smaller or equal and elements after
+		 * the k-th are larger or equal.
+		 *
+		 * @param i
+		 *            index of first element of the sublist
+		 * @param j
+		 *            index of last element of the sublist
+		 * @param k
+		 *            index for k-th smallest value. {@code i <= k <= j}.
+		 * @param compare_d
+		 *            dimension by which to order the sublist
+		 */
+		private void kthElement( int i, int j, final int k, final int compare_d )
+		{
+			while ( true )
+			{
+				final int pivotpos = partition( i, j, compare_d );
+				if ( pivotpos > k )
+				{
+					// partition lower half
+					j = pivotpos - 1;
+				}
+				else if ( pivotpos < k )
+				{
+					// partition upper half
+					i = pivotpos + 1;
+				}
+				else
+					return;
+			}
+		}
+
 		/**
 		 * Partition a sublist of Nodes by their coordinate in the specified
 		 * dimension.
@@ -96,11 +180,44 @@ public class FlatKDTree
 		 *            dimension by which to order the sublist
 		 * @return index of pivot element
 		 */
-		private int partitionSubList( int i, int j, final int compare_d )
+		private int partition( int i, int j, final int compare_d )
 		{
-			TODO
+			final double[] values = positions[compare_d];
+			final int len = j - i + 1;
+			if ( len <= 2 )
+			{
+				if ( len <= 0 )
+					throw new IllegalArgumentException();
+				if ( values[ indices[ i ] ] > values[ indices[ j ] ] )
+					swap( i, j );
+				return i;
+			}
+			else
+			{
+				final int m = ( i + j ) / 2;
+				if ( values[ indices[ i ] ] > values[ indices[ m ] ] )
+					swap( i, m );
+				if ( values[ indices[ i ] ] > values[ indices[ j ] ] )
+					swap( i, j );
+				if ( values[ indices[ m ] ] > values[ indices[ j ] ] )
+					swap( m, j );
+				swap( m, i + 1 );
+				final int p = ++i;
+				final double pivot = values[ indices[ p ] ];
+				while ( true )
+				{
+					while ( values[ indices[ ++i ] ] < pivot )
+						;
+					while ( values[ indices[ --j ] ] > pivot )
+						;
+					if ( j < i )
+						break;
+					swap( i, j );
+				}
+				swap( p, j );
+				return j;
+			}
 		}
-
 	}
 
 	public static class KDTree0
@@ -124,8 +241,7 @@ public class FlatKDTree
 			for ( RealLocalizable point : points )
 				nodes.get( i++, ref ).setPosition( point );
 
-			// kth element that also scrambles indices
-			//
+			nodes.makeTree();
 		}
 	}
 
