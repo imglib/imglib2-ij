@@ -3,17 +3,198 @@ package net.imglib2.kdtree;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import net.imglib2.KDTreeNode;
 import net.imglib2.RealLocalizable;
 import net.imglib2.RealPoint;
+import net.imglib2.Sampler;
 import net.imglib2.kdtree.FlatKDTree.NodeData.Node;
 
 import static net.imglib2.util.Partition.partitionSubList;
 
 public class FlatKDTree
 {
-	public static class KDTreeNode
+	public static class KDTree< T >
 	{
+		final double[][] positions;
 
+		final int[] tree;
+
+		final List< T > values;
+
+		private final int numDimensions;
+
+		private final int numPoints;
+
+		KDTree( final double[][] positions, final int[] tree, final List< T > values )
+		{
+			this.positions = positions;
+			this.tree = tree;
+			this.values = values;
+
+			numDimensions = positions.length;
+			numPoints = positions[ 0 ].length;
+		}
+
+		public KDTreeNode< T > root()
+		{
+			return new KDTreeNode<>( this ).setNodeIndex( 0 );
+		}
+
+		KDTreeNode< T > left( final KDTreeNode< T > parent )
+		{
+			final int c = 2 * parent.nodeIndex + 1;
+			if ( c >= numPoints )
+				return null;
+			return new KDTreeNode<>( this ).setNodeIndex( c );
+		}
+
+		KDTreeNode< T > right( final KDTreeNode< T > parent )
+		{
+			final int c = 2 * parent.nodeIndex + 2;
+			if ( c >= numPoints )
+				return null;
+			return new KDTreeNode<>( this ).setNodeIndex( c );
+		}
+
+		KDTreeNode< T > root( final KDTreeNode< T > ref )
+		{
+			return ref.setNodeIndex( 0 );
+		}
+
+		KDTreeNode< T > left( final KDTreeNode< T > parent, final KDTreeNode< T > ref )
+		{
+			final int c = 2 * parent.nodeIndex + 1;
+			if ( c >= numPoints )
+				return null;
+			return ref.setNodeIndex( c );
+		}
+
+		KDTreeNode< T > right( final KDTreeNode< T > parent, final KDTreeNode< T > ref )
+		{
+			final int c = 2 * parent.nodeIndex + 2;
+			if ( c >= numPoints )
+				return null;
+			return ref.setNodeIndex( c );
+		}
+
+		//		@Override
+		public int numDimensions()
+		{
+			return numDimensions;
+		}
+	}
+
+	public static class KDTreeNode< T > implements RealLocalizable, Sampler< T >
+	{
+		private final KDTree< T > tree;
+
+		private final int n;
+
+		private int nodeIndex;
+
+		private int k;
+
+		KDTreeNode( final KDTree< T > tree )
+		{
+			this.tree = tree;
+			n = tree.numDimensions();
+		}
+
+		/**
+		 * Left child of this node. All nodes x in the left subtree have
+		 * {@code x.pos[splitDimension] <= this.pos[splitDimension]}.
+		 */
+		public KDTreeNode< T > left()
+		{
+			return tree.left( this );
+		}
+
+		public KDTreeNode< T > left(final KDTreeNode< T > ref)
+		{
+			return tree.left( this, ref );
+		}
+
+		/**
+		 * Right child of this node. All nodes x in the right subtree have
+		 * {@code x.pos[splitDimension] >= this.pos[splitDimension]}.
+		 */
+		public KDTreeNode< T > right()
+		{
+			return tree.right( this );
+		}
+
+		public KDTreeNode< T > right(final KDTreeNode< T > ref)
+		{
+			return tree.right( this, ref );
+		}
+
+		/**
+		 * Get the dimension along which this node divides the space.
+		 *
+		 * @return splitting dimension.
+		 */
+		public final int getSplitDimension()
+		{
+			return ( 31 - Integer.numberOfLeadingZeros( nodeIndex + 1 ) ) % n;
+		}
+
+		/**
+		 * Get the position along {@link net.imglib2.KDTreeNode#getSplitDimension()} where this
+		 * node divides the space.
+		 *
+		 * @return splitting position.
+		 */
+		public final double getSplitCoordinate()
+		{
+			return getDoublePosition( getSplitDimension() );
+		}
+
+		KDTreeNode< T > setNodeIndex( final int nodeIndex )
+		{
+			this.nodeIndex = nodeIndex;
+			k = tree.tree[ nodeIndex ];
+			return this;
+		}
+
+		@Override
+		public double getDoublePosition( final int d )
+		{
+			return tree.positions[ d ][ k ];
+		}
+
+		@Override
+		public int numDimensions()
+		{
+			return n;
+		}
+
+		@Override
+		public T get()
+		{
+			return tree.values.get( k );
+		}
+
+		@Override
+		public KDTreeNode< T > copy()
+		{
+			final KDTreeNode< T > copy = new KDTreeNode<>( tree );
+			copy.setNodeIndex( nodeIndex );
+			return copy;
+		}
+
+		/**
+		 * Compute the squared distance from p to this node.
+		 */
+		public double squDistanceTo( final double[] p )
+		{
+			double sum = 0;
+			for ( int d = 0; d < n; ++d )
+			{
+				final double x = getDoublePosition( d ) - p[ d ];
+				sum += x * x;
+			}
+			return sum;
+		}
 	}
 
 	/**
@@ -91,13 +272,11 @@ public class FlatKDTree
 				throw new IndexOutOfBoundsException();
 		}
 
-		private int leftChild(final int i) {
-			// TODO checked version, returning -1 if no such child
+		private static int leftChild(final int i) {
 			return 2 * i + 1;
 		}
 
-		private int rightChild(final int i) {
-			// TODO checked version, returning -1 if no such child
+		private static int rightChild(final int i) {
 			return 2 * i + 2;
 		}
 
