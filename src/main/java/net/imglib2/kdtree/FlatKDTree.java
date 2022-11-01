@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.IntFunction;
+import java.util.function.Supplier;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.RealLocalizable;
@@ -30,16 +31,16 @@ public class FlatKDTree
 	{
 		final double[][] positions;
 
-		final List< T > values;
+		final Supplier< IntFunction< T > > valuesSupplier;
 
 		private final int numDimensions;
 
 		private final int numPoints;
 
-		KDTree( final double[][] positions, final List< T > values )
+		KDTree( final double[][] positions, final Supplier< IntFunction< T > > valuesSupplier )
 		{
 			this.positions = positions;
-			this.values = values;
+			this.valuesSupplier = valuesSupplier;
 
 			numDimensions = positions.length;
 			numPoints = positions[ 0 ].length;
@@ -101,6 +102,8 @@ public class FlatKDTree
 		private final int n;
 
 		private int nodeIndex;
+
+		private IntFunction< T > values;
 
 		KDTreeNode( final KDTree< T > tree )
 		{
@@ -178,7 +181,9 @@ public class FlatKDTree
 		@Override
 		public T get()
 		{
-			return tree.values.get( nodeIndex );
+			if ( values == null )
+				values = tree.valuesSupplier.get();
+			return values.apply( nodeIndex );
 		}
 
 		@Override
@@ -239,15 +244,9 @@ public class FlatKDTree
 			ImageJFunctions.show( ( RandomAccessibleInterval ) Views.addDimension( img, 0, 0 ) );
 		}
 
-		return new KDTree<>( positions, reorderedValues );
-	}
-
-	@FunctionalInterface
-	public interface CopyableIntFunction< R > extends IntFunction< R >
-	{
-		default CopyableIntFunction< R > copy() {
-			return this;
-		}
+		final IntFunction< T > getValue = reorderedValues::get;
+		final Supplier< IntFunction< T > > valuesSupplier = () -> getValue;
+		return new KDTree<>( positions, valuesSupplier );
 	}
 
 	public static void main( String[] args )
