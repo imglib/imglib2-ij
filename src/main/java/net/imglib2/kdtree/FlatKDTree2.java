@@ -23,11 +23,13 @@ import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.util.Intervals;
 import net.imglib2.view.Views;
 
-public class FlatKDTree
+public class FlatKDTree2
 {
 	public static class KDTree< T >
 	{
 		final double[][] positions;
+
+		final int[] tree;
 
 		final List< T > values;
 
@@ -38,6 +40,7 @@ public class FlatKDTree
 		KDTree( final double[][] positions, final int[] tree, final List< T > values )
 		{
 			this.positions = positions;
+			this.tree = tree;
 			this.values = values;
 
 			numDimensions = positions.length;
@@ -101,6 +104,8 @@ public class FlatKDTree
 
 		private int nodeIndex;
 
+		private int k;
+
 		KDTreeNode( final KDTree< T > tree )
 		{
 			this.tree = tree;
@@ -159,13 +164,14 @@ public class FlatKDTree
 		KDTreeNode< T > setNodeIndex( final int nodeIndex )
 		{
 			this.nodeIndex = nodeIndex;
+			k = tree.tree[ nodeIndex ];
 			return this;
 		}
 
 		@Override
 		public double getDoublePosition( final int d )
 		{
-			return tree.positions[ d ][ nodeIndex ];
+			return tree.positions[ d ][ k ];
 		}
 
 		@Override
@@ -177,7 +183,7 @@ public class FlatKDTree
 		@Override
 		public T get()
 		{
-			return tree.values.get( nodeIndex );
+			return tree.values.get( k );
 		}
 
 		@Override
@@ -202,6 +208,7 @@ public class FlatKDTree
 			return sum;
 		}
 	}
+
 
 	private static < T extends NativeType< T > > Img< T > toArrayImg( final T type, final int size, final Iterator< T > values )
 	{
@@ -262,7 +269,7 @@ public class FlatKDTree
 		Interval interval = Intervals.createMinSize( 0, 0, 320, 200 );
 
 		KDTree< ARGBType > kdtree = kdtree( coordinates, colors );
-		NearestNeighborSearch< ARGBType > search = new NearestNeighborSearchOnKDTree<>( kdtree );
+		NearestNeighborSearch< ARGBType > search = new NearestNeighborSearchOnKDTree2<>( kdtree );
 		RealRandomAccessible< ARGBType > interpolated = Views.interpolate( search, new NearestNeighborSearchInterpolatorFactory<>() );
 		RandomAccessibleInterval< ARGBType > view = Views.interval( Views.raster( interpolated ), interval );
 		ImageJFunctions.show( view );
