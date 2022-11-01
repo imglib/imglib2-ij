@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.IntFunction;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.RealLocalizable;
@@ -35,7 +36,7 @@ public class FlatKDTree
 
 		private final int numPoints;
 
-		KDTree( final double[][] positions, final int[] tree, final List< T > values )
+		KDTree( final double[][] positions, final List< T > values )
 		{
 			this.positions = positions;
 			this.values = values;
@@ -217,7 +218,7 @@ public class FlatKDTree
 		final int numDimensions = points.iterator().next().numDimensions();
 		final int numPoints = points.size();
 
-		final double[][] positions = new double[ numDimensions ][ numPoints ];
+		double[][] positions = new double[ numDimensions ][ numPoints ];
 		int i = 0;
 		for ( RealLocalizable point : points )
 		{
@@ -227,28 +228,26 @@ public class FlatKDTree
 		}
 
 		final int[] tree = KDTreeBuilder.tree( positions );
-
-		final T type = values.get( 0 );
-		if ( type instanceof NativeType )
-		{
-			Img< T > img = ( Img< T > ) toArrayImg( ( NativeType ) type, values.size(), ( Iterator ) values.iterator() );
-			ImageJFunctions.show( ( RandomAccessibleInterval ) Views.addDimension( img, 0, 0 ) );
-		}
-
-//		return new KDTree<>( positions, tree, values );
-
-		final double[][] reorderedPositions = KDTreeBuilder.reorder( positions, tree );
+		positions = KDTreeBuilder.reorder( positions, tree );
 		final List< T > reorderedValues = new ArrayList<>();
 		KDTreeBuilder.reorder( values::get, tree ).forEachRemaining( reorderedValues::add );
-		Arrays.setAll( tree, l -> l );
 
+		final T type = values.get( 0 );
 		if ( type instanceof NativeType )
 		{
 			Img< T > img = ( Img< T > ) toArrayImg( ( NativeType ) type, reorderedValues.size(), ( Iterator ) reorderedValues.iterator() );
 			ImageJFunctions.show( ( RandomAccessibleInterval ) Views.addDimension( img, 0, 0 ) );
 		}
 
-		return new KDTree<>( reorderedPositions, tree, reorderedValues );
+		return new KDTree<>( positions, reorderedValues );
+	}
+
+	@FunctionalInterface
+	public interface CopyableIntFunction< R > extends IntFunction< R >
+	{
+		default CopyableIntFunction< R > copy() {
+			return this;
+		}
 	}
 
 	public static void main( String[] args )
