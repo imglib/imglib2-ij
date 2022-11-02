@@ -36,8 +36,6 @@ package net.imglib2.kdtree;
 
 import net.imglib2.RealLocalizable;
 import net.imglib2.Sampler;
-import net.imglib2.kdtree.FlatKDTree2.KDTree;
-import net.imglib2.kdtree.FlatKDTree2.KDTreeNode;
 import net.imglib2.neighborsearch.NearestNeighborSearch;
 
 /**
@@ -48,17 +46,17 @@ import net.imglib2.neighborsearch.NearestNeighborSearch;
  */
 public class NearestNeighborSearchOnKDTree2< T > implements NearestNeighborSearch< T >
 {
-	protected KDTree< T > tree;
+	protected FlatKDTree2.KDTree< T > tree;
 
 	protected final int n;
 
 	protected final double[] pos;
 
-	protected KDTreeNode< T > bestPoint;
+	protected FlatKDTree2.KDTreeNode< T > bestPoint;
 
 	protected double bestSquDistance;
 
-	public NearestNeighborSearchOnKDTree2( final KDTree< T > tree )
+	public NearestNeighborSearchOnKDTree2( final FlatKDTree2.KDTree< T > tree )
 	{
 		n = tree.numDimensions();
 		pos = new double[ n ];
@@ -79,7 +77,7 @@ public class NearestNeighborSearchOnKDTree2< T > implements NearestNeighborSearc
 		searchNode( tree.getRoot() );
 	}
 
-	protected void searchNode( final KDTreeNode< T > current )
+	protected void searchNode( final FlatKDTree2.KDTreeNode< T > current )
 	{
 		// consider the current node
 		final double distance = current.squDistanceTo( pos );
@@ -94,8 +92,8 @@ public class NearestNeighborSearchOnKDTree2< T > implements NearestNeighborSearc
 		final boolean leftIsNearBranch = axisDiff < 0;
 
 		// search the near branch
-		final KDTreeNode< T > nearChild = leftIsNearBranch ? current.left() : current.right();
-		final KDTreeNode< T > awayChild = leftIsNearBranch ? current.right() : current.left();
+		final FlatKDTree2.KDTreeNode< T > nearChild = leftIsNearBranch ? current.left() : current.right();
+		final FlatKDTree2.KDTreeNode< T > awayChild = leftIsNearBranch ? current.right() : current.left();
 		if ( nearChild != null )
 			searchNode( nearChild );
 
