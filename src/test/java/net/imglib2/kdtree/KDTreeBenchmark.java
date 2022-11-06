@@ -27,7 +27,7 @@ public class KDTreeBenchmark
 //	@Param({"3"})
 //	public int n;
 //
-	@Param({"10000", "100000", "1000000"})
+	@Param({"10000", "100000", "10000000", "100000000"})
 	public int numDataVertices;
 //
 //	@Param({"1000"})
@@ -48,56 +48,56 @@ public class KDTreeBenchmark
 	List< RealPoint > dataVertices;
 	List< RealPoint > testVertices;
 
-	private KDTree< RealPoint > kdtreeOld;
+//	private KDTree< RealPoint > kdtreeOld;
 	private FlatKDTree.KDTree< RealPoint > kdtree;
-	private FlatKDTreeFlat.KDTree< RealPoint > kdtreeFlat;
+//	private FlatKDTreeFlat.KDTree< RealPoint > kdtreeFlat;
 
 	@Setup
 	public void setup()
 	{
 		createVertices();
-		kdtreeOld = new KDTree<>( dataVertices, dataVertices );
+//		kdtreeOld = new KDTree<>( dataVertices, dataVertices );
 		kdtree = FlatKDTree.kdtree( dataVertices, dataVertices );
-		kdtreeFlat = FlatKDTreeFlat.kdtree( dataVertices, dataVertices );
+//		kdtreeFlat = FlatKDTreeFlat.kdtree( dataVertices, dataVertices );
 	}
 
-	@Benchmark
-	@BenchmarkMode( Mode.AverageTime )
-	@OutputTimeUnit( TimeUnit.MILLISECONDS )
-	public void createKDTreeOld()
-	{
-		new KDTree<>( dataVertices, dataVertices );
-	}
+//	@Benchmark
+//	@BenchmarkMode( Mode.AverageTime )
+//	@OutputTimeUnit( TimeUnit.MILLISECONDS )
+//	public void createKDTreeOld()
+//	{
+//		new KDTree<>( dataVertices, dataVertices );
+//	}
+//
+//	@Benchmark
+//	@BenchmarkMode( Mode.AverageTime )
+//	@OutputTimeUnit( TimeUnit.MILLISECONDS )
+//	public void createKDTree()
+//	{
+//		FlatKDTree.kdtree( dataVertices, dataVertices );
+//	}
+//
+//	@Benchmark
+//	@BenchmarkMode( Mode.AverageTime )
+//	@OutputTimeUnit( TimeUnit.MILLISECONDS )
+//	public void createKDTreeFlat()
+//	{
+//		FlatKDTreeFlat.kdtree( dataVertices, dataVertices );
+//	}
 
-	@Benchmark
-	@BenchmarkMode( Mode.AverageTime )
-	@OutputTimeUnit( TimeUnit.MILLISECONDS )
-	public void createKDTree()
-	{
-		FlatKDTree.kdtree( dataVertices, dataVertices );
-	}
-
-	@Benchmark
-	@BenchmarkMode( Mode.AverageTime )
-	@OutputTimeUnit( TimeUnit.MILLISECONDS )
-	public void createKDTreeFlat()
-	{
-		FlatKDTreeFlat.kdtree( dataVertices, dataVertices );
-	}
-
-	@Benchmark
-	@BenchmarkMode( Mode.AverageTime )
-	@OutputTimeUnit( TimeUnit.MILLISECONDS )
-	public void nearestNeighborSearchOld()
-	{
-		final net.imglib2.neighborsearch.NearestNeighborSearchOnKDTree< RealPoint > kd = new net.imglib2.neighborsearch.NearestNeighborSearchOnKDTree<>( kdtreeOld );
-		for ( final RealLocalizable t : testVertices )
-		{
-			kd.search( t );
-			kd.getSampler().get();
-		}
-	}
-
+//	@Benchmark
+//	@BenchmarkMode( Mode.AverageTime )
+//	@OutputTimeUnit( TimeUnit.MILLISECONDS )
+//	public void nearestNeighborSearchOld()
+//	{
+//		final net.imglib2.neighborsearch.NearestNeighborSearchOnKDTree< RealPoint > kd = new net.imglib2.neighborsearch.NearestNeighborSearchOnKDTree<>( kdtreeOld );
+//		for ( final RealLocalizable t : testVertices )
+//		{
+//			kd.search( t );
+//			kd.getSampler().get();
+//		}
+//	}
+//
 	@Benchmark
 	@BenchmarkMode( Mode.AverageTime )
 	@OutputTimeUnit( TimeUnit.MILLISECONDS )
@@ -111,18 +111,18 @@ public class KDTreeBenchmark
 		}
 	}
 
-	@Benchmark
-	@BenchmarkMode( Mode.AverageTime )
-	@OutputTimeUnit( TimeUnit.MILLISECONDS )
-	public void nearestNeighborSearchFlat()
-	{
-		final NearestNeighborSearchOnKDTreeFlat< RealPoint > kd = new NearestNeighborSearchOnKDTreeFlat<>( kdtreeFlat );
-		for ( final RealLocalizable t : testVertices )
-		{
-			kd.search( t );
-			kd.getSampler().get();
-		}
-	}
+//	@Benchmark
+//	@BenchmarkMode( Mode.AverageTime )
+//	@OutputTimeUnit( TimeUnit.MILLISECONDS )
+//	public void nearestNeighborSearchFlat()
+//	{
+//		final NearestNeighborSearchOnKDTreeFlat< RealPoint > kd = new NearestNeighborSearchOnKDTreeFlat<>( kdtreeFlat );
+//		for ( final RealLocalizable t : testVertices )
+//		{
+//			kd.search( t );
+//			kd.getSampler().get();
+//		}
+//	}
 
 
 	private void createVertices()
