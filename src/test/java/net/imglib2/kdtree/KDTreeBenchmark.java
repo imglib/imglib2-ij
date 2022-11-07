@@ -18,7 +18,6 @@ import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 import org.openjdk.jmh.runner.options.TimeValue;
-import org.openjdk.jmh.annotations.Param;
 import org.openjdk.jmh.annotations.Setup;
 
 @State( Scope.Benchmark )
@@ -27,8 +26,8 @@ public class KDTreeBenchmark
 //	@Param({"3"})
 //	public int n;
 //
-	@Param({"10000", "100000", "1000000"})
-	public int numDataVertices;
+//	@Param({"10000", "100000", "1000000"})
+//	public int numDataVertices;
 //
 //	@Param({"1000"})
 //	public int numTestVertices;
@@ -40,7 +39,7 @@ public class KDTreeBenchmark
 //	public double maxCoordinateValue;
 //
 	public int n = 3;
-//	public int numDataVertices = 100000;
+	public int numDataVertices = 100000;
 	public int numTestVertices = 1000;
 	public double minCoordinateValue = -5;
 	public double maxCoordinateValue = 5;
@@ -49,8 +48,7 @@ public class KDTreeBenchmark
 	List< RealPoint > testVertices;
 
 	private KDTree< RealPoint > kdtreeOld;
-	private FlatKDTree.KDTree< RealPoint > kdtree;
-	private FlatKDTreeFlat.KDTree< RealPoint > kdtreeFlat;
+	private net.imglib2.kdtree.KDTree< RealPoint > kdtree;
 
 	@Setup
 	public void setup()
@@ -58,7 +56,6 @@ public class KDTreeBenchmark
 		createVertices();
 		kdtreeOld = new KDTree<>( dataVertices, dataVertices );
 		kdtree = FlatKDTree.kdtree( dataVertices, dataVertices );
-		kdtreeFlat = FlatKDTreeFlat.kdtree( dataVertices, dataVertices );
 	}
 
 	@Benchmark
@@ -75,14 +72,6 @@ public class KDTreeBenchmark
 	public void createKDTree()
 	{
 		FlatKDTree.kdtree( dataVertices, dataVertices );
-	}
-
-	@Benchmark
-	@BenchmarkMode( Mode.AverageTime )
-	@OutputTimeUnit( TimeUnit.MILLISECONDS )
-	public void createKDTreeFlat()
-	{
-		FlatKDTreeFlat.kdtree( dataVertices, dataVertices );
 	}
 
 	@Benchmark
@@ -111,18 +100,6 @@ public class KDTreeBenchmark
 		}
 	}
 
-	@Benchmark
-	@BenchmarkMode( Mode.AverageTime )
-	@OutputTimeUnit( TimeUnit.MILLISECONDS )
-	public void nearestNeighborSearchFlat()
-	{
-		final NearestNeighborSearchOnKDTreeFlat< RealPoint > kd = new NearestNeighborSearchOnKDTreeFlat<>( kdtreeFlat );
-		for ( final RealLocalizable t : testVertices )
-		{
-			kd.search( t );
-			kd.getSampler().get();
-		}
-	}
 
 
 	private void createVertices()

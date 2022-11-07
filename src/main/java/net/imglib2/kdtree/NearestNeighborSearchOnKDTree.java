@@ -46,13 +46,13 @@ import net.imglib2.neighborsearch.NearestNeighborSearch;
  */
 public class NearestNeighborSearchOnKDTree< T > implements NearestNeighborSearch< T >
 {
-	private final FlatKDTree.KDTree< T > tree;
+	private final KDTree< T > tree;
 
 	private final KDTreeImpl.NearestNeighborSearch search;
 
-	private final FlatKDTree.KDTreeNode< T > bestPoint;
+	private final KDTreeNode< T > bestPoint;
 
-	public NearestNeighborSearchOnKDTree( final FlatKDTree.KDTree< T > tree )
+	public NearestNeighborSearchOnKDTree( final KDTree< T > tree )
 	{
 		this.tree = tree;
 		search = tree.impl.new NearestNeighborSearch();

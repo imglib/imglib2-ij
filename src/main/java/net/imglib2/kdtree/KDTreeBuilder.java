@@ -5,7 +5,7 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.function.IntFunction;
 
-final class KDTreeBuilder // TODO: rename?
+final class KDTreeBuilder // TODO: this stuff can move to KDTreeImpl as static methods?
 {
 	static int[] tree( double[][] positions )
 	{
@@ -24,6 +24,33 @@ final class KDTreeBuilder // TODO: rename?
 			Arrays.setAll( reordered[ d ], i -> p[ tree[ i ] ] );
 		}
 		return reordered;
+	}
+
+	/**
+	 * Invert the given permutation {@code tree}.
+	 * <p>
+	 * For example, {@code tree = {3, 4, 1, 0, 5, 2}} indicates that coordinates
+	 * and value for the node at heap index {@code i} can be found at index
+	 * {@code tree[i]} in the respective input list.
+	 * <p>
+	 * The inverse, {@code inv = {3, 4, 1, 0, 5, 2}} indicates that coordinates
+	 * and value at index {@code i} in the respective input list belong to the
+	 * node at heap index {@code inv[i]}.
+	 *
+	 * @param tree a permutation
+	 * @return the inverse permutation
+	 */
+	static int[] invert( int[] tree )
+	{
+		// For example:
+		// i =          0  1  2  3  4  5
+		// tree =      {3, 4, 1, 0, 5, 2}
+		// output =    {3, 2, 5, 0, 1, 4}
+
+		final int[] inv = new int[ tree.length ];
+		for ( int i = 0; i < tree.length; i++ )
+			inv[tree[i]] = i;
+		return inv;
 	}
 
 	static < T > Iterator< T > reorder( final IntFunction< T > getAt, int[] tree )

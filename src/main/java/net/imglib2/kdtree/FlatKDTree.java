@@ -31,142 +31,7 @@ import net.imglib2.view.Views;
 public class FlatKDTree {
 
 
-	public static class KDTree<T> {
-
-        final KDTreeImpl impl;
-
-        final Supplier<IntFunction<T>> valuesSupplier;
-
-        KDTree(final KDTreeImpl impl, final Supplier<IntFunction<T>> valuesSupplier) {
-            this.impl = impl;
-            this.valuesSupplier = valuesSupplier;
-        }
-
-        public KDTreeNode<T> getRoot() {
-            return new KDTreeNode<>(this).setNodeIndex(impl.root());
-        }
-
-        KDTreeNode<T> left(final KDTreeNode<T> parent) {
-			final int c = impl.left( parent.nodeIndex );
-            return c < 0 ? null : new KDTreeNode<>(this).setNodeIndex(c);
-        }
-
-        KDTreeNode<T> right(final KDTreeNode<T> parent) {
-			final int c = impl.right( parent.nodeIndex );
-			return c < 0 ? null : new KDTreeNode<>(this).setNodeIndex(c);
-        }
-
-        KDTreeNode<T> getRoot(final KDTreeNode<T> ref) {
-            return ref.setNodeIndex(impl.root());
-        }
-
-        KDTreeNode<T> left(final KDTreeNode<T> parent, final KDTreeNode<T> ref) {
-			final int c = impl.left( parent.nodeIndex );
-			return c < 0 ? null : ref.setNodeIndex(c);
-        }
-
-        KDTreeNode<T> right(final KDTreeNode<T> parent, final KDTreeNode<T> ref) {
-			final int c = impl.right( parent.nodeIndex );
-			return c < 0 ? null : ref.setNodeIndex(c);
-        }
-
-        public int numDimensions() {
-            return impl.numDimensions();
-        }
-    }
-
-    public static class KDTreeNode<T> implements RealLocalizable, Sampler<T> {
-        private final KDTree<T> tree;
-
-        private int nodeIndex;
-
-        private IntFunction<T> values;
-
-        KDTreeNode(final KDTree<T> tree) {
-            this.tree = tree;
-        }
-
-        /**
-         * Left child of this node. All nodes x in the left subtree have
-         * {@code x.pos[splitDimension] <= this.pos[splitDimension]}.
-         */
-        public KDTreeNode<T> left() {
-            return tree.left(this);
-        }
-
-        public KDTreeNode<T> left(final KDTreeNode<T> ref) {
-            return tree.left(this, ref);
-        }
-
-        /**
-         * Right child of this node. All nodes x in the right subtree have
-         * {@code x.pos[splitDimension] >= this.pos[splitDimension]}.
-         */
-        public KDTreeNode<T> right() {
-            return tree.right(this);
-        }
-
-        public KDTreeNode<T> right(final KDTreeNode<T> ref) {
-            return tree.right(this, ref);
-        }
-
-        /**
-         * Get the dimension along which this node divides the space.
-         *
-         * @return splitting dimension.
-         */
-        public final int getSplitDimension() {
-            return tree.impl.splitDimension( nodeIndex );
-        }
-
-        /**
-         * Get the position along {@link net.imglib2.KDTreeNode#getSplitDimension()} where this
-         * node divides the space.
-         *
-         * @return splitting position.
-         */
-        public final double getSplitCoordinate() {
-            return getDoublePosition(getSplitDimension());
-        }
-
-        KDTreeNode<T> setNodeIndex(final int nodeIndex) {
-            this.nodeIndex = nodeIndex;
-            return this;
-        }
-
-        @Override
-        public double getDoublePosition(final int d) {
-            return tree.impl.getDoublePosition( nodeIndex, d );
-        }
-
-        @Override
-        public int numDimensions() {
-            return tree.numDimensions();
-        }
-
-        @Override
-        public T get() {
-            if (values == null)
-                values = tree.valuesSupplier.get();
-            return values.apply(nodeIndex);
-        }
-
-        @Override
-        public KDTreeNode<T> copy() {
-            final KDTreeNode<T> copy = new KDTreeNode<>(tree);
-            copy.setNodeIndex(nodeIndex);
-            return copy;
-        }
-
-        /**
-         * Compute the squared distance from p to this node.
-         */
-        public double squDistanceTo(final double[] p) {
-			return tree.impl.squDistance( nodeIndex, p );
-        }
-    }
-
-    private static <T extends NativeType<T>> Img<T> toArrayImg(final T type, final int size, final Iterator<T> values) {
+	private static <T extends NativeType<T>> Img<T> toArrayImg(final T type, final int size, final Iterator<T> values) {
         final ArrayImg<T, ?> img = new ArrayImgFactory<>(type).create(size);
         img.forEach(t -> t.set(values.next()));
         return img;
@@ -201,6 +66,7 @@ public class FlatKDTree {
                 final RandomAccess<T> ra = img.randomAccess();
                 return i -> ra.setPositionAndGet(i);
             };
+			System.out.println( "valuesSupplier = " + valuesSupplier );
             return new KDTree<>(new KDTreeImpl(positions), valuesSupplier);
         }
 
@@ -218,7 +84,7 @@ public class FlatKDTree {
         // the interval we want to display
         Interval interval = Intervals.createMinSize(0, 0, 320, 200);
 
-        KDTree<ARGBType> kdtree = kdtree(coordinates, colors);
+        final KDTree<ARGBType> kdtree = new KDTree<>(colors, coordinates);
         NearestNeighborSearch<ARGBType> search = new NearestNeighborSearchOnKDTree<>(kdtree);
         RealRandomAccessible<ARGBType> interpolated = Views.interpolate(search, new NearestNeighborSearchInterpolatorFactory<>());
         RandomAccessibleInterval<ARGBType> view = Views.interval(Views.raster(interpolated), interval);

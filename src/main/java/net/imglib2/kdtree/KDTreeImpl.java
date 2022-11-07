@@ -98,8 +98,7 @@ public class KDTreeImpl {
         return 32 - Integer.numberOfLeadingZeros(numPoints); // TODO: store in field?
     }
 
-	// TODO remove?
-    public class Node implements RealLocalizable {
+    public class Node implements RealLocalizable { // TODO unsused. remove?
 
         int i;
 
