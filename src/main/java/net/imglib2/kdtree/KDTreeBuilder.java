@@ -7,6 +7,8 @@ import java.util.function.IntFunction;
 
 final class KDTreeBuilder // TODO: this stuff can move to KDTreeImpl as static methods?
 {
+	static final int MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;
+
 	static int[] tree( double[][] positions )
 	{
 		return new Nodes( positions ).makeTree();
@@ -23,6 +25,20 @@ final class KDTreeBuilder // TODO: this stuff can move to KDTreeImpl as static m
 			final double[] p = positions[ d ];
 			Arrays.setAll( reordered[ d ], i -> p[ tree[ i ] ] );
 		}
+		return reordered;
+	}
+
+	static double[] reorderToFlatLayout( double[][] positions, int[] tree )
+	{
+		final int numDimensions = positions.length;
+		final int numPoints = positions[ 0 ].length;
+		assert tree.length == numPoints;
+		if ( ( long ) numDimensions * numPoints > MAX_ARRAY_SIZE )
+			throw new IllegalArgumentException( "positions[][] is too large to be stored in a flat array" );
+		final double[] reordered = new double[ numDimensions * numPoints ];
+		for ( int i = 0; i < numPoints; ++i )
+			for ( int d = 0; d < numDimensions; ++d )
+				reordered[ numDimensions * i + d ] = positions[ d ][ tree[ i ] ];
 		return reordered;
 	}
 
