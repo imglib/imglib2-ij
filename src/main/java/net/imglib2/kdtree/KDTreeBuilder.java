@@ -69,28 +69,6 @@ final class KDTreeBuilder // TODO: this stuff can move to KDTreeImpl as static m
 		return inv;
 	}
 
-	static < T > Iterator< T > reorder( final IntFunction< T > getAt, int[] tree )
-	{
-		return new Iterator< T >()
-		{
-			int i = 0;
-
-			@Override
-			public boolean hasNext()
-			{
-				return i < tree.length;
-			}
-
-			@Override
-			public T next()
-			{
-				if ( !hasNext() )
-					throw new NoSuchElementException();
-				return getAt.apply( tree[ i++ ] );
-			}
-		};
-	}
-
 	private static final class Nodes
 	{
 		private final int numDimensions;
@@ -278,7 +256,7 @@ final class KDTreeBuilder // TODO: this stuff can move to KDTreeImpl as static m
 		 */
 		private int partition( int i, int j, final int compare_d )
 		{
-			final double[] values = positions[compare_d];
+			final double[] values = positions[ compare_d ];
 			final int len = j - i + 1;
 			if ( len <= 2 )
 			{
