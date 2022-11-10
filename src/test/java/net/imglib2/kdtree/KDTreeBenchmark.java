@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
-import net.imglib2.KDTree;
 import net.imglib2.RealLocalizable;
 import net.imglib2.RealPoint;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -47,15 +46,15 @@ public class KDTreeBenchmark
 	List< RealPoint > dataVertices;
 	List< RealPoint > testVertices;
 
-	private KDTree< RealPoint > kdtreeOld;
+	private net.imglib2.KDTree< RealPoint > kdtreeOld;
 	private net.imglib2.kdtree.KDTree< RealPoint > kdtree;
 
 	@Setup
 	public void setup()
 	{
 		createVertices();
-		kdtreeOld = new KDTree<>( dataVertices, dataVertices );
-		kdtree = FlatKDTree.kdtree( dataVertices, dataVertices );
+		kdtreeOld = new net.imglib2.KDTree<>( dataVertices, dataVertices );
+		kdtree = new net.imglib2.kdtree.KDTree<>( dataVertices, dataVertices );
 	}
 
 	@Benchmark
@@ -63,7 +62,7 @@ public class KDTreeBenchmark
 	@OutputTimeUnit( TimeUnit.MILLISECONDS )
 	public void createKDTreeOld()
 	{
-		new KDTree<>( dataVertices, dataVertices );
+		new net.imglib2.KDTree<>( dataVertices, dataVertices );
 	}
 
 	@Benchmark
@@ -71,7 +70,7 @@ public class KDTreeBenchmark
 	@OutputTimeUnit( TimeUnit.MILLISECONDS )
 	public void createKDTree()
 	{
-		FlatKDTree.kdtree( dataVertices, dataVertices );
+		new net.imglib2.kdtree.KDTree<>( dataVertices, dataVertices );
 	}
 
 	@Benchmark
@@ -92,7 +91,7 @@ public class KDTreeBenchmark
 	@OutputTimeUnit( TimeUnit.MILLISECONDS )
 	public void nearestNeighborSearch()
 	{
-		final NearestNeighborSearchOnKDTree< RealPoint > kd = new NearestNeighborSearchOnKDTree<>( kdtree );
+		final net.imglib2.kdtree.NearestNeighborSearchOnKDTree< RealPoint > kd = new net.imglib2.kdtree.NearestNeighborSearchOnKDTree<>( kdtree );
 		for ( final RealLocalizable t : testVertices )
 		{
 			kd.search( t );

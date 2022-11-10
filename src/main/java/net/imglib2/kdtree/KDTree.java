@@ -9,14 +9,15 @@ import net.imglib2.RealLocalizable;
 
 public class KDTree< T >
 {
+	final KDTreeData< T > treeData;
+
 	final KDTreeImpl impl;
 
 	final Supplier< IntFunction< T > > valuesSupplier;
 
 	public KDTree( final IterableRealInterval< T > interval )
 	{
-//		--> This is implemented as a special case with a List<RealCursor<T>>
-//		I will change this to instead a List<T> (or better ArrayImg<T>, ListImg<T>?)
+		//	Previously, this was implemented as a special case with a List<RealCursor<T>>
 
 		// TODO: assert size > 0
 		// TODO: test
@@ -26,9 +27,6 @@ public class KDTree< T >
 
 	public < L extends RealLocalizable > KDTree( final List< T > values, final List< L > positions )
 	{
-//		--> the constructor can be called with the same list twice, values == positions, if T extends RealLocalizable
-//		For the new implementation, this distinction shouldn't matter
-
 		// TODO: revise: encapsulate check in size(values, positions) private static method
 //		assert values.size() == positions.size();
 //		assert !positions.isEmpty();
@@ -37,51 +35,10 @@ public class KDTree< T >
 
 	public < L extends RealLocalizable > KDTree( final int numPoints, final Iterable< T > values, final Iterable< L > positions )
 	{
-		Iterator< L > ipos = positions.iterator();
-		if ( !ipos.hasNext() )
-			throw new IllegalArgumentException( "provided positions Iterable has fewer elements than required" );
-		final int numDimensions = ipos.next().numDimensions();
-
-		final double[][] points = new double[ numDimensions ][ numPoints ];
-		ipos = positions.iterator();
-		for ( int i = 0; i < numPoints; ++i )
-		{
-			if ( !ipos.hasNext() )
-				throw new IllegalArgumentException( "provided positions Iterable has fewer elements than required" );
-			final L pos = ipos.next();
-			for ( int d = 0; d < numDimensions; d++ )
-				points[ d ][ i ] = pos.getDoublePosition( d );
-		}
-		final int[] tree = KDTreeBuilder.tree(points);
-		final int[] invtree = KDTreeBuilder.invert( tree );
-
-		// TODO: Alternatively, this could also flatten out the dimensions if
-		// 		 everything fits into one array
-		final double[][] treeCoordinates = KDTreeBuilder.reorder( points, tree );
-
-		// TODO: Encapsulate this into a function
-		//       Then make a variant that uses an ArrayImg<T> if T is NativeType
-		//       (This should be opt-in, if desired by client code)
-		@SuppressWarnings( "unchecked" )
-		final T[] reorderedValues = ( T[] ) new Object[ numPoints ];
-		final Iterator< T > ival = values.iterator();
-		for ( int i = 0; i < numPoints; ++i )
-		{
-			if ( !ival.hasNext() )
-				throw new IllegalArgumentException( "provided values Iterable has fewer elements than required" );
-			reorderedValues[ invtree[ i ] ] = ival.next();
-		}
-		final IntFunction<T> getValue = k -> reorderedValues[ k ];
-
-		impl = new KDTreeImpl( treeCoordinates );
-		valuesSupplier = () -> getValue;
-	}
-
-
-	KDTree( final KDTreeImpl impl, final Supplier< IntFunction< T > > valuesSupplier )
-	{
-		this.impl = impl;
-		this.valuesSupplier = valuesSupplier;
+		final boolean storeValuesAsNativeImg = true; // TODO make this a parameter
+		treeData = KDTreeData.create( numPoints, values, positions, storeValuesAsNativeImg );
+		impl = new KDTreeImpl( treeData.positions() ); // TODO or treeData.flatPositions() depending on treeData.layout()
+		valuesSupplier = treeData.valuesSupplier();
 	}
 
 	public KDTreeNode< T > getRoot()

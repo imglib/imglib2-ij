@@ -157,12 +157,12 @@ public class KDTreeData< T >
 	 * 		Otherwise, store values as a {@code List<T>}.
 	 */
 	public static < L extends RealLocalizable, T > KDTreeData< T > create(
-			final int numDimensions,
 			final int numPoints,
 			final Iterable< T > values,
 			final Iterable< L > positions,
 			final boolean storeValuesAsNativeImg )
 	{
+		final int numDimensions = getNumDimensions( positions );
 		final double[][] points = buildCoordinates( numDimensions, numPoints, positions );
 		final int[] tree = KDTreeBuilder.tree( points );
 		final int[] invtree = KDTreeBuilder.invert( tree );
@@ -211,6 +211,12 @@ public class KDTreeData< T >
 		if ( !ival.hasNext() )
 			throw new IllegalArgumentException( "provided values Iterable has fewer elements than required" );
 		return ival.next();
+	}
+
+	private static int getNumDimensions( Iterable< ? extends RealLocalizable > positions )
+	{
+		final Iterator< ? extends RealLocalizable > ipos = positions.iterator();
+		return ipos.hasNext() ? ipos.next().numDimensions() : 0;
 	}
 
 	private static < T > List< T > orderValuesList(

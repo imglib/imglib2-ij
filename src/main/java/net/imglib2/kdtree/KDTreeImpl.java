@@ -95,25 +95,7 @@ public class KDTreeImpl {
     }
 
     public int depth() {
-        return 32 - Integer.numberOfLeadingZeros(numPoints); // TODO: store in field?
-    }
-
-    public class Node implements RealLocalizable { // TODO unsused. remove?
-
-        int i;
-
-        Node() {
-        }
-
-        @Override
-        public double getDoublePosition(final int d) {
-            return KDTreeImpl.this.getDoublePosition( i, d );
-        }
-
-        @Override
-        public int numDimensions() {
-            return numDimensions;
-        }
+        return 32 - Integer.numberOfLeadingZeros(numPoints);
     }
 
 
