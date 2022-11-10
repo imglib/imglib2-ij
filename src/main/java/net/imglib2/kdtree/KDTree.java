@@ -1,6 +1,5 @@
 package net.imglib2.kdtree;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;

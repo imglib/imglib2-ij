@@ -1,9 +1,6 @@
 package net.imglib2.kdtree;
 
 import java.util.Arrays;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.function.IntFunction;
 
 final class KDTreeBuilder // TODO: this stuff can move to KDTreeImpl as static methods?
 {
