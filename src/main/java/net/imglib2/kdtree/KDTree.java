@@ -5,6 +5,8 @@ import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import net.imglib2.IterableRealInterval;
 import net.imglib2.RealLocalizable;
+import net.imglib2.img.Img;
+import net.imglib2.type.NativeType;
 
 public class KDTree< T >
 {
@@ -34,10 +36,16 @@ public class KDTree< T >
 
 	public < L extends RealLocalizable > KDTree( final int numPoints, final Iterable< T > values, final Iterable< L > positions )
 	{
-		final boolean storeValuesAsNativeImg = true; // TODO make this a parameter
-		treeData = KDTreeData.create( numPoints, values, positions, storeValuesAsNativeImg );
-		impl = new KDTreeImpl( treeData.positions() ); // TODO or treeData.flatPositions() depending on treeData.layout()
-		valuesSupplier = treeData.valuesSupplier();
+		// TODO make storeValuesAsNativeImg a parameter
+		this( createKDTree( numPoints, values, positions, true ) );
+	}
+
+	// cinstruct with pre-built data, e.g., from deserialization
+	public KDTree( final KDTreeData< T > data )
+	{
+		treeData = data;
+		impl = new KDTreeImpl( data.positions() ); // TODO or data.flatPositions() depending on treeData.layout()
+		valuesSupplier = data.valuesSupplier();
 	}
 
 	public KDTreeNode< T > getRoot()
@@ -77,5 +85,41 @@ public class KDTree< T >
 	public int numDimensions()
 	{
 		return impl.numDimensions();
+	}
+
+	/**
+	 * @param storeValuesAsNativeImg
+	 * 		If {@code true} and {@code T} is a {@code NativeType},
+	 * 		store values into {@code NativeImg}.
+	 * 		Otherwise, store values as a {@code List<T>}.
+	 */
+	private static < L extends RealLocalizable, T > KDTreeData< T > createKDTree(
+			final int numPoints,
+			final Iterable< T > values,
+			final Iterable< L > positions,
+			final boolean storeValuesAsNativeImg )
+	{
+		final int numDimensions = KDTreeUtils.getNumDimensions( positions );
+		final double[][] points = KDTreeUtils.initPositions( numDimensions, numPoints, positions );
+		final int[] tree = KDTreeUtils.makeTree( points );
+		final int[] invtree = KDTreeUtils.invert( tree );
+
+		// TODO: Alternatively, this could also flatten out the dimensions if
+		// 		 everything fits into one array
+		//       See KDTreeBuilder.MAX_ARRAY_SIZE
+		//		 and KDTreeBuilder.reorderToFlatLayout(...)
+		final double[][] treePoints = KDTreeUtils.reorder( points, tree );
+
+		if ( storeValuesAsNativeImg && KDTreeUtils.getType( values ) instanceof NativeType )
+		{
+			@SuppressWarnings( "unchecked" )
+			final Img< T > treeValues = ( Img< T > ) KDTreeUtils.orderValuesImg( invtree, ( Iterable ) values );
+			return new KDTreeData< T >( treePoints, treeValues );
+		}
+		else
+		{
+			final List< T > treeValues = KDTreeUtils.orderValuesList( invtree, values );
+			return new KDTreeData< T >( treePoints, treeValues );
+		}
 	}
 }

@@ -2,6 +2,13 @@ package net.imglib2.kdtree;
 
 import net.imglib2.RealLocalizable;
 
+import static net.imglib2.kdtree.KDTreeUtils.leftChildIndex;
+import static net.imglib2.kdtree.KDTreeUtils.parentIndex;
+import static net.imglib2.kdtree.KDTreeUtils.rightChildIndex;
+
+/**
+ * Accessing the positions tree (without values).
+ */
 public class KDTreeImpl {
 
     private final double[][] positions;
@@ -32,7 +39,7 @@ public class KDTreeImpl {
      * @return index of left child or {@code -1} if no left child exists
      */
     public int left(final int i) {
-        return ifExists(2 * i + 1);
+		return ifExists( leftChildIndex( i ) );
     }
 
     /**
@@ -42,7 +49,7 @@ public class KDTreeImpl {
      * @return index of right child or {@code -1} if no right child exists
      */
     public int right(final int i) {
-        return ifExists(2 * i + 2);
+		return ifExists( rightChildIndex( i ) );
     }
 
     /**
@@ -52,7 +59,7 @@ public class KDTreeImpl {
      * @return index of parent
      */
     public int parent(final int i) {
-        return (i - 1) / 2;
+		return i == root() ? -1 : parentIndex( i );
     }
 
     /**
@@ -99,6 +106,7 @@ public class KDTreeImpl {
     }
 
 
+
     public class NearestNeighborSearch {
 
         private final double[] pos;
@@ -127,14 +135,14 @@ public class KDTreeImpl {
             double bestSquDistanceL = Double.POSITIVE_INFINITY;
             int bestIndexL = -1;
             while (true) {
-                final double distance = KDTreeImpl.this.squDistance(current, pos);
+                final double distance = squDistance(current, pos);
                 if (distance < bestSquDistanceL) {
                     bestSquDistanceL = distance;
                     bestIndexL = current;
                 }
 
                 final int d = depth % numDimensions;
-                final double axisDiff = pos[d] - positions[d][current];
+                final double axisDiff = pos[d] - getDoublePosition(current, d);
                 final boolean leftIsNearBranch = axisDiff < 0;
 
                 // search the near branch
@@ -159,11 +167,11 @@ public class KDTreeImpl {
             }
         }
 
-        public int index() {
+        public int bestIndex() {
             return bestIndex;
         }
 
-        public double squDistance() {
+        public double bestSquDistance() {
             return bestSquDistance;
         }
 

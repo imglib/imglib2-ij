@@ -1,16 +1,97 @@
 package net.imglib2.kdtree;
 
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import net.imglib2.RandomAccess;
+import net.imglib2.RealLocalizable;
+import net.imglib2.img.Img;
+import net.imglib2.img.array.ArrayImgFactory;
+import net.imglib2.type.NativeType;
 
-final class KDTreeBuilder // TODO: this stuff can move to KDTreeImpl as static methods?
+final class KDTreeUtils
 {
 	static final int MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;
 
-	static int[] tree( double[][] positions )
+	/**
+	 * If the tree is flattened into an array the left child of node at
+	 * index {@code i} has index {@code 2 * i + 1}.
+	 */
+	static int leftChildIndex( final int i )
 	{
-		return new Nodes( positions ).makeTree();
+		return 2 * i + 1;
 	}
 
+	/**
+	 * If the tree is flattened into an array the right child of node at
+	 * index {@code i} has index {@code 2 * i + 2}.
+	 */
+	static int rightChildIndex( final int i )
+	{
+		return 2 * i + 2;
+	}
+
+	/**
+	 * If the tree is flattened into an array the parent of node at
+	 * index {@code i} has index {@code (i - 1) / 2} (except for the
+	 * root node {@code i==0}).
+	 */
+	static int parentIndex( final int i )
+	{
+		return ( i - 1 ) / 2;
+	}
+
+	/**
+	 * Copy the coordinates of the given {@code points} to a new {@code double[][] positions} array.
+	 * The coordinate in dimension {@code d} of the {@code i}th point is stored at {@code positions[d][i]}.
+	 * That is, {@code positions[0]} has all X coordinates, {@code positions[0]} has all Y coordinates, and so on.
+	 */
+	static double[][] initPositions(
+			final int numDimensions,
+			final int numPoints,
+			final Iterable< ? extends RealLocalizable > points )
+	{
+		final double[][] positions = new double[ numDimensions ][ numPoints ];
+		final Iterator< ? extends RealLocalizable > ipos =  points.iterator();
+		for ( int i = 0; i < numPoints; ++i )
+		{
+			if ( !ipos.hasNext() )
+				throw new IllegalArgumentException( "positions Iterable is empty" );
+			final RealLocalizable pos = ipos.next();
+			for ( int d = 0; d < numDimensions; d++ )
+				positions[ d ][ i ] = pos.getDoublePosition( d );
+		}
+		return positions;
+	}
+
+	/**
+	 * Sort the given points into a k-d tree.
+	 * <p>
+	 * The tree is given as a flat (heap-like) array of point indices, {@code int[] tree}.
+	 * The index of the point chosen as the root node is {@code tree[0]}.
+	 * The coordinates of the root node are at {@code positions[d][tree[0]]}.
+	 * <p>
+	 * The indices of the children (less-or-equal and greater-or-equal, respectively) of root are at {@code tree[1]} and {@code tree[2]}, and so on.
+	 *
+	 * @param positions
+	 * 		The coordinates for the {@code i}th point are stored at {@code positions[d][i]} where {@code d} is the dimension.
+	 * 	    See {@link #initPositions(int, int, Iterable)}.
+	 *
+	 * @return flattened tree of point indices
+	 */
+	static int[] makeTree( double[][] positions )
+	{
+		return new MakeTree( positions ).tree;
+	}
+
+	/**
+	 * Re-order the node {@code positions} to form a tree corresponding to the index array {@code tree'={0,1,2,...}}.
+	 *
+	 * @param positions
+	 * @param tree
+	 *
+	 * @return
+	 */
 	static double[][] reorder( double[][] positions, int[] tree )
 	{
 		final int numDimensions = positions.length;
@@ -25,6 +106,15 @@ final class KDTreeBuilder // TODO: this stuff can move to KDTreeImpl as static m
 		return reordered;
 	}
 
+	/**
+	 * Re-order the node {@code positions} to form a tree corresponding to the index array {@code tree'={0,1,2,...}}.
+	 * Then flatten the result into a 1-D array, interleaving coordinates in all dimensions.
+	 *
+	 * @param positions
+	 * @param tree
+	 *
+	 * @return
+	 */
 	static double[] reorderToFlatLayout( double[][] positions, int[] tree )
 	{
 		final int numDimensions = positions.length;
@@ -66,7 +156,90 @@ final class KDTreeBuilder // TODO: this stuff can move to KDTreeImpl as static m
 		return inv;
 	}
 
-	private static final class Nodes
+	/**
+	 * Re-order the node {@code values} to form a tree corresponding to the index array {@code tree'={0,1,2,...}}.
+	 * The tree is given as an {@link #invert(int[]) inverted permutation}, so that we can iterate through the {@code values} in order, putting each at the right index in the returned {@code List}.
+	 *
+	 * @param invtree
+	 * @param values
+	 * @param <T>
+	 *
+	 * @return
+	 */
+	static < T > List< T > orderValuesList(
+			final int[] invtree,
+			final Iterable< T > values )
+	{
+		final int size = invtree.length;
+		@SuppressWarnings( "unchecked" )
+		final T[] orderedValues = ( T[] ) new Object[ size ];
+		final Iterator< T > ival = values.iterator();
+		for ( final int i : invtree )
+		{
+			if ( !ival.hasNext() )
+				throw new IllegalArgumentException( "provided values Iterable has fewer elements than required" );
+			orderedValues[ i ] = ival.next();
+		}
+		return Arrays.asList( orderedValues );
+	}
+
+	/**
+	 * Re-order the node {@code values} to form a tree corresponding to the index array {@code tree'={0,1,2,...}}.
+	 * The tree is given as an {@link #invert(int[]) inverted permutation}, so that we can iterate through the {@code values} in order, putting each at the right index in the returned 1D {@code Img}.
+	 *
+	 * @param invtree
+	 * @param values
+	 * @param <T>
+	 *
+	 * @return
+	 */
+	static < T extends NativeType< T > > Img< T > orderValuesImg(
+			final int[] invtree,
+			final Iterable< T > values )
+	{
+		final int size = invtree.length;
+		final Img< T > img = new ArrayImgFactory<>( getType( values ) ).create( size );
+		final RandomAccess< T > orderedValues = img.randomAccess();
+		final Iterator< T > ival = values.iterator();
+		for ( final int i : invtree )
+		{
+			if ( !ival.hasNext() )
+				throw new IllegalArgumentException( "provided values Iterable has fewer elements than required" );
+			orderedValues.setPositionAndGet( i ).set( ival.next() );
+		}
+		return img;
+	}
+
+	/**
+	 * Returns the first element of {@code values}.
+	 *
+	 * @throws IllegalArgumentException
+	 * 		if {@code values} has no elements.
+	 */
+	static < T > T getType( Iterable< T > values )
+	{
+		final Iterator< T > ival = values.iterator();
+		if ( !ival.hasNext() )
+			throw new IllegalArgumentException( "values Iterable is empty" );
+		return ival.next();
+	}
+
+	/**
+	 * Returns the number of dimensions of the first element of {@code positions}.
+	 * If {@code positions} has no elements, returns {@code 0}.
+	 *
+	 * @param positions
+	 * 		list of points
+	 *
+	 * @return number of dimensions of the first point
+	 */
+	static int getNumDimensions( Iterable< ? extends RealLocalizable > positions )
+	{
+		final Iterator< ? extends RealLocalizable > ipos = positions.iterator();
+		return ipos.hasNext() ? ipos.next().numDimensions() : 0;
+	}
+
+	private static final class MakeTree
 	{
 		private final int numDimensions;
 
@@ -91,40 +264,15 @@ final class KDTreeBuilder // TODO: this stuff can move to KDTreeImpl as static m
 		 */
 		private final int[] tree;
 
-		/**
-		 * If the tree is flattened into an array the left child of node at
-		 * index {@code i} has index {@code 2 * i + 1}.
-		 */
-		private static int leftChild( final int i )
-		{
-			return 2 * i + 1;
-		}
-
-		/**
-		 * If the tree is flattened into an array the right child of node at
-		 * index {@code i} has index {@code 2 * i + 2}.
-		 */
-		private static int rightChild( final int i )
-		{
-			return 2 * i + 2;
-		}
-
-		Nodes( final double[][] positions )
+		private MakeTree( final double[][] positions )
 		{
 			this.positions = positions;
-
 			numDimensions = positions.length;
 			numPoints = positions[ 0 ].length;
-
 			indices = new int[ numPoints ];
 			tree = new int[ numPoints ];
-		}
-
-		int[] makeTree()
-		{
 			Arrays.setAll( indices, j -> j );
 			makeNode( 0, numPoints - 1, 0, 0 );
-			return tree;
 		}
 
 		/**
@@ -190,8 +338,8 @@ final class KDTreeBuilder // TODO: this stuff can move to KDTreeImpl as static m
 				tree[ nodeIndex ] = indices[ k ];
 				final int dChild = ( d + 1 ) % numDimensions;
 //				final int dChild = d + 1 == numDimensions ? 0 : d + 1;
-				makeNode( i, k - 1, dChild, leftChild( nodeIndex ) );
-				makeNode( k + 1, j, dChild, rightChild( nodeIndex ) );
+				makeNode( i, k - 1, dChild, leftChildIndex( nodeIndex ) );
+				makeNode( k + 1, j, dChild, rightChildIndex( nodeIndex ) );
 			}
 			else if ( j == i )
 			{
@@ -291,5 +439,5 @@ final class KDTreeBuilder // TODO: this stuff can move to KDTreeImpl as static m
 		}
 	}
 
-	private KDTreeBuilder() {}
+	private KDTreeUtils() {}
 }

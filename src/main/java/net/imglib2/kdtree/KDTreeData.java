@@ -1,7 +1,5 @@
 package net.imglib2.kdtree;
 
-import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
@@ -9,7 +7,6 @@ import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.RealLocalizable;
 import net.imglib2.img.Img;
-import net.imglib2.img.array.ArrayImgFactory;
 import net.imglib2.img.list.ListImg;
 import net.imglib2.type.NativeType;
 import net.imglib2.util.Util;
@@ -52,7 +49,7 @@ public class KDTreeData< T >
 		final IntFunction< T > v = values::get;
 		valuesSupplier = () -> v;
 
-		type = getType( values );
+		type = KDTreeUtils.getType( values );
 	}
 
 	public KDTreeData( double[][] positions, RandomAccessibleInterval< T > values )
@@ -88,7 +85,7 @@ public class KDTreeData< T >
 		final IntFunction< T > v = values::get;
 		valuesSupplier = () -> v;
 
-		type = getType( values );
+		type = KDTreeUtils.getType( values );
 	}
 
 	public KDTreeData( double[] positions, RandomAccessibleInterval< T > values )
@@ -158,109 +155,5 @@ public class KDTreeData< T >
 	public int size()
 	{
 		return numPoints;
-	}
-
-
-	/**
-	 * @param storeValuesAsNativeImg
-	 * 		If {@code true} and {@code T} is a {@code NativeType},
-	 * 		store values into {@code NativeImg}.
-	 * 		Otherwise, store values as a {@code List<T>}.
-	 */
-	public static < L extends RealLocalizable, T > KDTreeData< T > create(
-			final int numPoints,
-			final Iterable< T > values,
-			final Iterable< L > positions,
-			final boolean storeValuesAsNativeImg )
-	{
-		final int numDimensions = getNumDimensions( positions );
-		final double[][] points = buildCoordinates( numDimensions, numPoints, positions );
-		final int[] tree = KDTreeBuilder.tree( points );
-		final int[] invtree = KDTreeBuilder.invert( tree );
-
-		// TODO: Alternatively, this could also flatten out the dimensions if
-		// 		 everything fits into one array
-		//       See KDTreeBuilder.MAX_ARRAY_SIZE
-		//		 and KDTreeBuilder.reorderToFlatLayout(...)
-		final double[][] treePoints = KDTreeBuilder.reorder( points, tree );
-
-		if ( storeValuesAsNativeImg && getType( values ) instanceof NativeType )
-		{
-			@SuppressWarnings( "unchecked" )
-			final Img< T > treeValues = ( Img< T > ) orderValuesImg( invtree, ( Iterable ) values );
-			return new KDTreeData< T >( treePoints, treeValues );
-		}
-		else
-		{
-			final List< T > treeValues = orderValuesList( invtree, values );
-			return new KDTreeData< T >( treePoints, treeValues );
-		}
-	}
-
-	// TODO: move to KDTreeBuilder?
-	private static double[][] buildCoordinates(
-			final int numDimensions,
-			final int numPoints,
-			final Iterable< ? extends RealLocalizable > positions )
-	{
-		final double[][] coordinates = new double[ numDimensions ][ numPoints ];
-		final Iterator< ? extends RealLocalizable > ipos = positions.iterator();
-		for ( int i = 0; i < numPoints; ++i )
-		{
-			if ( !ipos.hasNext() )
-				throw new IllegalArgumentException( "positions Iterable is empty" );
-			final RealLocalizable pos = ipos.next();
-			for ( int d = 0; d < numDimensions; d++ )
-				coordinates[ d ][ i ] = pos.getDoublePosition( d );
-		}
-		return coordinates;
-	}
-
-	private static < T > T getType( Iterable< T > values )
-	{
-		final Iterator< T > ival = values.iterator();
-		if ( !ival.hasNext() )
-			throw new IllegalArgumentException( "values Iterable is empty" );
-		return ival.next();
-	}
-
-	private static int getNumDimensions( Iterable< ? extends RealLocalizable > positions )
-	{
-		final Iterator< ? extends RealLocalizable > ipos = positions.iterator();
-		return ipos.hasNext() ? ipos.next().numDimensions() : 0;
-	}
-
-	private static < T > List< T > orderValuesList(
-			final int[] invtree,
-			final Iterable< T > values )
-	{
-		final int size = invtree.length;
-		@SuppressWarnings( "unchecked" )
-		final T[] orderedValues = ( T[] ) new Object[ size ];
-		final Iterator< T > ival = values.iterator();
-		for ( final int i : invtree )
-		{
-			if ( !ival.hasNext() )
-				throw new IllegalArgumentException( "provided values Iterable has fewer elements than required" );
-			orderedValues[ i ] = ival.next();
-		}
-		return Arrays.asList( orderedValues );
-	}
-
-	private static < T extends NativeType< T > > Img< T > orderValuesImg(
-			final int[] invtree,
-			final Iterable< T > values )
-	{
-		final int size = invtree.length;
-		final Img< T > img = new ArrayImgFactory<>( getType( values ) ).create( size );
-		final RandomAccess< T > orderedValues = img.randomAccess();
-		final Iterator< T > ival = values.iterator();
-		for ( final int i : invtree )
-		{
-			if ( !ival.hasNext() )
-				throw new IllegalArgumentException( "provided values Iterable has fewer elements than required" );
-			orderedValues.setPositionAndGet( i ).set( ival.next() );
-		}
-		return img;
 	}
 }

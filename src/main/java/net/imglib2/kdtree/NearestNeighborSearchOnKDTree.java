@@ -64,7 +64,7 @@ public class NearestNeighborSearchOnKDTree< T > implements NearestNeighborSearch
 		tree = nn.tree;
 		search = nn.search.copy();
 		bestPoint = tree.getRoot();
-		bestPoint.setNodeIndex( nn.search.index() );
+		bestPoint.setNodeIndex( nn.search.bestIndex() );
 	}
 
 	@Override
@@ -77,7 +77,7 @@ public class NearestNeighborSearchOnKDTree< T > implements NearestNeighborSearch
 	public void search( final RealLocalizable p )
 	{
 		search.search( p );
-		bestPoint.setNodeIndex( search.index() );
+		bestPoint.setNodeIndex( search.bestIndex() );
 	}
 
 	@Override
@@ -95,13 +95,13 @@ public class NearestNeighborSearchOnKDTree< T > implements NearestNeighborSearch
 	@Override
 	public double getSquareDistance()
 	{
-		return search.squDistance();
+		return search.bestSquDistance();
 	}
 
 	@Override
 	public double getDistance()
 	{
-		return Math.sqrt( search.squDistance() );
+		return Math.sqrt( search.bestSquDistance() );
 	}
 
 	@Override
