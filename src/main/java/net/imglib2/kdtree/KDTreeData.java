@@ -1,8 +1,6 @@
 package net.imglib2.kdtree;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.IntFunction;
@@ -12,10 +10,8 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.RealLocalizable;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgFactory;
-import net.imglib2.img.list.AbstractListImg;
-import net.imglib2.img.list.ListCursor;
+import net.imglib2.img.list.ListImg;
 import net.imglib2.type.NativeType;
-import net.imglib2.type.Type;
 
 // TODO javadoc
 // TODO revise visibility of fields and methods
@@ -249,93 +245,5 @@ public class KDTreeData< T >
 			orderedValues.setPositionAndGet( i ).set( ival.next() );
 		}
 		return img;
-	}
-
-
-	// TODO: replace with imglib2 core ListImg when that has the wrap functionality
-	static class ListImg< T > extends AbstractListImg< T >
-	{
-		final private List< T > pixels;
-
-		public ListImg( final long[] dim, final T type )
-		{
-			super( dim );
-			pixels = new ArrayList< T >( ( int ) numPixels );
-
-			if ( type instanceof Type< ? > )
-			{
-				final Type< ? > t = ( Type< ? > ) type;
-				@SuppressWarnings( "unchecked" )
-				final ArrayList< Type< ? > > tpixels = ( ArrayList< Type< ? > > ) pixels;
-				for ( int i = 0; i < numPixels; ++i )
-					tpixels.add( t.createVariable() );
-			}
-			else
-			{
-				for ( int i = 0; i < numPixels; ++i )
-					pixels.add( null );
-			}
-		}
-
-		public ListImg( final Collection< T > collection, final long... dim )
-		{
-			super( dim );
-
-			assert numPixels == collection.size() : "Dimensions do not match number of pixels.";
-
-			pixels = new ArrayList< T >( ( int ) numPixels );
-			pixels.addAll( collection );
-		}
-
-		@Override
-		protected T get( final int index )
-		{
-			return pixels.get( index );
-		}
-
-		@Override
-		protected void set( final int index, final T value )
-		{
-			pixels.set( index, value );
-		}
-
-		private static < A extends Type< A > > ListImg< A > copyWithType( final ListImg< A > img )
-		{
-			final ListImg< A > copy = new ListImg< A >( img.dimension, img.firstElement().createVariable() );
-
-			final ListCursor< A > source = img.cursor();
-			final ListCursor< A > target = copy.cursor();
-
-			while ( source.hasNext() )
-				target.next().set( source.next() );
-
-			return copy;
-		}
-
-		@SuppressWarnings( { "unchecked", "rawtypes" } )
-		@Override
-		public ListImg< T > copy()
-		{
-			final T type = firstElement();
-			if ( type instanceof Type< ? > )
-			{
-				final ListImg< ? > copy = copyWithType( ( ListImg< Type > ) this );
-				return ( ListImg< T > ) copy;
-			}
-			return new ListImg< T >( this.pixels, dimension );
-		}
-
-		private ListImg( final List< T > pixels, final boolean dummy, final long... dim )
-		{
-			super( dim );
-
-			assert numPixels == pixels.size() : "Dimensions do not match number of pixels.";
-			this.pixels = pixels;
-		}
-
-		public static < T > ListImg< T > wrap( List< T > pixels, final long... dim )
-		{
-			return new ListImg<>( pixels, false, dim );
-		}
 	}
 }
