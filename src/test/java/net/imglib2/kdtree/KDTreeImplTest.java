@@ -1,0 +1,107 @@
+package net.imglib2.kdtree;
+
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import net.imglib2.RealLocalizable;
+import net.imglib2.RealPoint;
+import net.imglib2.util.LinAlgHelpers;
+import org.junit.Assert;
+import org.junit.Before;
+
+import java.util.ArrayList;
+import java.util.Random;
+import org.junit.Test;
+
+public class KDTreeImplTest {
+
+	public int n = 3;
+	public int numDataVertices = 100;
+	public int numTestVertices = 10;
+	public double minCoordinateValue = -5;
+	public double maxCoordinateValue = 5;
+
+	public List< RealPoint > dataVertices;
+	public List< RealPoint > testVertices;
+
+    @Before
+    public void init()
+    {
+		final double[] p = new double[ n ];
+		final double size = ( maxCoordinateValue - minCoordinateValue );
+		final Random rnd = new Random( 4379 );
+		dataVertices = new ArrayList<>();
+		for ( int i = 0; i < numDataVertices; ++i )
+		{
+			for ( int d = 0; d < n; ++d )
+				p[ d ] = rnd.nextDouble() * size + minCoordinateValue;
+			dataVertices.add( new RealPoint( p ) );
+		}
+		testVertices = new ArrayList<>();
+		for ( int i = 0; i < numTestVertices; ++i )
+		{
+			for ( int d = 0; d < n; ++d )
+				p[ d ] = rnd.nextDouble() * 2 * size + minCoordinateValue - size / 2;
+			testVertices.add( new RealPoint( p ) );
+		}
+    }
+
+	@Test
+	public void testNearestNeighborSearch()
+	{
+		final double[][] points = KDTreeUtils.initPositions( n, numDataVertices, dataVertices );
+		final int[] tree = KDTreeUtils.makeTree( points );
+		final double[][] treePoints = KDTreeUtils.reorder( points, tree );
+		final KDTreeImpl impl = new KDTreeImpl( treePoints );
+		final KDTreeImpl.NearestNeighborSearch search = impl.new NearestNeighborSearch();
+
+		for ( RealPoint testVertex : testVertices )
+		{
+			final int expected = findNearestNeighborExhaustive( testVertex );
+
+			search.search( testVertex );
+			final int actual = tree[ search.bestIndex() ];
+
+//			System.out.println( "actual = " + actual + ", expected = " + expected );
+			Assert.assertEquals( expected, actual );
+		}
+	}
+
+	@Test
+	public void testKNearestNeighborSearch()
+	{
+		final int k = 10;
+		final double[][] points = KDTreeUtils.initPositions( n, numDataVertices, dataVertices );
+		final int[] tree = KDTreeUtils.makeTree( points );
+		final double[][] treePoints = KDTreeUtils.reorder( points, tree );
+		final KDTreeImpl impl = new KDTreeImpl( treePoints );
+		final KDTreeImpl.KNearestNeighborSearch search = impl.new KNearestNeighborSearch( k );
+
+		for ( RealPoint testVertex : testVertices )
+		{
+			final int[] expecteds = findNearestNeighborsExhaustive( testVertex, k );
+
+			search.search( testVertex );
+			final int[] actuals = new int[ k ];
+			Arrays.setAll( actuals, i -> tree[ search.bestIndex( i ) ] );
+
+//			System.out.println( "actual = " + actual + ", expected = " + expected );
+			Assert.assertArrayEquals( expecteds, actuals );
+		}
+	}
+
+	private int findNearestNeighborExhaustive( final RealLocalizable point )
+	{
+		return findNearestNeighborsExhaustive( point, 1 )[ 0 ];
+	}
+
+	private int[] findNearestNeighborsExhaustive( final RealLocalizable point, final int k )
+	{
+		ArrayList< RealPoint > sorted = new ArrayList<>();
+		sorted.addAll( dataVertices );
+		sorted.sort( Comparator.comparing( p -> LinAlgHelpers.distance( p.positionAsDoubleArray(), point.positionAsDoubleArray() ) ) );
+		final int[] neighbors = new int[ k ];
+		Arrays.setAll(neighbors, i -> dataVertices.indexOf( sorted.get( i ) ) );
+		return neighbors;
+	}
+}
