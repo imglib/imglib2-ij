@@ -97,13 +97,42 @@ final class KDTreeUtils
 		final int numDimensions = positions.length;
 		final int numPoints = positions[ 0 ].length;
 		assert tree.length == numPoints;
-		final double[][] reordered = new double[ numDimensions ][ numPoints ];
-		for ( int d = 0; d < numDimensions; ++d )
-		{
-			final double[] p = positions[ d ];
-			Arrays.setAll( reordered[ d ], i -> p[ tree[ i ] ] );
-		}
+		final double[][] reordered = new double[ numDimensions ][];
+		Arrays.setAll( reordered, d -> reorder( positions[ d ], tree ) );
 		return reordered;
+	}
+
+	/**
+	 * TODO javadoc
+	 *
+	 * @param values
+	 * @param order
+	 * @return
+	 */
+	// TODO --> move to KDTreeUtil and reuse
+	static double[] reorder( final double[] values, final int[] order )
+	{
+		final int size = order.length;
+		final double[] reordered = new double[ size ];
+		Arrays.setAll( reordered, i -> values[ order[ i ] ] );
+		return reordered;
+	}
+
+	/**
+	 * TODO javadoc
+	 *
+	 * @param values
+	 * @param order
+	 * @return
+	 */
+	// TODO --> move to KDTreeUtil
+	static int[] reorder( final int[] values, final int[] order )
+	{
+		final int size = order.length;
+		final int[] reordered = new int[ size ];
+		Arrays.setAll( reordered, i -> values[ order[ i ] ] );
+		return reordered;
+//		System.arraycopy( reordered, 0, values, 0, size );
 	}
 
 	/**
@@ -239,6 +268,95 @@ final class KDTreeUtils
 		return ipos.hasNext() ? ipos.next().numDimensions() : 0;
 	}
 
+	/**
+	 * TODO javadoc
+	 *
+	 * @param i
+	 * @param j
+	 * @param order
+	 */
+	private static void swap( final int i, final int j, final int[] order )
+	{
+		final int tmp = order[ i ];
+		order[ i ] = order[ j ];
+		order[ j ] = tmp;
+	}
+
+	/**
+	 * Partition a sublist of values.
+	 *
+	 * TODO revise
+	 * A pivot element is chosen by median-of-three method. Then {@code
+	 * [i,j]} is reordered, such that all elements before the pivot are
+	 * smaller-equal and all elements after the pivot are larger-equal the
+	 * pivot. The index of the pivot element is returned.
+	 *
+	 * @param i
+	 *            index of first element of the sublist
+	 * @param j
+	 *            index of last element of the sublist
+	 * @param values TODO
+	 * @param order TODO
+	 * @return index of pivot element
+	 */
+	// TODO --> move to KDTreeUtil and reuse
+	static int partition( int i, int j, final double[] values, final int[] order )
+	{
+		final int len = j - i + 1;
+		if ( len <= 2 )
+		{
+			if ( len <= 0 )
+				throw new IllegalArgumentException();
+			if ( values[ order[ i ] ] > values[ order[ j ] ] )
+				swap( i, j, order );
+			return i;
+		}
+		else
+		{
+			final int m = ( i + j ) / 2;
+			if ( values[ order[ i ] ] > values[ order[ m ] ] )
+				swap( i, m, order );
+			if ( values[ order[ i ] ] > values[ order[ j ] ] )
+				swap( i, j, order );
+			if ( values[ order[ m ] ] > values[ order[ j ] ] )
+				swap( m, j, order );
+			swap( m, i + 1, order );
+			final int p = ++i;
+			final double pivot = values[ order[ p ] ];
+			while ( true )
+			{
+				while ( values[ order[ ++i ] ] < pivot )
+					;
+				while ( values[ order[ --j ] ] > pivot )
+					;
+				if ( j < i )
+					break;
+				swap( i, j, order );
+			}
+			swap( p, j, order );
+			return j;
+		}
+	}
+
+	/**
+	 * TODO javadoc
+	 *
+	 * @param i
+	 * @param j
+	 * @param values
+	 * @param order
+	 */
+	// TODO --> move to KDTreeUtil
+	static void quicksort( final int i, final int j, final double[] values, final int[] order )
+	{
+		if ( 0 <= i && i < j )
+		{
+			final int p = partition( i, j, values, order );
+			quicksort( i, p - 1, values, order );
+			quicksort( p + 1, j, values, order );
+		}
+	}
+
 	private static final class MakeTree
 	{
 		private final int numDimensions;
@@ -314,21 +432,6 @@ final class KDTreeUtils
 					: len - h2;
 		}
 
-		private void swap( final int i, final int j )
-		{
-//			checkIndexBounds( i );
-//			checkIndexBounds( j );
-			final int tmp = indices[ i ];
-			indices[ i ] = indices[ j ];
-			indices[ j ] = tmp;
-		}
-
-		private void checkIndexBounds(final int i)
-		{
-			if ( i < 0 || i >= numPoints )
-				throw new IndexOutOfBoundsException();
-		}
-
 		private void makeNode( final int i, final int j, final int d, final int nodeIndex )
 		{
 			if ( j > i )
@@ -366,7 +469,7 @@ final class KDTreeUtils
 		{
 			while ( true )
 			{
-				final int pivotpos = partition( i, j, compare_d );
+				final int pivotpos = partition( i, j, positions[ compare_d ], indices );
 				if ( pivotpos > k )
 				{
 					// partition lower half
@@ -379,62 +482,6 @@ final class KDTreeUtils
 				}
 				else
 					return;
-			}
-		}
-
-		/**
-		 * Partition a sublist of Nodes by their coordinate in the specified
-		 * dimension.
-		 *
-		 * A pivot element is chosen by median-of-three method. Then {@code
-		 * [i,j]} is reordered, such that all elements before the pivot are
-		 * smaller-equal and all elements after the pivot are larger-equal the
-		 * pivot. The index of the pivot element is returned.
-		 *
-		 * @param i
-		 *            index of first element of the sublist
-		 * @param j
-		 *            index of last element of the sublist
-		 * @param compare_d
-		 *            dimension by which to order the sublist
-		 * @return index of pivot element
-		 */
-		private int partition( int i, int j, final int compare_d )
-		{
-			final double[] values = positions[ compare_d ];
-			final int len = j - i + 1;
-			if ( len <= 2 )
-			{
-				if ( len <= 0 )
-					throw new IllegalArgumentException();
-				if ( values[ indices[ i ] ] > values[ indices[ j ] ] )
-					swap( i, j );
-				return i;
-			}
-			else
-			{
-				final int m = ( i + j ) / 2;
-				if ( values[ indices[ i ] ] > values[ indices[ m ] ] )
-					swap( i, m );
-				if ( values[ indices[ i ] ] > values[ indices[ j ] ] )
-					swap( i, j );
-				if ( values[ indices[ m ] ] > values[ indices[ j ] ] )
-					swap( m, j );
-				swap( m, i + 1 );
-				final int p = ++i;
-				final double pivot = values[ indices[ p ] ];
-				while ( true )
-				{
-					while ( values[ indices[ ++i ] ] < pivot )
-						;
-					while ( values[ indices[ --j ] ] > pivot )
-						;
-					if ( j < i )
-						break;
-					swap( i, j );
-				}
-				swap( p, j );
-				return j;
 			}
 		}
 	}
