@@ -77,7 +77,7 @@ class Candidates
 	// TODO --> move to KDTreeUtil
 	private static void quicksort( final int i, final int j, final double[] values, final int[] order )
 	{
-		if ( 0 < i && i < j )
+		if ( 0 <= i && i < j )
 		{
 			final int p = partition( i, j, values, order );
 			quicksort( i, p - 1, values, order );

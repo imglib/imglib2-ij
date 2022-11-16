@@ -71,6 +71,7 @@ public class KDTreeImplTest {
 	public void testKNearestNeighborSearch()
 	{
 		final int k = 10;
+
 		final double[][] points = KDTreeUtils.initPositions( n, numDataVertices, dataVertices );
 		final int[] tree = KDTreeUtils.makeTree( points );
 		final double[][] treePoints = KDTreeUtils.reorder( points, tree );
@@ -90,6 +91,29 @@ public class KDTreeImplTest {
 		}
 	}
 
+	@Test
+	public void testRadiusNeighborSearch()
+	{
+		final double radius = 7;
+
+		final double[][] points = KDTreeUtils.initPositions( n, numDataVertices, dataVertices );
+		final int[] tree = KDTreeUtils.makeTree( points );
+		final double[][] treePoints = KDTreeUtils.reorder( points, tree );
+		final KDTreeImpl impl = new KDTreeImpl( treePoints );
+		final KDTreeImpl.RadiusNeighborSearch search = impl.new RadiusNeighborSearch();
+
+		for ( RealPoint testVertex : testVertices )
+		{
+			final int[] expecteds = findRadiusNeighborsExhaustive( testVertex, radius );
+
+			search.search( testVertex, radius, true );
+			final int[] actuals = new int[ search.numNeighbors() ];
+			Arrays.setAll( actuals, i -> tree[ search.bestIndex( i ) ] );
+
+			Assert.assertArrayEquals( expecteds, actuals );
+		}
+	}
+
 	private int findNearestNeighborExhaustive( final RealLocalizable point )
 	{
 		return findNearestNeighborsExhaustive( point, 1 )[ 0 ];
@@ -97,10 +121,30 @@ public class KDTreeImplTest {
 
 	private int[] findNearestNeighborsExhaustive( final RealLocalizable point, final int k )
 	{
-		ArrayList< RealPoint > sorted = new ArrayList<>();
+		final List< RealPoint > sorted = new ArrayList<>();
 		sorted.addAll( dataVertices );
-		sorted.sort( Comparator.comparing( p -> LinAlgHelpers.distance( p.positionAsDoubleArray(), point.positionAsDoubleArray() ) ) );
+		sorted.sort( Comparator.comparing( p -> distance( point, p ) ) );
 		final int[] neighbors = new int[ k ];
+		Arrays.setAll(neighbors, i -> dataVertices.indexOf( sorted.get( i ) ) );
+		return neighbors;
+	}
+
+	private static double distance( final RealLocalizable p1, final RealLocalizable p2 )
+	{
+		return LinAlgHelpers.distance( p2.positionAsDoubleArray(), p1.positionAsDoubleArray() );
+	}
+
+	private int[] findRadiusNeighborsExhaustive( final RealLocalizable point, final double radius )
+	{
+		final List< RealPoint > sorted = new ArrayList<>();
+		dataVertices.forEach( p -> {
+			if ( distance( point, p ) <= radius )
+			{
+				sorted.add( p );
+			}
+		} );
+		sorted.sort( Comparator.comparing( p -> distance( point, p ) ) );
+		final int[] neighbors = new int[ sorted.size() ];
 		Arrays.setAll(neighbors, i -> dataVertices.indexOf( sorted.get( i ) ) );
 		return neighbors;
 	}
