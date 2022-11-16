@@ -325,7 +325,7 @@ final class KDTreeUtils
 
 		private void checkIndexBounds(final int i)
 		{
-			if ( i < 0 || i > numPoints )
+			if ( i < 0 || i >= numPoints )
 				throw new IndexOutOfBoundsException();
 		}
 

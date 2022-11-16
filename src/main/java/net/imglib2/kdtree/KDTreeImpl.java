@@ -136,9 +136,9 @@ public class KDTreeImpl {
             double bestSquDistanceL = Double.POSITIVE_INFINITY;
             int bestIndexL = -1;
             while (true) {
-                final double distance = squDistance(current, pos);
-                if (distance < bestSquDistanceL) {
-                    bestSquDistanceL = distance;
+                final double squDistance = squDistance(current, pos);
+                if (squDistance < bestSquDistanceL) {
+                    bestSquDistanceL = squDistance;
                     bestIndexL = current;
                 }
 
@@ -282,4 +282,88 @@ public class KDTreeImpl {
         }
 
     }
+
+
+
+
+
+	public class RadiusNeighborSearch
+	{
+		private final double[] pos;
+
+		private final double[] axisDiffs;
+
+		private final int[] awayChilds;
+
+		private final Candidates candidates;
+
+		RadiusNeighborSearch() {
+			pos = new double[numDimensions];
+			final int depth = depth();
+			axisDiffs = new double[depth + 1];
+			awayChilds = new int[depth + 1];
+			candidates = new Candidates();
+		}
+
+		public void search(final RealLocalizable p, final double radius, final boolean sortResults) {
+			assert radius >= 0;
+			final double squRadius = radius * radius;
+			p.localize(pos);
+			candidates.clear();
+			int current = root();
+			int depth = 0;
+			while (true) {
+				final double squDistance = squDistance(current, pos);
+				if (squDistance < squRadius) {
+					candidates.add( squDistance, current );
+				}
+
+				final int d = depth % numDimensions;
+				final double axisDiff = pos[d] - getDoublePosition(current, d);
+				final boolean leftIsNearBranch = axisDiff < 0;
+
+				// search the near branch
+				final int nearChild = leftIsNearBranch ? left(current) : right(current);
+				final int awayChild = leftIsNearBranch ? right(current) : left(current);
+				++depth;
+				awayChilds[depth] = awayChild;
+				axisDiffs[depth] = axisDiff * axisDiff;
+				if (nearChild < 0) {
+					while (awayChilds[depth] < 0 || axisDiffs[depth] > squRadius) {
+						if (--depth == 0) {
+							if ( sortResults )
+							{
+								candidates.sort();
+							}
+							return;
+						}
+					}
+					current = awayChilds[depth];
+					awayChilds[depth] = -1;
+				} else {
+					current = nearChild;
+				}
+			}
+		}
+
+		public int numNeighbors()
+		{
+			return candidates.size;
+		}
+
+		public int bestIndex(final int i) {
+			return candidates.indices[ i ];
+		}
+
+		public double bestSquDistance(final int i) {
+			return candidates.distances[ i ];
+		}
+
+		public RadiusNeighborSearch copy() {
+			final RadiusNeighborSearch copy = new RadiusNeighborSearch();
+			System.arraycopy(pos, 0, copy.pos, 0, pos.length);
+			copy.candidates.makeCopyOf( candidates );
+			return copy;
+		}
+	}
 }
