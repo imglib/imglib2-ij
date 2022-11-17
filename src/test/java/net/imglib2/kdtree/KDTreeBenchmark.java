@@ -6,6 +6,7 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import net.imglib2.RealLocalizable;
 import net.imglib2.RealPoint;
+import org.junit.Assert;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Mode;
@@ -38,7 +39,7 @@ public class KDTreeBenchmark
 //	public double maxCoordinateValue;
 //
 	public int n = 3;
-	public int numDataVertices = 100000;
+	public int numDataVertices = 1000000;
 	public int numTestVertices = 1000;
 	public double minCoordinateValue = -5;
 	public double maxCoordinateValue = 5;
@@ -55,6 +56,17 @@ public class KDTreeBenchmark
 		createVertices();
 		kdtreeOld = new net.imglib2.KDTree<>( dataVertices, dataVertices );
 		kdtree = new net.imglib2.kdtree.KDTree<>( dataVertices, dataVertices );
+//		spoil();
+	}
+
+	public void spoil() {
+		final double[][] points = KDTreeUtils.initPositions( n, numDataVertices, dataVertices );
+		final int[] tree = KDTreeUtils.makeTree( points );
+		final double[][] treePoints = KDTreeUtils.reorder( points, tree );
+		final KDTreeImpl impl = new KDTreeImpl.Nested( treePoints );
+		final KDTreeImpl.NearestNeighborSearch search = new KDTreeImpl.NearestNeighborSearch( impl );
+		for ( RealPoint testVertex : testVertices )
+			search.search( testVertex );
 	}
 
 	@Benchmark
