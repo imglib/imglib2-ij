@@ -53,7 +53,7 @@ public class KDTreeImplTest {
 		final int[] tree = KDTreeUtils.makeTree( points );
 		final double[][] treePoints = KDTreeUtils.reorder( points, tree );
 		final KDTreeImpl impl = new KDTreeImpl( treePoints );
-		final KDTreeImpl.NearestNeighborSearch search = impl.new NearestNeighborSearch();
+		final KDTreeImpl.NearestNeighborSearch search = new KDTreeImpl.NearestNeighborSearch( impl );
 
 		for ( RealPoint testVertex : testVertices )
 		{
@@ -76,7 +76,7 @@ public class KDTreeImplTest {
 		final int[] tree = KDTreeUtils.makeTree( points );
 		final double[][] treePoints = KDTreeUtils.reorder( points, tree );
 		final KDTreeImpl impl = new KDTreeImpl( treePoints );
-		final KDTreeImpl.KNearestNeighborSearch search = impl.new KNearestNeighborSearch( k );
+		final KDTreeImpl.KNearestNeighborSearch search = new KDTreeImpl.KNearestNeighborSearch( impl, k );
 
 		for ( RealPoint testVertex : testVertices )
 		{
@@ -100,7 +100,7 @@ public class KDTreeImplTest {
 		final int[] tree = KDTreeUtils.makeTree( points );
 		final double[][] treePoints = KDTreeUtils.reorder( points, tree );
 		final KDTreeImpl impl = new KDTreeImpl( treePoints );
-		final KDTreeImpl.RadiusNeighborSearch search = impl.new RadiusNeighborSearch();
+		final KDTreeImpl.RadiusNeighborSearch search = new KDTreeImpl.RadiusNeighborSearch( impl );
 
 		for ( RealPoint testVertex : testVertices )
 		{

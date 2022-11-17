@@ -89,7 +89,7 @@ public class KDTreeImpl {
     public double squDistance(final int i, final double[] pos) {
         double sum = 0;
         for (int d = 0; d < numDimensions; ++d) {
-            final double diff = pos[d] - positions[d][i];
+			final double diff = pos[ d ] - getDoublePosition(i, d);
             sum += diff * diff;
         }
         return sum;
@@ -108,7 +108,9 @@ public class KDTreeImpl {
     }
 
 
-    public class NearestNeighborSearch {
+    public static class NearestNeighborSearch {
+
+		private final KDTreeImpl tree;
 
         private final double[] pos;
 
@@ -120,43 +122,42 @@ public class KDTreeImpl {
 
         private final int[] awayChilds;
 
-        NearestNeighborSearch() {
-            pos = new double[numDimensions];
+		NearestNeighborSearch( final KDTreeImpl tree ) {
+			this.tree = tree;
+			pos = new double[tree.numDimensions];
             bestIndex = -1;
             bestSquDistance = Double.POSITIVE_INFINITY;
-            final int depth = depth();
+            final int depth = tree.depth();
             axisDiffs = new double[depth + 1];
             awayChilds = new int[depth + 1];
         }
 
         public void search(final RealLocalizable p) {
             p.localize(pos);
-            int current = root();
-            int depth = 0;
-            double bestSquDistanceL = Double.POSITIVE_INFINITY;
-            int bestIndexL = -1;
-            while (true) {
-                final double squDistance = squDistance(current, pos);
-                if (squDistance < bestSquDistanceL) {
-                    bestSquDistanceL = squDistance;
-                    bestIndexL = current;
+			int current = tree.root();
+			int depth = 0;
+			bestSquDistance = Double.POSITIVE_INFINITY;
+			bestIndex = -1;
+			while (true) {
+                final double squDistance = tree.squDistance(current, pos);
+                if (squDistance < bestSquDistance) {
+                    bestSquDistance = squDistance;
+                    bestIndex = current;
                 }
 
-                final int d = depth % numDimensions;
-                final double axisDiff = pos[d] - getDoublePosition(current, d);
+                final int d = depth % tree.numDimensions;
+                final double axisDiff = pos[d] - tree.getDoublePosition(current, d);
                 final boolean leftIsNearBranch = axisDiff < 0;
 
                 // search the near branch
-                final int nearChild = leftIsNearBranch ? left(current) : right(current);
-                final int awayChild = leftIsNearBranch ? right(current) : left(current);
+                final int nearChild = leftIsNearBranch ? tree.left(current) : tree.right(current);
+                final int awayChild = leftIsNearBranch ? tree.right(current) : tree.left(current);
                 ++depth;
                 awayChilds[depth] = awayChild;
                 axisDiffs[depth] = axisDiff * axisDiff;
                 if (nearChild < 0) {
-                    while (awayChilds[depth] < 0 || axisDiffs[depth] > bestSquDistanceL) {
+                    while (awayChilds[depth] < 0 || axisDiffs[depth] > bestSquDistance) {
                         if (--depth == 0) {
-                            bestSquDistance = bestSquDistanceL;
-                            bestIndex = bestIndexL;
                             return;
                         }
                     }
@@ -177,7 +178,7 @@ public class KDTreeImpl {
         }
 
         public NearestNeighborSearch copy() {
-            final NearestNeighborSearch copy = new NearestNeighborSearch();
+			final NearestNeighborSearch copy = new NearestNeighborSearch(tree);
             System.arraycopy(pos, 0, copy.pos, 0, pos.length);
             copy.bestIndex = bestIndex;
             copy.bestSquDistance = bestSquDistance;
@@ -186,11 +187,13 @@ public class KDTreeImpl {
     }
 
 
-    public class KNearestNeighborSearch {
+    public static class KNearestNeighborSearch {
+
+		private final KDTreeImpl tree;
 
         private final double[] pos;
 
-        private final int k;
+		private final int k;
 
         private final double[] bestSquDistance;
 
@@ -200,12 +203,13 @@ public class KDTreeImpl {
 
         private final int[] awayChilds;
 
-        KNearestNeighborSearch(final int k) {
-            this.k = k;
-            pos = new double[numDimensions];
+        KNearestNeighborSearch(final KDTreeImpl tree, final int k) {
+			this.tree = tree;
+			this.k = k;
+            pos = new double[tree.numDimensions];
             bestSquDistance = new double[k];
             bestIndex = new int[k];
-            final int depth = depth();
+            final int depth = tree.depth();
             axisDiffs = new double[depth + 1];
             awayChilds = new int[depth + 1];
         }
@@ -234,20 +238,20 @@ public class KDTreeImpl {
 
         public void search(final RealLocalizable p) {
             p.localize(pos);
-            int current = root();
+            int current = tree.root();
             int depth = 0;
             Arrays.fill(bestSquDistance, Double.POSITIVE_INFINITY);
             Arrays.fill(bestIndex, -1);
             while (true) {
-                insert(squDistance(current, pos), current);
+                insert(tree.squDistance(current, pos), current);
 
-                final int d = depth % numDimensions;
-                final double axisDiff = pos[d] - getDoublePosition(current, d);
+                final int d = depth % tree.numDimensions;
+                final double axisDiff = pos[d] - tree.getDoublePosition(current, d);
                 final boolean leftIsNearBranch = axisDiff < 0;
 
                 // search the near branch
-                final int nearChild = leftIsNearBranch ? left(current) : right(current);
-                final int awayChild = leftIsNearBranch ? right(current) : left(current);
+                final int nearChild = leftIsNearBranch ? tree.left(current) : tree.right(current);
+                final int awayChild = leftIsNearBranch ? tree.right(current) : tree.left(current);
                 ++depth;
                 awayChilds[depth] = awayChild;
                 axisDiffs[depth] = axisDiff * axisDiff;
@@ -274,7 +278,7 @@ public class KDTreeImpl {
         }
 
         public KNearestNeighborSearch copy() {
-            final KNearestNeighborSearch copy = new KNearestNeighborSearch( k );
+            final KNearestNeighborSearch copy = new KNearestNeighborSearch( tree, k );
             System.arraycopy(pos, 0, copy.pos, 0, pos.length);
             System.arraycopy(bestIndex, 0, copy.bestIndex, 0, bestIndex.length);
             System.arraycopy(bestSquDistance, 0, copy.bestSquDistance, 0, bestSquDistance.length);
@@ -287,8 +291,10 @@ public class KDTreeImpl {
 
 
 
-	public class RadiusNeighborSearch
-	{
+	public static class RadiusNeighborSearch {
+
+		private final KDTreeImpl tree;
+
 		private final double[] pos;
 
 		private final double[] axisDiffs;
@@ -297,9 +303,10 @@ public class KDTreeImpl {
 
 		private final Candidates candidates;
 
-		RadiusNeighborSearch() {
-			pos = new double[numDimensions];
-			final int depth = depth();
+		RadiusNeighborSearch(final KDTreeImpl tree) {
+			this.tree = tree;
+			pos = new double[tree.numDimensions];
+			final int depth = tree.depth();
 			axisDiffs = new double[depth + 1];
 			awayChilds = new int[depth + 1];
 			candidates = new Candidates();
@@ -310,21 +317,21 @@ public class KDTreeImpl {
 			final double squRadius = radius * radius;
 			p.localize(pos);
 			candidates.clear();
-			int current = root();
+			int current = tree.root();
 			int depth = 0;
 			while (true) {
-				final double squDistance = squDistance(current, pos);
+				final double squDistance = tree.squDistance(current, pos);
 				if (squDistance < squRadius) {
 					candidates.add( squDistance, current );
 				}
 
-				final int d = depth % numDimensions;
-				final double axisDiff = pos[d] - getDoublePosition(current, d);
+				final int d = depth % tree.numDimensions;
+				final double axisDiff = pos[d] - tree.getDoublePosition(current, d);
 				final boolean leftIsNearBranch = axisDiff < 0;
 
 				// search the near branch
-				final int nearChild = leftIsNearBranch ? left(current) : right(current);
-				final int awayChild = leftIsNearBranch ? right(current) : left(current);
+				final int nearChild = leftIsNearBranch ? tree.left(current) : tree.right(current);
+				final int awayChild = leftIsNearBranch ? tree.right(current) : tree.left(current);
 				++depth;
 				awayChilds[depth] = awayChild;
 				axisDiffs[depth] = axisDiff * axisDiff;
@@ -360,7 +367,7 @@ public class KDTreeImpl {
 		}
 
 		public RadiusNeighborSearch copy() {
-			final RadiusNeighborSearch copy = new RadiusNeighborSearch();
+			final RadiusNeighborSearch copy = new RadiusNeighborSearch(tree);
 			System.arraycopy(pos, 0, copy.pos, 0, pos.length);
 			copy.candidates.makeCopyOf( candidates );
 			return copy;

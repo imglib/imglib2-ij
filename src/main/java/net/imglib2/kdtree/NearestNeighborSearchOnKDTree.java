@@ -55,7 +55,7 @@ public class NearestNeighborSearchOnKDTree< T > implements NearestNeighborSearch
 	public NearestNeighborSearchOnKDTree( final KDTree< T > tree )
 	{
 		this.tree = tree;
-		search = tree.impl.new NearestNeighborSearch();
+		search = new KDTreeImpl.NearestNeighborSearch( tree.impl );
 		bestPoint = tree.getRoot();
 	}
 
