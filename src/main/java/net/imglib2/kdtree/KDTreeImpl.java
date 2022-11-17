@@ -13,18 +13,49 @@ import static net.imglib2.kdtree.KDTreeUtils.rightChildIndex;
 /**
  * Accessing the positions tree (without values).
  */
-public class KDTreeImpl {
-
-	private final double[][] positions;
+public abstract class KDTreeImpl {
 
 	private final int numDimensions;
 
 	private final int numPoints;
 
-	KDTreeImpl(final double[][] positions) {
-		this.positions = positions;
-		numDimensions = positions.length;
-		numPoints = positions[0].length;
+	static class Nested extends KDTreeImpl {
+
+		private final double[][] positions;
+
+		Nested(final double[][] positions) {
+			super(positions.length, positions[0].length);
+			this.positions = positions;
+		}
+
+		@Override
+		public double getDoublePosition(final int i, final int d) {
+			return positions[d][i];
+		}
+	}
+
+	static class Flat extends KDTreeImpl {
+
+		private final double[] positions;
+
+		private final int numDimensions;
+
+		Flat(final double[] positions, final int numDimensions) {
+			super(numDimensions, positions.length / numDimensions);
+			this.positions = positions;
+			this.numDimensions = numDimensions;
+		}
+
+		@Override
+		public double getDoublePosition(final int i, final int d) {
+			return positions[numDimensions * i + d];
+		}
+
+	}
+
+	KDTreeImpl(final int numDimensions, final int numPoints) {
+		this.numDimensions = numDimensions;
+		this.numPoints = numPoints;
 	}
 
 	/**
@@ -92,9 +123,7 @@ public class KDTreeImpl {
 		return (31 - Integer.numberOfLeadingZeros(i + 1)) % numDimensions;
 	}
 
-	public double getDoublePosition(final int i, final int d) {
-		return positions[d][i];
-	}
+	public abstract double getDoublePosition(final int i, final int d);
 
 	public double squDistance(final int i, final double[] pos) {
 		double sum = 0;

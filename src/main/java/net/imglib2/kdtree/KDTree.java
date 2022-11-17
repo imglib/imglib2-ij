@@ -8,6 +8,8 @@ import net.imglib2.RealLocalizable;
 import net.imglib2.img.Img;
 import net.imglib2.type.NativeType;
 
+import static net.imglib2.kdtree.KDTreeData.PositionsLayout.FLAT;
+
 public class KDTree< T >
 {
 	final KDTreeData< T > treeData;
@@ -44,7 +46,10 @@ public class KDTree< T >
 	public KDTree( final KDTreeData< T > data )
 	{
 		treeData = data;
-		impl = new KDTreeImpl( data.positions() ); // TODO or data.flatPositions() depending on treeData.layout()
+		if ( data.layout() == FLAT )
+			impl = new KDTreeImpl.Flat( data.flatPositions(), data.numDimensions() );
+		else
+			impl = new KDTreeImpl.Nested( data.positions() );
 		valuesSupplier = data.valuesSupplier();
 	}
 
@@ -108,7 +113,8 @@ public class KDTree< T >
 		// 		 everything fits into one array
 		//       See KDTreeBuilder.MAX_ARRAY_SIZE
 		//		 and KDTreeBuilder.reorderToFlatLayout(...)
-		final double[][] treePoints = KDTreeUtils.reorder( points, tree );
+//		final double[][] treePoints = KDTreeUtils.reorder( points, tree );
+		final double[] treePoints = KDTreeUtils.reorderToFlatLayout( points, tree );
 
 		if ( storeValuesAsNativeImg && KDTreeUtils.getType( values ) instanceof NativeType )
 		{
