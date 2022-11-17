@@ -5,10 +5,7 @@ import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.RealLocalizable;
-import net.imglib2.img.Img;
 import net.imglib2.img.list.ListImg;
-import net.imglib2.type.NativeType;
 import net.imglib2.util.Util;
 
 // TODO javadoc

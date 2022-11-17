@@ -6,7 +6,6 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import net.imglib2.RealLocalizable;
 import net.imglib2.RealPoint;
-import org.junit.Assert;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Mode;
@@ -39,7 +38,8 @@ public class KDTreeBenchmark
 //	public double maxCoordinateValue;
 //
 	public int n = 3;
-	public int numDataVertices = 1000000;
+	public int k = 10;
+	public int numDataVertices = 10000;
 	public int numTestVertices = 1000;
 	public double minCoordinateValue = -5;
 	public double maxCoordinateValue = 5;
@@ -108,6 +108,40 @@ public class KDTreeBenchmark
 		{
 			kd.search( t );
 			kd.getSampler().get();
+		}
+	}
+
+	@Benchmark
+	@BenchmarkMode( Mode.AverageTime )
+	@OutputTimeUnit( TimeUnit.MILLISECONDS )
+	public void kNearestNeighborSearchOld()
+	{
+		final net.imglib2.neighborsearch.KNearestNeighborSearchOnKDTree< RealPoint > kd = new net.imglib2.neighborsearch.KNearestNeighborSearchOnKDTree<>( kdtreeOld, k );
+		for ( final RealLocalizable t : testVertices )
+		{
+			kd.search( t );
+			kd.getSampler().get();
+//			for ( int i = 0; i < k; i++ )
+//			{
+//				kd.getSampler( i ).get();
+//			}
+		}
+	}
+
+	@Benchmark
+	@BenchmarkMode( Mode.AverageTime )
+	@OutputTimeUnit( TimeUnit.MILLISECONDS )
+	public void kNearestNeighborSearch()
+	{
+		final net.imglib2.kdtree.KNearestNeighborSearchOnKDTree< RealPoint > kd = new net.imglib2.kdtree.KNearestNeighborSearchOnKDTree<>( kdtree, k );
+		for ( final RealLocalizable t : testVertices )
+		{
+			kd.search( t );
+			kd.getSampler().get();
+//			for ( int i = 0; i < k; i++ )
+//			{
+//				kd.getSampler( i ).get();
+//			}
 		}
 	}
 

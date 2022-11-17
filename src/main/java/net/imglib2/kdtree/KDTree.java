@@ -53,6 +53,10 @@ public class KDTree< T >
 		valuesSupplier = data.valuesSupplier();
 	}
 
+	KDTreeNode< T > createNode() {
+		return new KDTreeNode<>( this );
+	}
+
 	public KDTreeNode< T > getRoot()
 	{
 		return new KDTreeNode<>( this ).setNodeIndex( impl.root() );

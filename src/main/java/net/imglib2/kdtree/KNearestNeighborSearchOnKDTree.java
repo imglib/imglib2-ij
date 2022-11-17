@@ -2,7 +2,7 @@
  * #%L
  * ImgLib2: a general-purpose, multidimensional image processing library.
  * %%
- * Copyright (C) 2009 - 2021 Tobias Pietzsch, Stephan Preibisch, Stephan Saalfeld,
+ * Copyright (C) 2009 - 2022 Tobias Pietzsch, Stephan Preibisch, Stephan Saalfeld,
  * John Bogovic, Albert Cardona, Barry DeZonia, Christian Dietz, Jan Funke,
  * Aivar Grislis, Jonathan Hale, Grant Harris, Stefan Helfrich, Mark Hiner,
  * Martin Horn, Steffen Jaensch, Lee Kamentsky, Larry Lindsey, Melissa Linkert,
@@ -34,37 +34,44 @@
 
 package net.imglib2.kdtree;
 
+import java.util.Arrays;
 import net.imglib2.RealLocalizable;
 import net.imglib2.Sampler;
-import net.imglib2.neighborsearch.NearestNeighborSearch;
+import net.imglib2.neighborsearch.KNearestNeighborSearch;
 
 /**
- * Implementation of {@link NearestNeighborSearch} search for kd-trees.
- * 
+ * Implementation of {@link KNearestNeighborSearch} search for kd-trees.
  * 
  * @author Tobias Pietzsch
  */
-public class NearestNeighborSearchOnKDTree< T > implements NearestNeighborSearch< T >
+public class KNearestNeighborSearchOnKDTree< T > implements KNearestNeighborSearch< T >
 {
 	private final KDTree< T > tree;
 
-	private final KDTreeImpl.NearestNeighborSearch search;
+	private final int k;
 
-	private final KDTreeNode< T > bestPoint;
+	private final KDTreeImpl.KNearestNeighborSearch search;
 
-	public NearestNeighborSearchOnKDTree( final KDTree< T > tree )
+	private final KDTreeNode< T >[] bestPoints;
+
+	@SuppressWarnings( "unchecked" )
+	public KNearestNeighborSearchOnKDTree( final KDTree< T > tree, final int k )
 	{
 		this.tree = tree;
-		search = new KDTreeImpl.NearestNeighborSearch( tree.impl );
-		bestPoint = tree.createNode();
+		this.k = k;
+		search = new KDTreeImpl.KNearestNeighborSearch( tree.impl, k );
+		bestPoints = new KDTreeNode[ k ];
+		Arrays.setAll( bestPoints, i -> tree.createNode() );
 	}
 
-	private NearestNeighborSearchOnKDTree( final NearestNeighborSearchOnKDTree< T > nn )
+	@SuppressWarnings( "unchecked" )
+	private KNearestNeighborSearchOnKDTree( final KNearestNeighborSearchOnKDTree< T > knn )
 	{
-		tree = nn.tree;
-		search = nn.search.copy();
-		bestPoint = tree.createNode();
-		bestPoint.setNodeIndex( nn.search.bestIndex() );
+		tree = knn.tree;
+		k = knn.k;
+		search = knn.search.copy();
+		bestPoints = new KDTreeNode[ k ];
+		Arrays.setAll( bestPoints, i -> tree.createNode().setNodeIndex( search.bestIndex( i ) ) );
 	}
 
 	@Override
@@ -74,39 +81,73 @@ public class NearestNeighborSearchOnKDTree< T > implements NearestNeighborSearch
 	}
 
 	@Override
+	public int getK()
+	{
+		return k;
+	}
+
+	@Override
 	public void search( final RealLocalizable p )
 	{
 		search.search( p );
-		bestPoint.setNodeIndex( search.bestIndex() );
+		for ( int i = 0; i < k; i++ )
+			bestPoints[ i ].setNodeIndex( search.bestIndex( i ) );
+	}
+
+	@Override
+	public Sampler< T > getSampler( final int i )
+	{
+		return bestPoints[ i ];
+	}
+
+	@Override
+	public RealLocalizable getPosition( final int i )
+	{
+		return bestPoints[ i ];
+	}
+
+	@Override
+	public double getSquareDistance( final int i )
+	{
+		return search.bestSquDistance( i );
+	}
+
+	@Override
+	public double getDistance( final int i )
+	{
+		return Math.sqrt( search.bestSquDistance( i ) );
+	}
+
+
+	@Override
+	public KNearestNeighborSearchOnKDTree< T > copy()
+	{
+		return new KNearestNeighborSearchOnKDTree<>( this );
+	}
+
+	/* NearestNeighborSearch */
+
+	@Override
+	public RealLocalizable getPosition()
+	{
+		return getPosition( 0 );
 	}
 
 	@Override
 	public Sampler< T > getSampler()
 	{
-		return bestPoint;
-	}
-
-	@Override
-	public RealLocalizable getPosition()
-	{
-		return bestPoint;
+		return getSampler( 0 );
 	}
 
 	@Override
 	public double getSquareDistance()
 	{
-		return search.bestSquDistance();
+		return getSquareDistance( 0 );
 	}
 
 	@Override
 	public double getDistance()
 	{
-		return Math.sqrt( search.bestSquDistance() );
-	}
-
-	@Override
-	public NearestNeighborSearchOnKDTree< T > copy()
-	{
-		return new NearestNeighborSearchOnKDTree<>( this );
+		return getDistance( 0 );
 	}
 }

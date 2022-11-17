@@ -262,14 +262,14 @@ public abstract class KDTreeImpl {
 			// first check whether index will be inserted at all
 			if (squDistance < bestSquDistance[k - 1]) {
 
-				// find insertion point
+				// find insertion point, shifting existing elements to make room
 				int i;
-				for (i = k - 1; i > 0 && squDistance < bestSquDistance[i - 1]; --i)
-					;
+				for (i = k - 1; i > 0 && squDistance < bestSquDistance[i - 1]; --i) {
+					bestSquDistance[i] = bestSquDistance[i - 1];
+					bestIndex[i] = bestIndex[i - 1];
+				}
 
-				// insert index at i, pushing existing elements from i backwards
-				System.arraycopy(bestSquDistance, i, bestSquDistance, i + 1, k - i - 1);
-				System.arraycopy(bestIndex, i, bestIndex, i + 1, k - i - 1);
+				// insert index at i,
 				bestSquDistance[i] = squDistance;
 				bestIndex[i] = index;
 			}
@@ -306,6 +306,10 @@ public abstract class KDTreeImpl {
 					current = nearChild;
 				}
 			}
+		}
+
+		public int k()  {
+			return k;
 		}
 
 		public int bestIndex(final int i) {
