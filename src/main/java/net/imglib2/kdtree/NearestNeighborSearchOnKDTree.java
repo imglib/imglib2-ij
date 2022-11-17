@@ -99,12 +99,6 @@ public class NearestNeighborSearchOnKDTree< T > implements NearestNeighborSearch
 	}
 
 	@Override
-	public double getDistance()
-	{
-		return Math.sqrt( search.bestSquDistance() );
-	}
-
-	@Override
 	public NearestNeighborSearchOnKDTree< T > copy()
 	{
 		return new NearestNeighborSearchOnKDTree<>( this );

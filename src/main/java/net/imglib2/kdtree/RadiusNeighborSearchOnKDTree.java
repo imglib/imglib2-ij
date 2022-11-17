@@ -34,44 +34,54 @@
 
 package net.imglib2.kdtree;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 import net.imglib2.RealLocalizable;
 import net.imglib2.Sampler;
-import net.imglib2.neighborsearch.KNearestNeighborSearch;
+import net.imglib2.neighborsearch.RadiusNeighborSearch;
 
 /**
- * Implementation of {@link KNearestNeighborSearch} search for kd-trees.
- * 
+ * Implementation of {@link RadiusNeighborSearch} search for kd-trees.
+ *
  * @author Tobias Pietzsch
  */
-public class KNearestNeighborSearchOnKDTree< T > implements KNearestNeighborSearch< T >
+public class RadiusNeighborSearchOnKDTree< T > implements RadiusNeighborSearch< T >
 {
 	private final KDTree< T > tree;
 
-	private final int k;
+	private final KDTreeImpl.RadiusNeighborSearch search;
 
-	private final KDTreeImpl.KNearestNeighborSearch search;
+	private final List< KDTreeNode< T > > matches;
 
-	private final KDTreeNode< T >[] matches;
-
-	@SuppressWarnings( "unchecked" )
-	public KNearestNeighborSearchOnKDTree( final KDTree< T > tree, final int k )
+	public RadiusNeighborSearchOnKDTree( final KDTree< T > tree )
 	{
 		this.tree = tree;
-		this.k = k;
-		search = new KDTreeImpl.KNearestNeighborSearch( tree.impl, k );
-		matches = new KDTreeNode[ k ];
-		Arrays.setAll( matches, i -> tree.createNode() );
+		search = new KDTreeImpl.RadiusNeighborSearch( tree.impl );
+		matches = new ArrayList<>();
 	}
 
-	@SuppressWarnings( "unchecked" )
-	private KNearestNeighborSearchOnKDTree( final KNearestNeighborSearchOnKDTree< T > knn )
+	private RadiusNeighborSearchOnKDTree( final RadiusNeighborSearchOnKDTree< T > other )
 	{
-		tree = knn.tree;
-		k = knn.k;
-		search = knn.search.copy();
-		matches = new KDTreeNode[ k ];
-		Arrays.setAll( matches, i -> tree.createNode().setNodeIndex( search.bestIndex( i ) ) );
+		tree = other.tree;
+		search = other.search.copy();
+		matches = new ArrayList<>();
+		for ( final KDTreeNode< T > match : other.matches )
+			matches.add( tree.createNode().setNodeIndex( match.nodeIndex() ) );
+	}
+
+	@Override
+	public void search( final RealLocalizable reference, final double radius, final boolean sortResults )
+	{
+		search.search( reference, radius, sortResults );
+		fillMatches( 0, search.numNeighbors() - 1 );
+	}
+
+	private void fillMatches( final int first, final int last )
+	{
+		while ( matches.size() < last + 1 )
+			matches.add( tree.createNode() );
+		for ( int i = 0; i <= last; ++i )
+			matches.get( i ).setNodeIndex( search.bestIndex( i ) );
 	}
 
 	@Override
@@ -81,29 +91,21 @@ public class KNearestNeighborSearchOnKDTree< T > implements KNearestNeighborSear
 	}
 
 	@Override
-	public int getK()
+	public int numNeighbors()
 	{
-		return k;
-	}
-
-	@Override
-	public void search( final RealLocalizable p )
-	{
-		search.search( p );
-		for ( int i = 0; i < k; i++ )
-			matches[ i ].setNodeIndex( search.bestIndex( i ) );
+		return search.numNeighbors();
 	}
 
 	@Override
 	public Sampler< T > getSampler( final int i )
 	{
-		return matches[ i ];
+		return matches.get( i );
 	}
 
 	@Override
 	public RealLocalizable getPosition( final int i )
 	{
-		return matches[ i ];
+		return matches.get( i );
 	}
 
 	@Override
@@ -112,35 +114,9 @@ public class KNearestNeighborSearchOnKDTree< T > implements KNearestNeighborSear
 		return search.bestSquDistance( i );
 	}
 
-	@Override
-	public KNearestNeighborSearchOnKDTree< T > copy()
+//	@Override TODO
+	public RadiusNeighborSearchOnKDTree< T > copy()
 	{
-		return new KNearestNeighborSearchOnKDTree<>( this );
-	}
-
-	/* NearestNeighborSearch */
-
-	@Override
-	public RealLocalizable getPosition()
-	{
-		return getPosition( 0 );
-	}
-
-	@Override
-	public Sampler< T > getSampler()
-	{
-		return getSampler( 0 );
-	}
-
-	@Override
-	public double getSquareDistance()
-	{
-		return getSquareDistance( 0 );
-	}
-
-	@Override
-	public double getDistance()
-	{
-		return getDistance( 0 );
+		return new RadiusNeighborSearchOnKDTree<>( this );
 	}
 }

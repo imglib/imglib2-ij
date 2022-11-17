@@ -39,6 +39,7 @@ public class KDTreeBenchmark
 //
 	public int n = 3;
 	public int k = 10;
+	public int radius = 1;
 	public int numDataVertices = 10000;
 	public int numTestVertices = 1000;
 	public double minCoordinateValue = -5;
@@ -142,6 +143,38 @@ public class KDTreeBenchmark
 //			{
 //				kd.getSampler( i ).get();
 //			}
+		}
+	}
+
+	@Benchmark
+	@BenchmarkMode( Mode.AverageTime )
+	@OutputTimeUnit( TimeUnit.MILLISECONDS )
+	public void radiusNeighborSearchOld()
+	{
+		final net.imglib2.neighborsearch.RadiusNeighborSearchOnKDTree< RealPoint > kd = new net.imglib2.neighborsearch.RadiusNeighborSearchOnKDTree<>( kdtreeOld );
+		for ( final RealLocalizable t : testVertices )
+		{
+			kd.search( t, radius, true );
+			for ( int i = 0; i < Math.min( kd.numNeighbors(), k ); i++ )
+			{
+				kd.getSampler( i ).get();
+			}
+		}
+	}
+
+	@Benchmark
+	@BenchmarkMode( Mode.AverageTime )
+	@OutputTimeUnit( TimeUnit.MILLISECONDS )
+	public void radiusNeighborSearch()
+	{
+		final net.imglib2.kdtree.RadiusNeighborSearchOnKDTree< RealPoint > kd = new net.imglib2.kdtree.RadiusNeighborSearchOnKDTree<>( kdtree );
+		for ( final RealLocalizable t : testVertices )
+		{
+			kd.search( t, radius, true );
+			for ( int i = 0; i < Math.min( kd.numNeighbors(), k ); i++ )
+			{
+				kd.getSampler( i ).get();
+			}
 		}
 	}
 
