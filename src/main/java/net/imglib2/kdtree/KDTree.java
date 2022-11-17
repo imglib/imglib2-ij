@@ -109,23 +109,23 @@ public class KDTree< T >
 		final int[] tree = KDTreeUtils.makeTree( points );
 		final int[] invtree = KDTreeUtils.invert( tree );
 
-		// TODO: Alternatively, this could also flatten out the dimensions if
-		// 		 everything fits into one array
-		//       See KDTreeBuilder.MAX_ARRAY_SIZE
-		//		 and KDTreeBuilder.reorderToFlatLayout(...)
-//		final double[][] treePoints = KDTreeUtils.reorder( points, tree );
-		final double[] treePoints = KDTreeUtils.reorderToFlatLayout( points, tree );
-
+		final boolean useFlatLayout = ( long ) numDimensions * numPoints <= KDTreeUtils.MAX_ARRAY_SIZE;
 		if ( storeValuesAsNativeImg && KDTreeUtils.getType( values ) instanceof NativeType )
 		{
 			@SuppressWarnings( "unchecked" )
 			final Img< T > treeValues = ( Img< T > ) KDTreeUtils.orderValuesImg( invtree, ( Iterable ) values );
-			return new KDTreeData< T >( treePoints, treeValues );
+			if ( useFlatLayout )
+				return new KDTreeData<>(KDTreeUtils.reorderToFlatLayout( points, tree ), treeValues);
+			else
+				return new KDTreeData<>(KDTreeUtils.reorder( points, tree ), treeValues);
 		}
 		else
 		{
 			final List< T > treeValues = KDTreeUtils.orderValuesList( invtree, values );
-			return new KDTreeData< T >( treePoints, treeValues );
+			if ( useFlatLayout )
+				return new KDTreeData<>(KDTreeUtils.reorderToFlatLayout( points, tree ), treeValues);
+			else
+				return new KDTreeData<>(KDTreeUtils.reorder( points, tree ), treeValues);
 		}
 	}
 }
