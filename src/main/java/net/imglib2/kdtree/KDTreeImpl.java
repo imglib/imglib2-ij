@@ -125,10 +125,37 @@ public abstract class KDTreeImpl {
 
 	public abstract double getDoublePosition(final int i, final int d);
 
+	/**
+	 * Compute the squared distance from node {@code i} to {@code pos}.
+	 */
+	public float squDistance(final int i, final float[] pos) {
+		float sum = 0;
+		for (int d = 0; d < numDimensions; ++d) {
+			final float diff = pos[d] - (float) getDoublePosition(i, d);
+			sum += diff * diff;
+		}
+		return sum;
+	}
+
+	/**
+	 * Compute the squared distance from node {@code i} to {@code pos}.
+	 */
 	public double squDistance(final int i, final double[] pos) {
 		double sum = 0;
 		for (int d = 0; d < numDimensions; ++d) {
 			final double diff = pos[d] - getDoublePosition(i, d);
+			sum += diff * diff;
+		}
+		return sum;
+	}
+
+	/**
+	 * Compute the squared distance from node {@code i} to {@code pos}.
+	 */
+	public double squDistance(final int i, final RealLocalizable pos) {
+		double sum = 0;
+		for (int d = 0; d < numDimensions; ++d) {
+			final double diff = pos.getDoublePosition(d) - getDoublePosition(i, d);
 			sum += diff * diff;
 		}
 		return sum;

@@ -114,7 +114,7 @@ public class RadiusNeighborSearchOnKDTree< T > implements RadiusNeighborSearch< 
 		return search.bestSquDistance( i );
 	}
 
-//	@Override TODO
+//	@Override TODO: add copy method to RadiusNeighborSearch interface
 	public RadiusNeighborSearchOnKDTree< T > copy()
 	{
 		return new RadiusNeighborSearchOnKDTree<>( this );

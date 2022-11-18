@@ -8,6 +8,8 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.list.ListImg;
 import net.imglib2.util.Util;
 
+import static net.imglib2.kdtree.KDTreeData.PositionsLayout.FLAT;
+
 // TODO javadoc
 // TODO revise visibility of fields and methods
 
@@ -73,7 +75,7 @@ public class KDTreeData< T >
 		numPoints = values.size();
 		numDimensions = positions.length / numPoints;
 
-		layout = PositionsLayout.FLAT;
+		layout = FLAT;
 		this.positions = null;
 		flatPositions = positions;
 
@@ -90,7 +92,7 @@ public class KDTreeData< T >
 		numPoints = ( int ) values.dimension( 0 );
 		numDimensions = positions.length / numPoints;
 
-		layout = PositionsLayout.FLAT;
+		layout = FLAT;
 		this.positions = null;
 		flatPositions = positions;
 
@@ -110,10 +112,10 @@ public class KDTreeData< T >
 	}
 
 	// for serialisation and usage by the tree
-	// (TODO) Internal storage may be flattened into single double[] array, which is translated here
+	// Internal storage may be flattened into single double[] array, which is translated here
 	public double[][] positions()
 	{
-		return positions;
+		return layout == FLAT ? KDTreeUtils.unflatten( flatPositions, numDimensions ) : positions;
 	}
 
 	// for serialization

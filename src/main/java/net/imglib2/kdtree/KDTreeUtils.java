@@ -109,7 +109,6 @@ final class KDTreeUtils
 	 * @param order
 	 * @return
 	 */
-	// TODO --> move to KDTreeUtil and reuse
 	static double[] reorder( final double[] values, final int[] order )
 	{
 		final int size = order.length;
@@ -125,7 +124,6 @@ final class KDTreeUtils
 	 * @param order
 	 * @return
 	 */
-	// TODO --> move to KDTreeUtil
 	static int[] reorder( final int[] values, final int[] order )
 	{
 		final int size = order.length;
@@ -144,7 +142,7 @@ final class KDTreeUtils
 	 *
 	 * @return
 	 */
-	static double[] reorderToFlatLayout( double[][] positions, int[] tree )
+	static double[] reorderToFlatLayout( final double[][] positions, final int[] tree )
 	{
 		final int numDimensions = positions.length;
 		final int numPoints = positions[ 0 ].length;
@@ -156,6 +154,92 @@ final class KDTreeUtils
 			for ( int d = 0; d < numDimensions; ++d )
 				reordered[ numDimensions * i + d ] = positions[ d ][ tree[ i ] ];
 		return reordered;
+	}
+
+	/**
+	 * TODO javadoc
+	 *
+	 * @param positions
+	 * @return
+	 */
+	static double[] flatten( double[][] positions )
+	{
+		final int numDimensions = positions.length;
+		final int numPoints = positions[ 0 ].length;
+		final double[] flattened = new double[ numDimensions * numPoints ];
+		for ( int i = 0; i < numPoints; ++i )
+			for ( int d = 0; d < numDimensions; ++d )
+				flattened[ numDimensions * i + d ] = positions[ d ][ i ];
+		return flattened;
+
+	}
+
+	/**
+	 * TODO javadoc
+	 *
+	 * @param positions
+	 * @param numDimensions
+	 * @return
+	 */
+	static double[][] unflatten( double[] positions, final int numDimensions )
+	{
+		final int numPoints = positions.length / numDimensions;
+		final double[][] unflattened = new double[ numDimensions ][ numPoints ];
+		for (int i = 0; i < positions.length; ++i )
+		{
+			final int d = i % numDimensions;
+			unflattened[ d ][ i / numDimensions + d ] = positions[ i ];
+		}
+		return unflattened;
+
+	}
+
+	/**
+	 * TODO javadoc
+	 *
+	 * @param positions
+	 * @param min
+	 * @param max
+	 */
+	static void computeMinMax(final double[][] positions, final double[] min, final double[] max) {
+		final int n = min.length;
+		for (int d = 0; d < n; d++) {
+			double maxd = Double.NEGATIVE_INFINITY;
+			double mind = Double.POSITIVE_INFINITY;
+			for (double v : positions[d]) {
+				if (v < mind) {
+					mind = v;
+				}
+				if (v > maxd) {
+					maxd = v;
+				}
+			}
+			min[d] = mind;
+			max[d] = maxd;
+		}
+	}
+
+	/**
+	 * TODO javadoc
+	 *
+	 * @param flatPositions
+	 * @param min
+	 * @param max
+	 */
+	static void computeMinMax(final double[] flatPositions, final double[] min, final double[] max) {
+		final int n = min.length;
+		Arrays.fill(max, Double.NEGATIVE_INFINITY);
+		Arrays.fill(min, Double.POSITIVE_INFINITY);
+		int d = 0;
+		for (double v : flatPositions) {
+			if (v < min[d]) {
+				min[d] = v;
+			}
+			if (v > max[d]) {
+				max[d] = v;
+			}
+			d = (d + 1) % n;
+		}
 	}
 
 	/**
@@ -299,7 +383,6 @@ final class KDTreeUtils
 	 * @param order TODO
 	 * @return index of pivot element
 	 */
-	// TODO --> move to KDTreeUtil and reuse
 	static int partition( int i, int j, final double[] values, final int[] order )
 	{
 		final int len = j - i + 1;
@@ -346,7 +429,6 @@ final class KDTreeUtils
 	 * @param values
 	 * @param order
 	 */
-	// TODO --> move to KDTreeUtil
 	static void quicksort( final int i, final int j, final double[] values, final int[] order )
 	{
 		if ( 0 <= i && i < j )

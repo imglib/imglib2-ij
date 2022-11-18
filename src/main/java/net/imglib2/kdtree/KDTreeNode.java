@@ -4,6 +4,16 @@ import java.util.function.IntFunction;
 import net.imglib2.RealLocalizable;
 import net.imglib2.Sampler;
 
+/**
+ * Proxy for a node in a KDTree. A KDTreeNode has coordinates and a
+ * value. It provides the coordinates via the {@link RealLocalizable} interface.
+ * It provides the value via {@link Sampler#get()}.
+ *
+ * @param <T>
+ *            value type.
+ *
+ * @author Tobias Pietzsch
+ */
 public class KDTreeNode< T > implements RealLocalizable, Sampler< T >
 {
 	private final KDTree< T > tree;
@@ -12,9 +22,35 @@ public class KDTreeNode< T > implements RealLocalizable, Sampler< T >
 
 	private IntFunction< T > values;
 
+	/**
+	 * TODO javadoc
+	 *
+	 * @param tree
+	 */
 	KDTreeNode( final KDTree< T > tree )
 	{
 		this.tree = tree;
+	}
+
+	/**
+	 * TODO javadoc
+	 *
+	 * @param nodeIndex
+	 * @return
+	 */
+	KDTreeNode< T > setNodeIndex( final int nodeIndex )
+	{
+		this.nodeIndex = nodeIndex;
+		return this;
+	}
+
+	/**
+	 * TODO javadoc
+	 *
+	 * @return
+	 */
+	int nodeIndex() {
+		return nodeIndex;
 	}
 
 	/**
@@ -66,26 +102,16 @@ public class KDTreeNode< T > implements RealLocalizable, Sampler< T >
 		return getDoublePosition( getSplitDimension() );
 	}
 
-	KDTreeNode< T > setNodeIndex( final int nodeIndex )
+	@Override
+	public int numDimensions()
 	{
-		this.nodeIndex = nodeIndex;
-		return this;
-	}
-
-	int nodeIndex() {
-		return nodeIndex;
+		return tree.numDimensions();
 	}
 
 	@Override
 	public double getDoublePosition( final int d )
 	{
 		return tree.impl.getDoublePosition( nodeIndex, d );
-	}
-
-	@Override
-	public int numDimensions()
-	{
-		return tree.numDimensions();
 	}
 
 	@Override
@@ -107,7 +133,23 @@ public class KDTreeNode< T > implements RealLocalizable, Sampler< T >
 	/**
 	 * Compute the squared distance from p to this node.
 	 */
+	public final float squDistanceTo( final float[] p )
+	{
+		return tree.impl.squDistance( nodeIndex, p );
+	}
+
+	/**
+	 * Compute the squared distance from p to this node.
+	 */
 	public double squDistanceTo( final double[] p )
+	{
+		return tree.impl.squDistance( nodeIndex, p );
+	}
+
+	/**
+	 * Compute the squared distance from p to this node.
+	 */
+	public final double squDistanceTo( final RealLocalizable p )
 	{
 		return tree.impl.squDistance( nodeIndex, p );
 	}
