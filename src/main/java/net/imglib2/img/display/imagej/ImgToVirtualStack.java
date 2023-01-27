@@ -100,6 +100,8 @@ public class ImgToVirtualStack
 		final RandomAccessibleInterval< T > sorted = ensureXYCZT( imgPlus );
 		final ImageJVirtualStack<?> stack = imageStackWrapper.apply( sorted );
 		final ImagePlus result = new ImagePlus( imgPlus.getName(), stack );
+		if ( !Double.isNaN( stack.displayMin ) && !Double.isNaN( stack.displayMax ) )
+			result.setDisplayRange( stack.displayMin, stack.displayMax );
 		// NB: setWritable after the ImagePlus is created. Otherwise a useless stack.setPixels(...) call would be performed.
 		stack.setWritable( true );
 		result.setDimensions( ( int ) sorted.dimension( 2 ), ( int ) sorted.dimension( 3 ), ( int ) sorted.dimension( 4 ) );

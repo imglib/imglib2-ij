@@ -90,6 +90,9 @@ public class ImageJVirtualStack< T extends NativeType< T > > extends AbstractVir
 
 	private boolean isWritable = false;
 
+	protected double displayMin = Double.NaN;
+	protected double displayMax = Double.NaN;
+
 	protected ExecutorService service;
 
 	/* old constructor -> non-multithreaded projector */

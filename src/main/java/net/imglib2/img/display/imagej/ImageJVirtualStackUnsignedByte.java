@@ -68,7 +68,10 @@ public class ImageJVirtualStackUnsignedByte extends ImageJVirtualStack< Unsigned
 
 	public static ImageJVirtualStackUnsignedByte wrapAndScaleBitType( final RandomAccessibleInterval< BitType > source )
 	{
-		return new ImageJVirtualStackUnsignedByte( Converters.convert(source, new ToBitByteSamplerConverter()) );
+		ImageJVirtualStackUnsignedByte stack = new ImageJVirtualStackUnsignedByte( Converters.convert(source, new ToBitByteSamplerConverter()) );
+		stack.displayMin = 0;
+		stack.displayMax = 1;
+		return stack;
 	}
 
 	public < S > ImageJVirtualStackUnsignedByte( final RandomAccessibleInterval< S > source, final Converter< ? super S, UnsignedByteType > converter )

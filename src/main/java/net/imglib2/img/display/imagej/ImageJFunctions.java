@@ -192,6 +192,8 @@ public class ImageJFunctions
 	{
 		final ImageJVirtualStackFloat stack = new ImageJVirtualStackFloat( img, converter, service );
 		final ImagePlus imp = new ImagePlus( title, stack );
+		if ( !Double.isNaN( stack.displayMin ) && !Double.isNaN( stack.displayMax ) )
+			imp.setDisplayRange( stack.displayMin, stack.displayMax );
 		imp.show();
 
 		return imp;
@@ -303,6 +305,13 @@ public class ImageJFunctions
 	private static ImagePlus makeImagePlus( final Dimensions dims, final VirtualStack stack, final String title )
 	{
 		final ImagePlus imp = new ImagePlus( title, stack );
+		if ( stack instanceof ImageJVirtualStack )
+		{
+			ImageJVirtualStack ijStack = ( ImageJVirtualStack ) stack;
+			if ( !Double.isNaN( ijStack.displayMin ) && !Double.isNaN( ijStack.displayMax ) )
+				imp.setDisplayRange( ijStack.displayMin, ijStack.displayMax );
+		}
+
 		final int n = dims.numDimensions();
 		if ( n > 2 )
 		{
@@ -487,7 +496,9 @@ public class ImageJFunctions
 			final String title,
 			final ExecutorService service )
 	{
-		return wrapUnsignedByte( img, new RealUnsignedByteConverter< T >( 0, 1 ), title, service );
+		final ImagePlus imp = wrapUnsignedByte( img, new RealUnsignedByteConverter< T >( 0, 1 ), title, service );
+		imp.setDisplayRange( 0, 1 );
+		return imp;
 	}
 
 	public static < T extends RealType< T > > ImagePlus wrapBit(
