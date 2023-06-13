@@ -61,6 +61,7 @@ import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.util.Cast;
 import net.imglib2.util.IntervalIndexer;
 
 import ij.ImagePlus;
@@ -164,15 +165,26 @@ public class PlanarImgToVirtualStack extends AbstractVirtualStack
 	@Override
 	protected void setPixelsZeroBasedIndex( int index, Object pixels )
 	{
-		setPlaneCastType( img, indexer.applyAsInt( index ), wrapPixelsToAccess( pixels ) );
+		try
+		{
+			img.setPlane( indexer.applyAsInt( index ), Cast.unchecked( wrapPixelsToAccess( pixels ) ) );
+		}
+		catch ( UnsupportedOperationException e )
+		{
+			// intentionally do nothing
+			// NB: Both methods VirtualStack.setPixels(...) and
+			// VirtualStackAdapter.wrap( imagePlus ).setPlane(...) are not
+			// implemented. But they handle this with different strategies:
+			//   * VirtualStack.setPixels(...) -> does nothing
+			//   * VirtualStackAdapter.wrap( imagePlus ).setPlane(...)
+			//       -> throws an UnsupportedOperationException
+			// This try-catch-block adapts between the two strategies by
+			// doing nothing (like VirtualStack.setPixels(...)),
+			// if setPlane(...) throws an UnsupportedOperationException.
+		}
 	}
 
-	private static < A extends ArrayDataAccess< ? > > void setPlaneCastType( PlanarAccess< A > img, int index, ArrayDataAccess< ? > arrayDataAccess )
-	{
-		img.setPlane( index, ( A ) arrayDataAccess );
-	}
-
-	private ArrayDataAccess wrapPixelsToAccess( Object pixels )
+	private ArrayDataAccess< ? > wrapPixelsToAccess( Object pixels )
 	{
 		if ( pixels instanceof byte[] )
 			return new ByteArray( ( byte[] ) pixels );
