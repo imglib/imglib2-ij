@@ -49,6 +49,7 @@ import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
+import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.type.numeric.real.FloatType;
 
 import ij.ImagePlus;
@@ -80,8 +81,8 @@ public class ArrayImgToVirtualStack
 	 * Takes an {@link ImgPlus} (IJ2) and wraps it into an {@link ImagePlus}
 	 * (IJ1). This only works when {@link ImgPlus} is backed by a two
 	 * dimensional {@link ArrayImg}. Type of the image must be
-	 * {@link UnsignedByteType}, {@link UnsignedShortType}, {@link ARGBType} or
-	 * {@link FloatType}.
+	 * {@link UnsignedByteType}, {@link UnsignedShortType}, {@link IntType},
+	 * {@link ARGBType} or {@link FloatType}.
 	 * <p>
 	 * The returned {@link ImagePlus} uses the same pixel buffer as the given
 	 * image. Changes to the {@link ImagePlus} are therefore correctly reflected

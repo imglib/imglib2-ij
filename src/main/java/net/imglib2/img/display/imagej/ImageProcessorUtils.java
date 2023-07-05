@@ -38,6 +38,7 @@ import ij.process.ByteProcessor;
 import ij.process.ColorProcessor;
 import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
+import ij.process.IntProcessor;
 import ij.process.ShortProcessor;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
@@ -70,12 +71,19 @@ public class ImageProcessorUtils
 	 */
 	public static ImageProcessor createImageProcessor( final Object pixels, final int width, final int height, final ColorModel colorModel )
 	{
+		return createImageProcessor( pixels, width, height, colorModel, true );
+	}
+
+	static ImageProcessor createImageProcessor( final Object pixels, final int width, final int height, final ColorModel colorModel, final boolean rgb )
+	{
 		if ( pixels instanceof byte[] )
 			return new ByteProcessor( width, height, ( byte[] ) pixels, colorModel );
 		if ( pixels instanceof short[] )
 			return new ShortProcessor( width, height, ( short[] ) pixels, colorModel );
 		if ( pixels instanceof int[] )
-			return new ColorProcessor( width, height, ( int[] ) pixels );
+			return rgb
+				? new ColorProcessor( width, height, ( int[] ) pixels )
+				: new IntProcessor( width, height, ( int[] ) pixels );
 		if ( pixels instanceof float[] )
 			return new FloatProcessor( width, height, ( float[] ) pixels, colorModel );
 		throw new IllegalArgumentException( "unsupported color type" );
@@ -104,8 +112,15 @@ public class ImageProcessorUtils
 	 */
 	public static Img< ? > createImg( final Object pixels, final int width, final int height )
 	{
+		return createImg( pixels, width, height, true );
+	}
+
+	static Img< ? > createImg( final Object pixels, final int width, final int height, final boolean rgb )
+	{
 		if ( pixels instanceof int[] )
-			return ArrayImgs.argbs( ( int[] ) pixels, width, height );
+			return rgb
+				? ArrayImgs.argbs( ( int[] ) pixels, width, height )
+				: ArrayImgs.ints( ( int[] ) pixels, width, height );
 		if ( pixels instanceof byte[] )
 			return ArrayImgs.unsignedBytes( ( byte[] ) pixels, width, height );
 		if ( pixels instanceof short[] )

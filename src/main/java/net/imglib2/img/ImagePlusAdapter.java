@@ -51,6 +51,7 @@ import net.imglib2.type.Type;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.ComplexType;
 import net.imglib2.type.numeric.NumericType;
+import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.integer.UnsignedIntType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
@@ -104,7 +105,7 @@ public class ImagePlusAdapter
 		case ImagePlus.GRAY32:
 			return wrapFloat( imp );
 		case ImagePlus.COLOR_RGB:
-			return wrapRGBA( imp );
+			return imp.isRGB() ? wrapRGBA( imp ) : wrapSignedInt( imp );
 		default:
 			throw new RuntimeException( "Only 8, 16, 32-bit and RGB supported!" );
 		}
@@ -197,6 +198,22 @@ public class ImagePlusAdapter
 		return container;
 	}
 
+	public static IntImagePlus< IntType > wrapSignedInt( final ImagePlus imp )
+	{
+		if( imp.getType() != ImagePlus.COLOR_RGB )
+			return null;
+
+		final IntImagePlus< IntType > container = new IntImagePlus<>( imp );
+
+		// create a Type that is linked to the container
+		final IntType linkedType = new IntType( container );
+
+		// pass it to the DirectAccessContainer
+		container.setLinkedType( linkedType );
+
+		return container;
+	}
+
 	public static IntImagePlus< ARGBType > wrapRGBA( final ImagePlus imp )
 	{
 		if ( imp.getType() != ImagePlus.COLOR_RGB )
@@ -241,7 +258,9 @@ public class ImagePlusAdapter
 		case ImagePlus.GRAY32:
 			return wrapFloat( imp );
 		case ImagePlus.COLOR_RGB:
-			return convertToFloat( wrapRGBA( imp ), new ARGBtoFloatConverter() );
+			return imp.isRGB()
+				? convertToFloat( wrapRGBA( imp ), new ARGBtoFloatConverter() )
+				: convertToFloat( wrapSignedInt( imp ), new NumberToFloatConverter< IntType >() );
 		default:
 			throw new RuntimeException( "Only 8, 16, 32-bit and RGB supported!" );
 		}

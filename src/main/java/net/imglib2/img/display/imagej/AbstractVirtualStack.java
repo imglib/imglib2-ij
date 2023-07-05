@@ -153,7 +153,7 @@ public abstract class AbstractVirtualStack extends VirtualStack
 	protected RandomAccessibleInterval< ? > getSliceZeroBasedIndex( int index )
 	{
 		Object pixels = getPixelsZeroBasedIndex( index );
-		return ImageProcessorUtils.createImg( pixels, getWidth(), getHeight() );
+		return ImageProcessorUtils.createImg( pixels, getWidth(), getHeight(), isRGB() );
 	}
 
 	@Override
