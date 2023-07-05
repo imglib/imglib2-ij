@@ -34,6 +34,7 @@
 
 package net.imglib2.img.imageplus;
 
+import ij.process.IntProcessor;
 import net.imglib2.exception.ImgLibException;
 import net.imglib2.img.basictypeaccess.array.IntArray;
 import net.imglib2.type.NativeType;
@@ -55,7 +56,11 @@ public class IntImagePlus< T extends NativeType< T > > extends ImagePlusImg< T, 
 {
 	final ImagePlus imp;
 
-	public IntImagePlus( final long[] dim, final Fraction entitiesPerPixel )
+	public IntImagePlus( final long[] dim, final Fraction entitiesPerPixel ) {
+		this( dim, entitiesPerPixel, true );
+	}
+
+	public IntImagePlus( final long[] dim, final Fraction entitiesPerPixel, boolean rgb )
 	{
 		super( dim, entitiesPerPixel );
 
@@ -63,7 +68,7 @@ public class IntImagePlus< T extends NativeType< T > > extends ImagePlusImg< T, 
 		{
 			final ImageStack stack = new ImageStack( width, height );
 			for ( int i = 0; i < numSlices; ++i )
-				stack.addSlice( "", new ColorProcessor( width, height ) );
+				stack.addSlice( "", rgb ? new ColorProcessor( width, height ) : new IntProcessor( width, height ) );
 			imp = new ImagePlus( "image", stack );
 			imp.setDimensions( channels, depth, frames );
 			if ( numSlices > 1 )

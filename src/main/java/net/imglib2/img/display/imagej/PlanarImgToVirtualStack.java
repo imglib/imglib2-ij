@@ -60,6 +60,7 @@ import net.imglib2.type.Type;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
+import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.Cast;
 import net.imglib2.util.IntervalIndexer;
@@ -70,7 +71,7 @@ import ij.VirtualStack;
 /**
  * Utility class to convert a {@link PlanarImg} to an {@link ImagePlus}
  * without copying data. It is restricted to certain pixel types:
- * UnsignedByteType, UnsignedShortType, ARGBType and FloatType.
+ * UnsignedByteType, UnsignedShortType, IntType, ARGBType and FloatType.
  *
  * @see ArrayImgToVirtualStack
  * @see ImgToVirtualStack
@@ -99,13 +100,16 @@ public class PlanarImgToVirtualStack extends AbstractVirtualStack
 	 * reflected in the {@link ImgPlus}.
 	 * <p>
 	 * The image must be {@link UnsignedByteType}, {@link UnsignedShortType},
-	 * {@link ARGBType} or {@link FloatType}. Only up to five dimensions are
-	 * support. Axes oder must start with X, Y axes. Channel, Time and Z axes
-	 * might follow in arbitrary order. The image title and calibration are
-	 * derived from the given image.
+	 * {@link IntType}, {@link ARGBType} or {@link FloatType}.
+	 * </p>
+	 * <p>Only up to five dimensions are supported. Axes order must start with
+	 * X, Y axes. Channel, Time and Z axes might follow in arbitrary order.
+	 * The image title and calibration are derived from the given image.
+	 * </p>
 	 * <p>
 	 * Use {@link #isSupported(ImgPlus)} to check if an {@link ImagePlus} is
 	 * supported.
+	 * </p>
 	 *
 	 * @see #isSupported(ImgPlus)
 	 */
@@ -207,7 +211,7 @@ public class PlanarImgToVirtualStack extends AbstractVirtualStack
 			return 16;
 		if ( type instanceof ARGBType )
 			return 24;
-		if ( type instanceof FloatType )
+		if ( type instanceof IntType || type instanceof FloatType )
 			return 32;
 		throw new IllegalArgumentException( "unsupported type" );
 	}

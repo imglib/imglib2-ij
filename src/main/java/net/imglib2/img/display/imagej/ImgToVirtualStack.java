@@ -48,6 +48,7 @@ import net.imglib2.transform.integer.MixedTransform;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.ARGBType;
+import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.view.MixedTransformView;
@@ -140,6 +141,8 @@ public class ImgToVirtualStack
 			return ImageJVirtualStackUnsignedByte.wrap( rai );
 		if ( bitDepth <= 16 && !isSigned )
 			return ImageJVirtualStackUnsignedShort.wrap( rai );
+		if ( bitDepth <= 32 && type instanceof IntegerType )
+			return ImageJVirtualStackInt.wrap( rai );
 
 		// other types translated as 32-bit float data
 		return ImageJVirtualStackFloat.wrap( rai );

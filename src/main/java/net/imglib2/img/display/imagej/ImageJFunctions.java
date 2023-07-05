@@ -53,6 +53,7 @@ import net.imglib2.type.numeric.ComplexType;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.RealType;
+import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.integer.UnsignedIntType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
@@ -130,6 +131,11 @@ public class ImageJFunctions
 	public static Img< UnsignedIntType > wrapInt( final ImagePlus imp )
 	{
 		return ImagePlusAdapter.wrapInt( imp );
+	}
+
+	public static Img< IntType > wrapSignedInt( final ImagePlus imp )
+	{
+		return ImagePlusAdapter.wrapSignedInt( imp );
 	}
 
 	public static Img< ARGBType > wrapRGBA( final ImagePlus imp )
