@@ -222,4 +222,10 @@ public class ImageJVirtualStack< T extends NativeType< T > > extends AbstractVir
 		}
 		return origin;
 	}
+
+	/** Get the underlying ImgLib2 {@link RandomAccessibleInterval}. */
+	public RandomAccessibleInterval< T > getSource()
+	{
+		return source;
+	}
 }
