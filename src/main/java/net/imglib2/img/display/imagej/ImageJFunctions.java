@@ -57,6 +57,14 @@ import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.integer.UnsignedIntType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.type.volatiles.VolatileARGBType;
+import net.imglib2.type.volatiles.VolatileDoubleType;
+import net.imglib2.type.volatiles.VolatileFloatType;
+import net.imglib2.type.volatiles.VolatileIntType;
+import net.imglib2.type.volatiles.VolatileRealType;
+import net.imglib2.type.volatiles.VolatileShortType;
+import net.imglib2.type.volatiles.VolatileUnsignedByteType;
+import net.imglib2.type.volatiles.VolatileUnsignedShortType;
 import net.imglib2.util.Util;
 
 import ij.ImagePlus;
@@ -223,19 +231,17 @@ public class ImageJFunctions
 		// see e.g. http://bugs.sun.com/view_bug.do?bug_id=6548436
 		// TODO: remove casting madness as soon as the bug is fixed
 		final Object oImg = img;
-		if ( ARGBType.class.isInstance( t ) )
+		if ( ARGBType.class.isInstance( t ) || VolatileARGBType.class.isInstance( t ))
 			target = wrapRGB( ( RandomAccessibleInterval< ARGBType > ) oImg, title, service );
-		else if ( UnsignedByteType.class.isInstance( t ) )
+		else if ( UnsignedByteType.class.isInstance( t )  || VolatileUnsignedByteType.class.isInstance( t ))
 			target = wrapUnsignedByte( ( RandomAccessibleInterval< RealType > ) oImg, title, service );
 		else if ( BitType.class.isInstance( t ) )
-		{
 			target = wrapBit( ( RandomAccessibleInterval< RealType > ) oImg, title, service );
-		}
-		else if ( IntegerType.class.isInstance( t ) )
+		else if (IntegerType.class.isInstance( t ) || VolatileIntType.class.isInstance( t ) || VolatileShortType.class.isInstance( t ) || VolatileUnsignedShortType.class.isInstance( t ))
 			target = wrapUnsignedShort( ( RandomAccessibleInterval< RealType > ) oImg, title, service );
-		else if ( RealType.class.isInstance( t ) )
+		else if ( RealType.class.isInstance( t ) || VolatileRealType.class.isInstance( t ) || VolatileFloatType.class.isInstance( t ) || VolatileDoubleType.class.isInstance( t ) )
 			target = wrapFloat( ( RandomAccessibleInterval< RealType > ) oImg, title, service );
-		else if ( ComplexType.class.isInstance( t ) )
+		else if ( ComplexType.class.isInstance( t ))
 			target = wrapFloat( ( RandomAccessibleInterval< ComplexType > ) oImg, new ComplexPowerGLogFloatConverter(), title, service );
 		else
 		{
