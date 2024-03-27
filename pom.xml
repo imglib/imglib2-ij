@@ -161,6 +161,7 @@ Jean-Yves Tinevez and Michael Zinsmaier.</license.copyrightOwners>
 		<releaseProfiles>sign,deploy-to-scijava</releaseProfiles>
 
 		<imglib2.version>6.3.1-SNAPSHOT</imglib2.version>
+		<imglib2-cache.version>1.0.0-beta-18-SNAPSHOT</imglib2-cache.version>
 		<enforcer.skip>true</enforcer.skip>
 	</properties>
 
