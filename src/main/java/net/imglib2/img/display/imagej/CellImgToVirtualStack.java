@@ -51,7 +51,6 @@ import net.imglib2.type.NativeTypeFactory;
 import net.imglib2.util.Fraction;
 import net.imglib2.util.IntervalIndexer;
 import net.imglib2.util.Intervals;
-import net.imglib2.util.Util;
 
 import java.util.AbstractList;
 import java.util.List;
@@ -117,7 +116,7 @@ public class CellImgToVirtualStack
 	toPlanar( AbstractCellImg< T, A, ?, ? > cellImage )
 	{
 		final long[] dim = Intervals.dimensionsAsLongArray( cellImage );
-		final T type = Util.getTypeFromInterval( cellImage ).copy();
+		final T type = cellImage.getType().createVariable();
 		final Fraction entitiesPerPixel = type.getEntitiesPerPixel();
 		List< A > slices = new SlicesList<>( cellImage );
 		final PlanarImg< T, A > ts = new PlanarImg<>( slices, dim, entitiesPerPixel );

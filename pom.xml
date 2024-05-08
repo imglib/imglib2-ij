@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>35.1.1</version>
+		<version>37.0.0</version>
 		<relativePath />
 	</parent>
 
@@ -159,6 +159,9 @@ Jean-Yves Tinevez and Michael Zinsmaier.</license.copyrightOwners>
 
 		<!-- NB: Deploy releases to the SciJava Maven repository. -->
 		<releaseProfiles>sign,deploy-to-scijava</releaseProfiles>
+
+		<imglib2.version>7.0.1</imglib2.version>
+		<imglib2-cache.version>1.0.0-beta-18</imglib2-cache.version>
 	</properties>
 
 	<repositories>
