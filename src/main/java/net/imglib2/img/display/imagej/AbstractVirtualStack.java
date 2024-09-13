@@ -291,12 +291,6 @@ public abstract class AbstractVirtualStack extends VirtualStack
 	}
 
 	@Override
-	public void addUnsignedShortSlice( final String sliceLabel, final Object pixels )
-	{
-		super.addUnsignedShortSlice( sliceLabel, pixels );
-	}
-
-	@Override
 	public void addSlice( final ImageProcessor ip )
 	{
 		// ignore
@@ -481,12 +475,6 @@ public abstract class AbstractVirtualStack extends VirtualStack
 		return isSetVoxel ?
 				( a, b ) -> a.set( a.get() & mask | ((((int) b.get()) & 0xff) << shift )) :
 				( a, b ) -> b.set( ( a.get() >> shift) & 0xff );
-	}
-
-	@Override
-	public void drawSphere( final double radius, final int xc, final int yc, final int zc )
-	{
-		super.drawSphere( radius, xc, yc, zc );
 	}
 
 	@Override
