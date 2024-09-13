@@ -68,8 +68,8 @@ import java.util.stream.LongStream;
  * or {@link ARGBType}.
  * <p>
  * By default {@link ImageJVirtualStack} is not writable. A call to
- * {@link #setPixels} or {@link #setVoxels} has no effect. Buf if
- * {@link #setWritable(boolean)} is set to true, the pixels set by this methods
+ * {@link #setPixels} or {@link #setVoxels} has no effect. But if
+ * {@link #setWritable(boolean)} is set to true, the pixels set by these methods
  * are copied to the {@link RandomAccessibleInterval}.
  * <p>
  * A call to {@link #getPixels(int)} will return a copy of pixels of the specified image
