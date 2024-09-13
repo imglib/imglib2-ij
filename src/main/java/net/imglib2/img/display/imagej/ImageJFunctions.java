@@ -57,7 +57,7 @@ import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.integer.UnsignedIntType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.type.numeric.real.FloatType;
-import net.imglib2.util.Util;
+import net.imglib2.util.Cast;
 
 import ij.ImagePlus;
 import ij.VirtualStack;
@@ -217,26 +217,20 @@ public class ImageJFunctions
 			final ExecutorService service )
 	{
 		ImagePlus target;
-		final T t = Util.getTypeFromInterval( img );
+		final T t = img.getType();
 
-		// NB: Casting madness thanks to a long standing javac bug;
-		// see e.g. http://bugs.sun.com/view_bug.do?bug_id=6548436
-		// TODO: remove casting madness as soon as the bug is fixed
-		final Object oImg = img;
-		if ( ARGBType.class.isInstance( t ) )
-			target = wrapRGB( ( RandomAccessibleInterval< ARGBType > ) oImg, title, service );
-		else if ( UnsignedByteType.class.isInstance( t ) )
-			target = wrapUnsignedByte( ( RandomAccessibleInterval< RealType > ) oImg, title, service );
-		else if ( BitType.class.isInstance( t ) )
-		{
-			target = wrapBit( ( RandomAccessibleInterval< RealType > ) oImg, title, service );
-		}
-		else if ( IntegerType.class.isInstance( t ) )
-			target = wrapUnsignedShort( ( RandomAccessibleInterval< RealType > ) oImg, title, service );
-		else if ( RealType.class.isInstance( t ) )
-			target = wrapFloat( ( RandomAccessibleInterval< RealType > ) oImg, title, service );
-		else if ( ComplexType.class.isInstance( t ) )
-			target = wrapFloat( ( RandomAccessibleInterval< ComplexType > ) oImg, new ComplexPowerGLogFloatConverter(), title, service );
+		if ( t instanceof ARGBType )
+			target = wrapRGB( Cast.unchecked( img ), title, service );
+		else if ( t instanceof UnsignedByteType )
+			target = wrapUnsignedByte( Cast.unchecked( img ), title, service );
+		else if ( t instanceof BitType )
+			target = wrapBit( Cast.unchecked( img ), title, service );
+		else if ( t instanceof IntegerType )
+			target = wrapUnsignedShort( Cast.unchecked( img ), title, service );
+		else if ( t instanceof RealType )
+			target = wrapFloat( Cast.unchecked( img ), title, service );
+		else if ( t instanceof ComplexType )
+			target = wrapFloat( Cast.unchecked( img ), new ComplexPowerGLogFloatConverter(), title, service );
 		else
 		{
 			System.out.println( "Do not know how to display Type " + t.getClass().getSimpleName() );
