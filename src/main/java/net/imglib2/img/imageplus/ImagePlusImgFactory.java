@@ -105,7 +105,8 @@ public class ImagePlusImgFactory< T extends NativeType< T > > extends PlanarImgF
 			img = new ShortImagePlus( dimensions, entitiesPerPixel );
 			break;
 		default:
-			img = new ImagePlusImg<>( ArrayDataAccessFactory.get( typeFactory ), dimensions, entitiesPerPixel );
+			final A creator = ArrayDataAccessFactory.get( typeFactory );
+			img = new ImagePlusImg<>( creator, dimensions, entitiesPerPixel );
 		}
 		img.setLinkedType( typeFactory.createLinkedType( img ) );
 		return img;
